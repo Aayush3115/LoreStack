@@ -1,0 +1,143 @@
+* {
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+  
+  
+}
+
+body {
+   min-height: 100vh;
+  background: linear-gradient(135deg, #4f46e5, #9333ea);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Center container */
+.container {
+  width: 650px;
+  background: white;
+  padding: 30px;
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+  margin: 0px auto;
+  height: auto;
+  
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.msg {
+  font-size: 48px;
+  font-weight: bold;
+  color: #4f46e5;
+  margin-top: 20px;
+}
+
+.uline {
+  width: 90px;
+  height: 4px;
+  background: #4f46e5;
+  margin: 8px auto;
+  border-radius: 10px;
+}
+
+/* Input section */
+.inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.input {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input label {
+  font-size: 18px;
+  color: #444;
+  font-weight: bold;
+}
+
+.input input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  outline: none;
+  font-size: 15px;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.input input:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79,70,229,0.2);
+}
+
+/* Forgot password */
+.forget-password {
+  font-size: 18px;
+  margin-top: 20px;
+  color: #555;
+  text-align: center;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.forget-password:hover{
+     color: #4338ca;
+}
+
+
+
+/* Buttons */
+.buttonpart {
+  display: flex;
+  gap: 40px;
+  margin-top: 25px;
+}
+
+.buttonpart button {
+  flex: 1;
+  padding: 10px;
+  height: 65px;
+  border-radius: 12px;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+/* Sign Up button */
+.btn {
+  background: #4f46e5;
+  color: white;
+}
+
+.btn:hover {
+  background: #4338ca;
+}
+
+/* Active button (selected one) */
+.active {
+  background: #4f46e5;
+  color: white;
+}
+
+/* Inactive button (other one) */
+.inactive {
+  background: #e5e7eb;
+  color: #333;
+}
+
+/* Hover effect for inactive */
+.inactive:hover {
+  background: #d1d5db;
+}
+
