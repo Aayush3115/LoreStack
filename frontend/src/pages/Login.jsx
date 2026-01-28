@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
-import { Film, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Film, Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
 
 export default function LorestackLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [password2, setPassword2] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  
-  const API_BASE_URL = 'http://localhost:8000/api/auth/login'; 
+  const API_BASE = 'http://localhost:8000/api/auth';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,118 +24,78 @@ export default function LorestackLogin() {
 
     try {
       if (isLogin) {
-        const response = await fetch(`${API_BASE_URL}/auth/login/`, { 
+        const response = await fetch(`${API_BASE}/login/`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            email: email,
-            password: password,
+            username: username || email, 
+            password,
           }),
         });
 
         const data = await response.json();
 
         if (response.ok) {
-          localStorage.setItem('authToken', data.token);
-          
-          setSuccess('Login successful! Redirecting...');
-          
-          
+          localStorage.setItem('access_token', data.access);
+          localStorage.setItem('refresh_token', data.refresh);
+          setSuccess('Login successful!');
+
           setTimeout(() => {
-            window.location.href = '/dashboard'; 
+            window.location.href = '/';
           }, 1500);
         } else {
-          setError(data.message || data.error || 'Login failed. Please check your credentials.');
+          setError(data.detail || data.error || 'Login failed. Please check your credentials.');
         }
       } else {
-        
-        const response = await fetch(`${API_BASE_URL}/auth/register/`, { 
+        const response = await fetch(`${API_BASE}/register/`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            username: username,
-            email: email,
-            password: password,
+            username,
+            email,
+            password,
+            password2,
+            first_name: firstName,
+            last_name: lastName,
           }),
         });
 
         const data = await response.json();
 
         if (response.ok) {
-          setSuccess('Account created successfully! Please login.');
-          
-          
+          localStorage.setItem('access_token', data.access);
+          localStorage.setItem('refresh_token', data.refresh);
+          setSuccess('Account created successfully!');
+
           setTimeout(() => {
-            setIsLogin(true);
-            setPassword('');
-            setError('');
+            setIsLogin(true); 
+            setSuccess('Please sign in with your new account.');
           }, 2000);
         } else {
-         
-          if (data.email) {
-            setError(data.email[0]);
-          } else if (data.username) {
-            setError(data.username[0]);
-          } else if (data.password) {
-            setError(data.password[0]);
-          } else {
-            setError(data.message || data.error || 'Registration failed. Please try again.');
-          }
+          const backendErrors = Object.entries(data)
+            .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(' ') : msgs}`)
+            .join(' | ');
+
+          setError(backendErrors || 'Registration failed.');
         }
       }
     } catch (err) {
-      console.error('Authentication error:', err);
-      setError('Network error. Please check your connection and try again.');
+      setError('Network error. Please check if the backend server is running.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSocialLogin = async (provider) => {
-  
-    
-    try {
-      
-      
-      console.log(`Social login with ${provider} - Not implemented yet`);
-      setError(`${provider} authentication coming soon!`);
-    } catch (err) {
-      console.error('Social login error:', err);
-      setError(`Failed to login with ${provider}`);
-    }
+  const handleSocialLogin = (provider) => {
+    setError(`${provider} authentication coming soon!`);
   };
 
   const handleForgotPassword = async () => {
-   
-    if (!email) {
-      setError('Please enter your email address first.');
+    if (!username && !email) {
+      setError('Please enter your username or email address first.');
       return;
     }
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/password-reset/`, { 
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setSuccess('Password reset link sent to your email!');
-      } else {
-        setError(data.message || 'Failed to send reset link.');
-      }
-    } catch (err) {
-      console.error('Password reset error:', err);
-      setError('Failed to send reset link. Please try again.');
-    }
+    setError('Password reset functionality coming soon!');
   };
 
   return (
@@ -297,7 +259,7 @@ export default function LorestackLogin() {
         .form {
           display: flex;
           flex-direction: column;
-          gap: 24px;
+          gap: 20px;
         }
         
         .input-group {
@@ -387,17 +349,6 @@ export default function LorestackLogin() {
           transition: color 0.3s ease;
         }
         
-        .remember-label:hover {
-          color: #e4e4e7;
-        }
-        
-        .remember-checkbox {
-          width: 16px;
-          height: 16px;
-          border-radius: 4px;
-          cursor: pointer;
-        }
-        
         .forgot-button {
           background: none;
           border: none;
@@ -406,10 +357,6 @@ export default function LorestackLogin() {
           font-size: 14px;
           font-family: 'Source Sans Pro', sans-serif;
           transition: color 0.3s ease;
-        }
-        
-        .forgot-button:hover {
-          color: #fbbf24;
         }
         
         .submit-button {
@@ -425,11 +372,11 @@ export default function LorestackLogin() {
           box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.3);
           transition: all 0.3s ease;
           font-family: 'Source Sans Pro', sans-serif;
+          margin-top: 10px;
         }
         
         .submit-button:hover {
           background: linear-gradient(to right, #f59e0b, #f97316);
-          box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.5);
           transform: translateY(-2px);
         }
         
@@ -439,16 +386,12 @@ export default function LorestackLogin() {
           transform: none;
         }
         
-        .loading-spinner {
-          display: inline-block;
-        }
-        
         .message-box {
           padding: 12px 16px;
           border-radius: 8px;
           font-size: 14px;
           line-height: 1.5;
-          animation: slideDown 0.3s ease-out;
+          margin-bottom: 20px;
         }
         
         .error-box {
@@ -462,149 +405,46 @@ export default function LorestackLogin() {
           border: 1px solid rgba(34, 197, 94, 0.3);
           color: #86efac;
         }
-        
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .divider {
-          position: relative;
-          margin: 32px 0;
-        }
-        
-        .divider-line {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          align-items: center;
-        }
-        
-        .divider-border {
-          width: 100%;
-          border-top: 1px solid #27272a;
-        }
-        
-        .divider-text-wrapper {
-          position: relative;
-          display: flex;
-          justify-content: center;
-        }
-        
-        .divider-text {
-          padding: 0 16px;
-          font-size: 14px;
-          color: #71717a;
-          background: rgba(24, 24, 27, 0.6);
-        }
-        
-        .social-buttons {
+
+        .name-row {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 16px;
         }
         
-        .social-button {
-          padding: 14px 16px;
-          background: rgba(9, 9, 11, 0.5);
-          border: 1px solid rgba(39, 39, 42, 0.5);
-          border-radius: 8px;
-          color: white;
-          font-weight: 600;
-          font-size: 15px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          font-family: 'Source Sans Pro', sans-serif;
-        }
-        
-        .social-button:hover {
-          background: rgba(39, 39, 42, 0.5);
-          border-color: #52525b;
-        }
-        
-        .footer-text {
-          text-align: center;
-          color: #52525b;
-          font-size: 13px;
-          margin-top: 32px;
-          line-height: 1.6;
-        }
-        
         @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
         
         @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
         }
         
         @keyframes pulse1 {
-          0%, 100% {
-            transform: scale(1);
-            opacity: 0.2;
-          }
-          50% {
-            transform: scale(1.1);
-            opacity: 0.3;
-          }
+          0%, 100% { transform: scale(1); opacity: 0.2; }
+          50% { transform: scale(1.1); opacity: 0.3; }
         }
         
         @keyframes pulse2 {
-          0%, 100% {
-            transform: scale(1);
-            opacity: 0.2;
-          }
-          50% {
-            transform: scale(1.05);
-            opacity: 0.25;
-          }
+          0%, 100% { transform: scale(1); opacity: 0.2; }
+          50% { transform: scale(1.05); opacity: 0.25; }
         }
         
         @media (max-width: 640px) {
-          .card {
-            padding: 28px;
-          }
-          
-          .logo-text {
-            font-size: 40px;
-          }
-          
-          .tagline {
-            font-size: 16px;
-          }
+          .card { padding: 28px; }
+          .logo-text { font-size: 40px; }
+          .name-row { grid-template-columns: 1fr; }
         }
       `}</style>
 
       <div className="login-container">
-        {/* Animated background elements */}
         <div className="bg-orb-1"></div>
         <div className="bg-orb-2"></div>
-        
-        {/* Grain texture overlay */}
         <div className="grain-overlay"></div>
 
         <div className="content-wrapper">
-          {/* Logo and header */}
           <div className="header">
             <div className="logo-wrapper">
               <div className="logo-icon-container">
@@ -618,18 +458,16 @@ export default function LorestackLogin() {
             </p>
           </div>
 
-          {/* Login/Signup card */}
           <div className="card">
-            {/* Tab switcher */}
             <div className="tab-switcher">
               <button
-                onClick={() => setIsLogin(true)}
+                onClick={() => { setIsLogin(true); setError(''); setSuccess(''); }}
                 className={`tab-button ${isLogin ? 'active' : 'inactive'}`}
               >
                 Sign In
               </button>
               <button
-                onClick={() => setIsLogin(false)}
+                onClick={() => { setIsLogin(false); setError(''); setSuccess(''); }}
                 className={`tab-button ${!isLogin ? 'active' : 'inactive'}`}
               >
                 Sign Up
@@ -637,55 +475,70 @@ export default function LorestackLogin() {
             </div>
 
             <form onSubmit={handleSubmit} className="form">
-              {/* Error message */}
-              {error && (
-                <div className="message-box error-box">
-                  {error}
-                </div>
-              )}
+              {error && <div className="message-box error-box">{error}</div>}
+              {success && <div className="message-box success-box">{success}</div>}
 
-              {/* Success message */}
-              {success && (
-                <div className="message-box success-box">
-                  {success}
-                </div>
-              )}
-
-              {/* Username input (only for signup) */}
-              {!isLogin && (
-                <div className="input-group">
-                  <label className="input-label">Username</label>
-                  <div className="input-wrapper">
-                    <Mail className="input-icon" size={20} />
-                    <input
-                      type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      placeholder="username"
-                      className="input-field"
-                      required={!isLogin}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Email input */}
               <div className="input-group">
-                <label className="input-label">Email</label>
+                <label className="input-label">Username</label>
                 <div className="input-wrapper">
-                  <Mail className="input-icon" size={20} />
+                  <User className="input-icon" size={20} />
                   <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your@email.com"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="cinemafan_24"
                     className="input-field"
                     required
                   />
                 </div>
               </div>
 
-              {/* Password input */}
+              {!isLogin && (
+                <>
+                  <div className="name-row">
+                    <div className="input-group">
+                      <label className="input-label">First Name</label>
+                      <input
+                        type="text"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        placeholder="John"
+                        className="input-field"
+                        style={{ paddingLeft: '16px' }}
+                        required
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label className="input-label">Last Name</label>
+                      <input
+                        type="text"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        placeholder="Doe"
+                        className="input-field"
+                        style={{ paddingLeft: '16px' }}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="input-group">
+                    <label className="input-label">Email</label>
+                    <div className="input-wrapper">
+                      <Mail className="input-icon" size={20} />
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="your@email.com"
+                        className="input-field"
+                        required
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
               <div className="input-group">
                 <label className="input-label">Password</label>
                 <div className="input-wrapper">
@@ -709,11 +562,27 @@ export default function LorestackLogin() {
                 </div>
               </div>
 
-              {/* Remember me & Forgot password */}
+              {!isLogin && (
+                <div className="input-group">
+                  <label className="input-label">Confirm Password</label>
+                  <div className="input-wrapper">
+                    <Lock className="input-icon" size={20} />
+                    <input
+                      type="password"
+                      value={password2}
+                      onChange={(e) => setPassword2(e.target.value)}
+                      placeholder="••••••••"
+                      className="input-field"
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+
               {isLogin && (
                 <div className="remember-forgot">
                   <label className="remember-label">
-                    <input type="checkbox" className="remember-checkbox" />
+                    <input type="checkbox" style={{ marginRight: '8px' }} />
                     <span>Remember me</span>
                   </label>
                   <button type="button" className="forgot-button" onClick={handleForgotPassword}>
@@ -722,41 +591,11 @@ export default function LorestackLogin() {
                 </div>
               )}
 
-              {/* Submit button */}
               <button type="submit" className="submit-button" disabled={loading}>
-                {loading ? (
-                  <span className="loading-spinner">Processing...</span>
-                ) : (
-                  isLogin ? 'Sign In' : 'Create Account'
-                )}
+                {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
               </button>
             </form>
-
-            {/* Divider */}
-            <div className="divider">
-              <div className="divider-line">
-                <div className="divider-border"></div>
-              </div>
-              <div className="divider-text-wrapper">
-                <span className="divider-text">or continue with</span>
-              </div>
-            </div>
-
-            {/* Social login buttons */}
-            <div className="social-buttons">
-              <button className="social-button" type="button" onClick={() => handleSocialLogin('google')}>
-                Google
-              </button>
-              <button className="social-button" type="button" onClick={() => handleSocialLogin('github')}>
-                GitHub
-              </button>
-            </div>
           </div>
-
-          {/* Footer text */}
-          <p className="footer-text">
-            By continuing, you agree to Lorestack's Terms of Service and Privacy Policy
-          </p>
         </div>
       </div>
     </>
