@@ -25,5 +25,7 @@ urlpatterns = [
     path('api/', include('communities.urls')),
     path('api/', include('interactions.urls')),
     path('api/auth/',include('accounts.urls')),
+    path("api/movies/", include("movies.urls")),
+
 ]
 
