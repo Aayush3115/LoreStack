@@ -28,7 +28,7 @@ export default function LorestackLogin() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            username: username || email, 
+            username: username || email,
             password,
           }),
         });
@@ -68,7 +68,7 @@ export default function LorestackLogin() {
           setSuccess('Account created successfully!');
 
           setTimeout(() => {
-            setIsLogin(true); 
+            setIsLogin(true);
             setSuccess('Please sign in with your new account.');
           }, 2000);
         } else {
@@ -502,7 +502,7 @@ export default function LorestackLogin() {
                         type="text"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="John"
+                        placeholder="Admin"
                         className="input-field"
                         style={{ paddingLeft: '16px' }}
                         required
@@ -514,7 +514,7 @@ export default function LorestackLogin() {
                         type="text"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        placeholder="Doe"
+                        placeholder="Admin"
                         className="input-field"
                         style={{ paddingLeft: '16px' }}
                         required
