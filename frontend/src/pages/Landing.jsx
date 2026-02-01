@@ -1,10 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout, Zap, Shield, Sparkles, ArrowRight } from 'lucide-react';
+import '../styles/Landing.css'
 
 const Landing = () => {
 const navigate = useNavigate();
-
 return (
 <div className="landing-page">
 <nav className="navbar">
@@ -31,31 +31,32 @@ Build Your <br />
 <span className="gradient-text">Digital Legacy</span>
 </h1>
 <p className="hero-subtitle">
-The ultimate platform for creating, sharing, and organizing your stories. Join thousands of creators today.
+The ultimate social platform for cinema nerds for logging, reviewing and interacting with other nerds. 
+<p> Join thousands of nerds today.</p>
 </p>
 <div className="hero-actions">
 <button className="primary-btn" onClick={() => navigate('/login')}>
 Launch App <ArrowRight size={18} />
 </button>
-<button className="secondary-btn">View Showcase</button>
+
 </div>
 </div>
 
 <div className="features-grid">
 <div className="feature-card">
 <div className="feature-icon icon-yellow"><Zap size={24} /></div>
-<h3>Lightning Fast</h3>
-<p>Built with the latest tech stack for peak performance.</p>
+<h3>Unique Rating System</h3>
+<p>Lorem ipsum dolor sit amet.</p>
 </div>
 <div className="feature-card">
 <div className="feature-icon icon-blue"><Shield size={24} /></div>
-<h3>Secure by Design</h3>
-<p>Your data is encrypted and protected at every step.</p>
+<h3>Easy UI/UX</h3>
+<p>Lorem ipsum dolor sit amet consectetur.</p>
 </div>
 <div className="feature-card">
-<div className="feature-icon icon-purple"><Layout size={24} /></div>
-<h3>Intuitive UI</h3>
-<p>A beautiful interface designed for productivity.</p>
+<div className="feature-icon icon-red"><Layout size={24} /></div>
+<h3>Mood Based Recommendation</h3>
+<p>Lorem ipsum dolor sit amet consectetur.</p>
 </div>
 </div>
 </main>
@@ -70,305 +71,10 @@ Launch App <ArrowRight size={18} />
 <div className="footer-links">
 <a href="#">Privacy</a>
 <a href="#">Terms</a>
-<a href="#">Twitter</a>
+<a href="https://x.com/Lore_Stack" target="_blank">Twitter</a>
 </div>
 </div>
 </footer>
-
-<style>{`
-.landing-page {
-min-height: 100vh;
-background-color: #0f172a;
-color: white;
-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-display: flex;
-flex-direction: column;
-overflow-x: hidden;
-}
-
-.navbar {
-display: flex;
-align-items: center;
-justify-content: space-between;
-padding: 24px 40px;
-background: rgba(15, 23, 42, 0.8);
-backdrop-filter: blur(12px);
-position: sticky;
-top: 0;
-z-index: 100;
-border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.logo-container {
-display: flex;
-align-items: center;
-gap: 12px;
-}
-
-.logo-box {
-width: 40px;
-height: 40px;
-background: linear-gradient(135deg, #6366f1, #a855f7);
-border-radius: 12px;
-display: flex;
-align-items: center;
-justify-content: center;
-box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-}
-
-.logo-text {
-font-size: 24px;
-font-weight: 800;
-background: linear-gradient(to right, #ffffff, #94a3b8);
--webkit-background-clip: text;
--webkit-text-fill-color: transparent;
-letter-spacing: -0.5px;
-}
-
-.nav-btn {
-background: white;
-color: #0f172a;
-padding: 10px 24px;
-border-radius: 99px;
-font-weight: 600;
-border: none;
-cursor: pointer;
-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.nav-btn:hover {
-transform: translateY(-2px);
-box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
-background: #f1f5f9;
-}
-
-.hero {
-flex: 1;
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-padding: 80px 20px;
-position: relative;
-}
-
-.bg-blur {
-position: absolute;
-width: 500px;
-height: 500px;
-border-radius: 50%;
-filter: blur(120px);
-z-index: 0;
-opacity: 0.15;
-animation: pulse 10s infinite alternate;
-}
-
-.blur-1 {
-top: 10%;
-left: 10%;
-background: #6366f1;
-}
-
-.blur-2 {
-bottom: 10%;
-right: 10%;
-background: #a855f7;
-animation-delay: -5s;
-}
-
-@keyframes pulse {
-0% { transform: scale(1); opacity: 0.1; }
-100% { transform: scale(1.2); opacity: 0.2; }
-}
-
-.hero-content {
-text-align: center;
-max-width: 900px;
-position: relative;
-z-index: 1;
-}
-
-.badge {
-display: inline-flex;
-align-items: center;
-gap: 8px;
-padding: 6px 16px;
-background: rgba(255, 255, 255, 0.05);
-border: 1px solid rgba(255, 255, 255, 0.1);
-border-radius: 99px;
-font-size: 14px;
-font-weight: 500;
-color: #a5b4fc;
-margin-bottom: 32px;
-}
-
-.hero-title {
-font-size: clamp(48px, 8vw, 96px);
-font-weight: 900;
-line-height: 1.1;
-letter-spacing: -2px;
-margin-bottom: 24px;
-}
-
-.gradient-text {
-background: linear-gradient(to right, #818cf8, #c084fc, #f472b6);
--webkit-background-clip: text;
--webkit-text-fill-color: transparent;
-}
-
-.hero-subtitle {
-font-size: clamp(18px, 2vw, 24px);
-color: #94a3b8;
-max-width: 600px;
-margin: 0 auto 48px;
-line-height: 1.6;
-}
-
-.hero-actions {
-display: flex;
-gap: 16px;
-justify-content: center;
-}
-
-.primary-btn {
-background: linear-gradient(to right, #4f46e5, #9333ea);
-color: white;
-padding: 16px 32px;
-border-radius: 16px;
-font-size: 18px;
-font-weight: 700;
-border: none;
-cursor: pointer;
-display: flex;
-align-items: center;
-gap: 8px;
-transition: all 0.3s;
-box-shadow: 0 8px 24px rgba(79, 70, 229, 0.3);
-}
-
-.primary-btn:hover {
-transform: translateY(-2px);
-box-shadow: 0 12px 32px rgba(79, 70, 229, 0.4);
-}
-
-.secondary-btn {
-background: rgba(255, 255, 255, 0.05);
-border: 1px solid rgba(255, 255, 255, 0.1);
-color: white;
-padding: 16px 32px;
-border-radius: 16px;
-font-size: 18px;
-font-weight: 700;
-cursor: pointer;
-transition: all 0.3s;
-}
-
-.secondary-btn:hover {
-background: rgba(255, 255, 255, 0.1);
-}
-
-.features-grid {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-gap: 24px;
-width: 100%;
-max-width: 1200px;
-margin-top: 120px;
-z-index: 1;
-}
-
-.feature-card {
-background: rgba(255, 255, 255, 0.02);
-border: 1px solid rgba(255, 255, 255, 0.05);
-padding: 40px;
-border-radius: 32px;
-transition: all 0.3s;
-}
-
-.feature-card:hover {
-background: rgba(255, 255, 255, 0.04);
-border-color: rgba(255, 255, 255, 0.1);
-transform: translateY(-8px);
-}
-
-.feature-icon {
-width: 48px;
-height: 48px;
-border-radius: 12px;
-display: flex;
-align-items: center;
-justify-content: center;
-margin-bottom: 24px;
-background: rgba(255, 255, 255, 0.05);
-}
-
-.icon-yellow { color: #fbbf24; }
-.icon-blue { color: #60a5fa; }
-.icon-purple { color: #c084fc; }
-
-.feature-card h3 {
-font-size: 20px;
-font-weight: 700;
-margin-bottom: 12px;
-}
-
-.feature-card p {
-color: #64748b;
-line-height: 1.6;
-}
-
-.footer {
-border-top: 1px solid rgba(255, 255, 255, 0.05);
-padding: 48px 40px;
-margin-top: 80px;
-}
-
-.footer-content {
-max-width: 1200px;
-margin: 0 auto;
-display: flex;
-justify-content: space-between;
-align-items: center;
-flex-wrap: wrap;
-gap: 24px;
-}
-
-.footer-brand {
-display: flex;
-align-items: center;
-gap: 8px;
-font-weight: 700;
-opacity: 0.6;
-}
-
-.copyright {
-color: #64748b;
-font-size: 14px;
-}
-
-.footer-links {
-display: flex;
-gap: 32px;
-}
-
-.footer-links a {
-color: #64748b;
-text-decoration: none;
-font-size: 14px;
-font-weight: 500;
-transition: color 0.3s;
-}
-
-.footer-links a:hover {
-color: white;
-}
-
-@media (max-width: 768px) {
-.hero-actions { flex-direction: column; }
-.hero-title { font-size: 48px; }
-.footer-content { flex-direction: column; text-align: center; }
-}
-`}</style>
 </div>
 );
 };
