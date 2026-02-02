@@ -14,11 +14,9 @@ const Home = () => {
         navigate('/login');
     };
 
-
     useEffect(() => {
         const fetchTrending = async () => {
             try {
-
                 const response = await fetch("http://localhost:8000/api/movies/trending/");
                 const data = await response.json();
                 if (data.status_code === 200 && data.data && data.data.results) {
@@ -51,7 +49,7 @@ const Home = () => {
                 <nav className="sidebar-nav">
                     <button className="nav-item active">
                         <Popcorn size={20} />
-                        <span>Dashboard</span>
+                        <span>Home</span>
                     </button>
                     <button className="nav-item">
                         <Search size={20} />
@@ -93,27 +91,56 @@ const Home = () => {
                     </div>
                 </header>
 
-
+                {/* Trending Movies Section with Scroll Buttons */}
                 <section className="dashboard-section">
                     <h2 className="section-title">Trending Movies</h2>
 
-                    <div className="horizontal-scroll">
-                        {error ? (
-                            <p className="error-text">{error}</p>
-                        ) : trendingMovies.length > 0 ? (
-                            trendingMovies.map((movie) => (
-                                <div className="movie-card" key={movie.id}>
-                                    <img
-                                        src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                                        alt={movie.title}
-                                        className="movie-poster"
-                                    />
-                                    <p className="movie-title">{movie.title}</p>
-                                </div>
-                            ))
-                        ) : (
-                            <p>Loading trending movies...</p>
-                        )}
+                    <div className="trending-wrapper-edge">
+                        {/* LEFT BUTTON: on top of the first movie */}
+                        <button
+                            className="scroll-btn left"
+                            onClick={() => {
+                                document.querySelector(".horizontal-scroll").scrollBy({
+                                    left: -300,
+                                    behavior: "smooth",
+                                });
+                            }}
+                        >
+                            ‹
+                        </button>
+
+                        {/* Horizontal scroll container */}
+                        <div className="horizontal-scroll">
+                            {error ? (
+                                <p className="error-text">{error}</p>
+                            ) : trendingMovies.length > 0 ? (
+                                trendingMovies.map((movie) => (
+                                    <div className="movie-card" key={movie.id}>
+                                        <img
+                                            src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                                            alt={movie.title}
+                                            className="movie-poster"
+                                        />
+                                        <p className="movie-title">{movie.title}</p>
+                                    </div>
+                                ))
+                            ) : (
+                                <p>Loading trending movies...</p>
+                            )}
+                        </div>
+
+                        {/* RIGHT BUTTON: at container's right edge */}
+                        <button
+                            className="scroll-btn right"
+                            onClick={() => {
+                                document.querySelector(".horizontal-scroll").scrollBy({
+                                    left: 300,
+                                    behavior: "smooth",
+                                });
+                            }}
+                        >
+                            ›
+                        </button>
                     </div>
                 </section>
 
