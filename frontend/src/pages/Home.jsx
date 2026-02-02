@@ -45,7 +45,6 @@ const Home = () => {
                     </div>
                     <span className="sidebar-brand">LoreStack</span>
                 </div>
-
                 <nav className="sidebar-nav">
                     <button className="nav-item active">
                         <Popcorn size={20} />
