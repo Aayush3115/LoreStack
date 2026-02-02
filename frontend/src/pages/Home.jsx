@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Layout, LogOut, Settings, User, Bell, Search, Sparkles,Popcorn, Clapperboard, HeartHandshake } from 'lucide-react';
+import { Layout, LogOut, Settings, User, Bell, Search, Sparkles, Popcorn, Clapperboard, HeartHandshake } from 'lucide-react';
 import '../styles/home.css'
 
 const Home = () => {
     const navigate = useNavigate();
+    const [trendingMovies, setTrendingMovies] = useState([]);
+    const [error, setError] = useState(null);
 
     const handleLogout = () => {
         localStorage.removeItem('access_token');
@@ -13,8 +15,30 @@ const Home = () => {
     };
 
 
+    useEffect(() => {
+        const fetchTrending = async () => {
+            try {
+
+                const response = await fetch("http://localhost:8000/api/movies/trending/");
+                const data = await response.json();
+                if (data.status_code === 200 && data.data && data.data.results) {
+                    setTrendingMovies(data.data.results);
+                } else {
+                    setError("Failed to load trending movies.");
+                    console.error("Invalid data format from backend:", data);
+                }
+            } catch (error) {
+                setError("Could not connect to the server.");
+                console.error("Failed to fetch trending movies:", error);
+            }
+        };
+
+        fetchTrending();
+    }, []);
+
     return (
         <div className="home-container">
+
             {/* Sidebar */}
             <aside className="sidebar">
                 <div className="sidebar-header">
@@ -68,9 +92,32 @@ const Home = () => {
                         <div className="user-avatar"></div>
                     </div>
                 </header>
-            </main>
 
-           
+
+                <section className="dashboard-section">
+                    <h2 className="section-title">Trending Movies</h2>
+
+                    <div className="horizontal-scroll">
+                        {error ? (
+                            <p className="error-text">{error}</p>
+                        ) : trendingMovies.length > 0 ? (
+                            trendingMovies.map((movie) => (
+                                <div className="movie-card" key={movie.id}>
+                                    <img
+                                        src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                                        alt={movie.title}
+                                        className="movie-poster"
+                                    />
+                                    <p className="movie-title">{movie.title}</p>
+                                </div>
+                            ))
+                        ) : (
+                            <p>Loading trending movies...</p>
+                        )}
+                    </div>
+                </section>
+
+            </main>
         </div>
     );
 };
