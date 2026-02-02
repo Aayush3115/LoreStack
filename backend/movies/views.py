@@ -7,7 +7,7 @@ import requests
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
-def trending_movies(request):
+def trending(request):
     url = "https://api.themoviedb.org/3/trending/movie/day"
     params = {
         "api_key": settings.TMDB_API_KEY

@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import trending_movies
+from .views import trending
 
 urlpatterns = [
-    path("trending/", trending_movies, name="trending"),
+    path("trending/", trending, name="trending"),
 ]
