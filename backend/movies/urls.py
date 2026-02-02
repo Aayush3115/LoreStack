@@ -2,5 +2,5 @@ from django.urls import path
 from .views import trending
 
 urlpatterns = [
-    path("trending/", trending),
+    path("trending/", trending, name="trending"),
 ]

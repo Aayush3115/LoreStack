@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout, LogOut, Settings, User, Bell, Search, Sparkles,Popcorn, Clapperboard, HeartHandshake } from 'lucide-react';
 import '../styles/home.css'
 
 const Home = () => {
     const navigate = useNavigate();
+    const [trendingMovies, setTrendingMovies] = useState([]);
 
     const handleLogout = () => {
         localStorage.removeItem('access_token');
@@ -12,9 +13,25 @@ const Home = () => {
         navigate('/login');
     };
 
+    // 🚀 FETCH TRENDING MOVIES HERE
+    useEffect(() => {
+        const fetchTrending = async () => {
+            try {
+                // 👉 Replace this with YOUR Django URL
+                const response = await fetch("YOUR_DJANGO_BACKEND_URL/api/trending/");
+                const data = await response.json();
+                setTrendingMovies(data); 
+            } catch (error) {
+                console.error("Failed to fetch trending movies:", error);
+            }
+        };
+
+        fetchTrending();
+    }, []);
 
     return (
         <div className="home-container">
+
             {/* Sidebar */}
             <aside className="sidebar">
                 <div className="sidebar-header">
@@ -68,9 +85,30 @@ const Home = () => {
                         <div className="user-avatar"></div>
                     </div>
                 </header>
-            </main>
 
-           
+                {/* ⭐ TRENDING MOVIES SECTION */}
+                <section className="dashboard-section">
+                    <h2 className="section-title">Trending Movies</h2>
+
+                    <div className="horizontal-scroll">
+                        {trendingMovies.length > 0 ? (
+                            trendingMovies.map((movie) => (
+                                <div className="movie-card" key={movie.id}>
+                                    <img
+                                        src={movie.poster_url}
+                                        alt={movie.title}
+                                        className="movie-poster"
+                                    />
+                                    <p className="movie-title">{movie.title}</p>
+                                </div>
+                            ))
+                        ) : (
+                            <p>Loading trending movies...</p>
+                        )}
+                    </div>
+                </section>
+
+            </main>
         </div>
     );
 };
