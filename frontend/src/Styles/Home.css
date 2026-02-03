@@ -48,6 +48,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+
 }
 
 .nav-item {
@@ -64,7 +65,9 @@
     cursor: pointer;
     transition: all 0.2s;
     text-align: left;
+
 }
+
 
 .nav-item:hover {
     color: white;
@@ -379,12 +382,11 @@
 /* Horizontal scroll container */
 .horizontal-scroll {
     display: flex;
+    gap: 16px;
     overflow-x: auto;
-    gap: 15px;
-    padding: 10px 0;
     scroll-behavior: smooth;
-    position: relative;
-    /* buttons relative to this */
+    cursor: grab;
+    user-select: none;
 }
 
 /* Hide scrollbar */
@@ -427,4 +429,68 @@
 .scroll-btn.right {
     right: 0;
     /* end of container */
+}
+
+.trending-wrapper-edge {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.horizontal-scroll {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 16px 0;
+    cursor: grab;
+    user-select: none;
+}
+
+.horizontal-scroll.dragging {
+    cursor: grabbing;
+}
+
+.horizontal-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.movie-card {
+    flex: 0 0 150px;
+    text-align: center;
+    border-radius: 8px;
+    transition: transform 0.2s;
+}
+
+.movie-card:hover {
+    transform: scale(1.05);
+}
+
+.movie-poster {
+    width: 100%;
+    border-radius: 8px;
+}
+
+.scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    cursor: pointer;
+}
+
+.scroll-btn.left {
+    left: 0;
+}
+
+.scroll-btn.right {
+    right: 0;
 }
