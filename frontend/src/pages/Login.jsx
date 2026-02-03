@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Film, Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
-import '../styles/Login.css'
+import '../Styles/Login.css'
+import logo from '../assets/logo.png';
 
 export default function LorestackLogin() {
   const [showPassword, setShowPassword] = useState(false);
@@ -111,10 +112,9 @@ export default function LorestackLogin() {
           <div className="header">
             <div className="logo-wrapper">
               <div className="logo-icon-container">
-                <Film className="logo-icon" size={48} color="#f59e0b" strokeWidth={1.5} />
+                <img src={logo} alt="LoreStack Logo" className="logo-img-login" />
                 <div className="logo-glow"></div>
               </div>
-              <h1 className="logo-text">Lorestack</h1>
             </div>
             <p className="tagline">
               {isLogin ? 'Welcome back to your cinematic universe' : 'Begin your journey through cinema'}
