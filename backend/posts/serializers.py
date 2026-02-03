@@ -15,7 +15,6 @@ class PostSerializer(serializers.ModelSerializer):
             'content',
             'mood',
             'mood_name',
-            'tags',
             'rating',
             'created_at'
         ]
