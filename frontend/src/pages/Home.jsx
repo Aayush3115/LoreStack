@@ -1,13 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState , useRef} from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Layout, LogOut, Settings, User, Bell, Search, Sparkles, Popcorn, Clapperboard, HeartHandshake } from 'lucide-react';
 import '../Styles/Home.css'
 import logo from '../assets/logo.png';
+
+
 
 const Home = () => {
     const navigate = useNavigate();
     const [trendingMovies, setTrendingMovies] = useState([]);
     const [error, setError] = useState(null);
+
+    const scrollRef = useRef(null);
+    const isDragging = useRef(false);
+    const startX = useRef(0);
+    const scrollLeft = useRef(0);
 
     const handleLogout = () => {
         localStorage.removeItem('access_token');
@@ -34,7 +41,25 @@ const Home = () => {
 
         fetchTrending();
     }, []);
+    const startDrag = (e) => {
+        isDragging.current = true;
+        startX.current = e.pageX - scrollRef.current.offsetLeft;
+        scrollLeft.current = scrollRef.current.scrollLeft;
+        scrollRef.current.classList.add('dragging');
+    };
 
+    const stopDrag = () => {
+        isDragging.current = false;
+        scrollRef.current.classList.remove('dragging');
+    };
+
+    const onDrag = (e) => {
+        if (!isDragging.current) return;
+        e.preventDefault();
+        const x = e.pageX - scrollRef.current.offsetLeft;
+        const walk = (x - startX.current) * 2;
+        scrollRef.current.scrollLeft = scrollLeft.current - walk;
+    };
     return (
         <div className="home-container">
 
@@ -50,26 +75,26 @@ const Home = () => {
                         <Popcorn size={20} />
                         <span>Home</span>
                     </button>
-                    <button className="nav-item">
-                        <Search size={20} />
-                        <span>Explore</span>
-                    </button>
-                    <button className="nav-item">
+                    <Link to='/Community' style={{ textDecoration: 'none' }}><button to='/Community' className="nav-item">
                         <HeartHandshake size={20} />
                         <span>Communities</span>
-                    </button>
-                    <button className="nav-item">
+                    </button></Link>
+                    <Link to='/Notification' style={{ textDecoration: 'none' }}><button className="nav-item">
                         <Bell size={20} />
                         <span>Notifications</span>
-                    </button>
-                    <button className="nav-item">
+                    </button></Link>
+                    <Link to='/Profile' style={{ textDecoration: 'none' }}> <button className="nav-item">
                         <User size={20} />
                         <span>Profile</span>
-                    </button>
-                    <button className="nav-item">
+                    </button></Link>
+                    <Link to='/Settings' style={{ textDecoration: 'none' }}><button className="nav-item">
                         <Settings size={20} />
                         <span>Settings</span>
-                    </button>
+                    </button></Link>
+
+
+
+
                 </nav>
 
                 <div className="sidebar-footer">
@@ -95,21 +120,23 @@ const Home = () => {
                     <h2 className="section-title">Trending Movies</h2>
 
                     <div className="trending-wrapper-edge">
-                        {/* LEFT BUTTON: on top of the first movie */}
+                        {/* Left Scroll Button */}
                         <button
                             className="scroll-btn left"
-                            onClick={() => {
-                                document.querySelector(".horizontal-scroll").scrollBy({
-                                    left: -300,
-                                    behavior: "smooth",
-                                });
-                            }}
+                            onClick={() => scrollRef.current.scrollBy({ left: -300, behavior: 'smooth' })}
                         >
                             ‹
                         </button>
 
-                        {/* Horizontal scroll container */}
-                        <div className="horizontal-scroll">
+                        {/* Horizontal Scroll Container */}
+                        <div
+                            className="horizontal-scroll"
+                            ref={scrollRef}
+                            onMouseDown={startDrag}
+                            onMouseLeave={stopDrag}
+                            onMouseUp={stopDrag}
+                            onMouseMove={onDrag}
+                        >
                             {error ? (
                                 <p className="error-text">{error}</p>
                             ) : trendingMovies.length > 0 ? (
@@ -128,15 +155,10 @@ const Home = () => {
                             )}
                         </div>
 
-                        {/* RIGHT BUTTON: at container's right edge */}
+                        {/* RIGHT BUTTON */}
                         <button
                             className="scroll-btn right"
-                            onClick={() => {
-                                document.querySelector(".horizontal-scroll").scrollBy({
-                                    left: 300,
-                                    behavior: "smooth",
-                                });
-                            }}
+                            onClick={() => scrollRef.current.scrollBy({ left: 300, behavior: 'smooth' })}
                         >
                             ›
                         </button>
