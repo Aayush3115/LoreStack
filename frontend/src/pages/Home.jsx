@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout, LogOut, Settings, User, Bell, Search, Sparkles, Popcorn, Clapperboard, HeartHandshake } from 'lucide-react';
-import '../styles/home.css'
+import '../Styles/Home.css'
+import logo from '../assets/logo.png';
 
 const Home = () => {
     const navigate = useNavigate();
@@ -41,9 +42,8 @@ const Home = () => {
             <aside className="sidebar">
                 <div className="sidebar-header">
                     <div className="sidebar-logo">
-                        <Clapperboard size={18} color="white" />
+                        <img src={logo} alt="LoreStack Logo" className="logo-img" />
                     </div>
-                    <span className="sidebar-brand">LoreStack</span>
                 </div>
                 <nav className="sidebar-nav">
                     <button className="nav-item active">

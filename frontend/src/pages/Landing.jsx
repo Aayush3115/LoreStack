@@ -1,7 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Layout, Zap, Shield, Sparkles, ArrowRight } from 'lucide-react';
-import '../styles/Landing.css'
+import { Layout, Shield, Sparkles, ArrowRight, Star, LayoutDashboard, Brain, Heart, Compass } from 'lucide-react';
+import '../Styles/Landing.css'
+
+import logo from '../assets/logo.png';
 
 const Landing = () => {
     const navigate = useNavigate();
@@ -10,9 +12,8 @@ const Landing = () => {
             <nav className="navbar">
                 <div className="logo-container">
                     <div className="logo-box">
-                        <Layout size={24} color="white" />
+                        <img src={logo} alt="LoreStack Logo" className="logo-img" />
                     </div>
-                    <span className="logo-text">LoreStack</span>
                 </div>
                 <button className="nav-btn" onClick={() => navigate('/login')}>Get Started</button>
             </nav>
@@ -23,16 +24,15 @@ const Landing = () => {
 
                 <div className="hero-content">
                     <div className="badge">
-                        <Sparkles size={14} />
-                        <span>Welcome to the future of Lore</span>
+                        <span>Welcome to where stories meet emotion</span>
                     </div>
                     <h1 className="hero-title">
-                        Build Your <br />
-                        <span className="gradient-text">Digital Legacy</span>
+                        More Than Content <br />
+                        <span className="gradient-text">It’s a Community</span>
                     </h1>
                     <div className="hero-subtitle">
-                        The ultimate social platform for cinema nerds for logging, reviewing and interacting with other nerds.
-                        <p>Join thousands of nerds today.</p>
+                        Find content that matches how you feel today and express your perspective in a space built for discussion, not noise.
+                        <p>Discover content. Share perspective.</p>
                     </div>
                     <div className="hero-actions">
                         <button className="primary-btn" onClick={() => navigate('/login')}>
@@ -44,19 +44,19 @@ const Landing = () => {
 
                 <div className="features-grid">
                     <div className="feature-card">
-                        <div className="feature-icon icon-yellow"><Zap size={24} /></div>
+                        <div className="feature-icon icon-yellow"><Sparkles size={24} /></div>
                         <h3>Unique Rating System</h3>
-                        <p>Lorem ipsum dolor sit amet.</p>
+                        <p>A rating system that values how content makes you feel, not just how popular it is.</p>
                     </div>
                     <div className="feature-card">
-                        <div className="feature-icon icon-blue"><Shield size={24} /></div>
+                        <div className="feature-icon icon-blue"><LayoutDashboard size={24} /></div>
                         <h3>Easy UI/UX</h3>
-                        <p>Lorem ipsum dolor sit amet consectetur.</p>
+                        <p>Simple, intuitive design so you can focus on content, not clicks.</p>
                     </div>
                     <div className="feature-card">
-                        <div className="feature-icon icon-red"><Layout size={24} /></div>
+                        <div className="feature-icon icon-red"><Brain size={24} /></div>
                         <h3>Mood Based Recommendation</h3>
-                        <p>Lorem ipsum dolor sit amet consectetur.</p>
+                        <p>Explore movies, series, and stories that match how you feel right now.</p>
                     </div>
                 </div>
             </main>
@@ -64,14 +64,15 @@ const Landing = () => {
             <footer className="footer">
                 <div className="footer-content">
                     <div className="footer-brand">
-                        <Layout size={20} />
-                        <span>LoreStack</span>
+                        <img src={logo} alt="LoreStack Logo" className="footer-logo-img" />
                     </div>
                     <p className="copyright">© 2026 LoreStack. All rights reserved.</p>
                     <div className="footer-links">
-                        <a href="#">Privacy</a>
-                        <a href="#">Terms</a>
-                        <a href="https://x.com/Lore_Stack" target="_blank">Twitter</a>
+                        <a href="#">Privacy Policy</a>
+                        <a href="#">Terms Of Service</a>
+                        <a href="https://x.com/Lore_Stack" target="_blank">X (Twitter)</a>
+                        <a href="https://instagram.com/Lore_Stack" target="_blank">Instagram</a>
+
                     </div>
                 </div>
             </footer>
