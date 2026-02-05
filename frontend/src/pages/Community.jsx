@@ -1,71 +1,103 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/community.css";
-
-const communities = [
-  {
-    name: "Dark Lore",
-    description: "Stories born from shadows, mystery, and the unknown.",
-    members: "12.4k members",
-    mood: "Dark",
-    activeMembers: "342 online",
-    storiesCount: "1.2k stories",
-  },
-  {
-    name: "Heart & Soul",
-    description: "Emotional tales that hit deep and stay with you.",
-    members: "9.1k members",
-    mood: "Emotional",
-    activeMembers: "219 online",
-    storiesCount: "845 stories",
-  },
-  {
-    name: "Comic Relief",
-    description: "Light, witty, and comedic stories to lift your mood.",
-    members: "7.8k members",
-    mood: "Comedy",
-    activeMembers: "187 online",
-    storiesCount: "623 stories",
-  },
-  {
-    name: "Mystic Minds",
-    description: "Mystery, fantasy, and unexplained narratives.",
-    members: "10.2k members",
-    mood: "Mysterious",
-    activeMembers: "298 online",
-    storiesCount: "987 stories",
-  },
-  {
-    name: "Inspiring Tales",
-    description: "Stories that motivate, uplift, and spark creativity.",
-    members: "8.5k members",
-    mood: "Inspiring",
-    activeMembers: "156 online",
-    storiesCount: "512 stories",
-  },
-  {
-    name: "Light Hearts",
-    description: "Wholesome, feel-good narratives and happy endings.",
-    members: "6.3k members",
-    mood: "Light",
-    activeMembers: "134 online",
-    storiesCount: "421 stories",
-  },
-];
+import axios from "axios";
 
 const Community = () => {
+  const [communities, setCommunities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeMood, setActiveMood] = useState("All");
   const [activeDiscover, setActiveDiscover] = useState("Trending");
 
   const moods = ["All", "Dark", "Light", "Comedy", "Emotional", "Mysterious", "Inspiring"];
   const discoverOptions = ["Trending", "Top Rated", "New", "Most Active"];
 
+useEffect(() => {
+  const fetchCommunities = async () => {
+    try {
+      setLoading(true);
+      // Call backend directly on port 5000
+      const response = await axios.get('http://localhost:5000/api/community/');
+      setCommunities(response.data);
+      setError(null);
+    } catch (err) {
+      setError(`Failed to load communities: ${err.message}`);
+      console.error("Error fetching communities:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchCommunities();
+}, []);
+
+  const handleJoinCommunity = async (communityId, currentlyJoined) => {
+    try {
+      if (currentlyJoined) {
+        await axios.post(`/api/community/${communityId}/leave`);
+      } else {
+        await axios.post(`/api/community/${communityId}/join`);
+      }
+      
+      // Update local state
+      setCommunities(prev => prev.map(community => 
+        community.id === communityId 
+          ? { ...community, joined: !currentlyJoined }
+          : community
+      ));
+    } catch (err) {
+      console.error("Error updating community join status:", err);
+    }
+  };
+
   const filteredCommunities = communities.filter(community => 
     activeMood === "All" || community.mood === activeMood
   );
 
+  // Calculate statistics
+  const totalCommunities = communities.length;
+  const totalMembers = communities.reduce((sum, community) => {
+    const members = parseInt(community.members?.replace(/[^0-9]/g, '')) || 0;
+    return sum + members;
+  }, 0);
+  const totalStoriesToday = communities.reduce((sum, community) => {
+    const stories = parseInt(community.storiesCount?.replace(/[^0-9]/g, '')) || 0;
+    return sum + stories;
+  }, 0);
+  const activeNow = communities.reduce((sum, community) => {
+    const active = parseInt(community.activeMembers?.match(/\d+/)?.[0]) || 0;
+    return sum + active;
+  }, 0);
+
+  if (loading) {
+    return (
+      <div className="community-page">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading communities...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && communities.length === 0) {
+    return (
+      <div className="community-page">
+        <div className="error-container">
+          <div className="error-icon">⚠️</div>
+          <h3>Error loading communities</h3>
+          <p>{error}</p>
+          <button onClick={() => window.location.reload()} className="retry-btn">
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="community-page">
-      {/* Left sidebar - Mood Filter */}
+      {/* Sidebar - Keep as is */}
       <div className="sidebar">
         <div className="logo-section">
           <div className="logo-icon">📚</div>
@@ -144,44 +176,41 @@ const Community = () => {
 
         <div className="stats-bar">
           <div className="stat-card">
-            <span className="stat-value"></span>
+            <span className="stat-value">{totalCommunities}</span>
             <span className="stat-label">Total Communities</span>
           </div>
           <div className="stat-card">
-            <span className="stat-value"></span>
+            <span className="stat-value">{totalMembers.toLocaleString()}</span>
             <span className="stat-label">Total Members</span>
           </div>
           <div className="stat-card">
-            <span className="stat-value"></span>
-            <span className="stat-label">Stories Today</span>
+            <span className="stat-value">{totalStoriesToday.toLocaleString()}</span>
+            <span className="stat-label">Total Stories</span>
           </div>
           <div className="stat-card">
-            <span className="stat-value"></span>
+            <span className="stat-value">{activeNow.toLocaleString()}</span>
             <span className="stat-label">Active Now</span>
           </div>
         </div>
 
         <div className="community-grid">
-          {filteredCommunities.map((community, index) => (
-            <div className="community-card" key={index}>
+          {filteredCommunities.map((community) => (
+            <div className="community-card" key={community.id}>
               <div className="card-header">
                 <div className="community-icon">
-                  {community.mood === "Dark" && "🌙"}
-                  {community.mood === "Emotional" && "💖"}
-                  {community.mood === "Comedy" && "😂"}
-                  {community.mood === "Mysterious" && "🔮"}
-                  {community.mood === "Inspiring" && "✨"}
-                  {community.mood === "Light" && "☀️"}
+                  {getMoodIcon(community.mood)}
                 </div>
                 <div className="community-info">
                   <div className="community-header">
                     <h2>{community.name}</h2>
-                    <span className={`mood-tag ${community.mood.toLowerCase()}`}>
+                    <span className={`mood-tag ${community.mood?.toLowerCase() || 'default'}`}>
                       {community.mood}
                     </span>
                   </div>
                   <div className="community-meta">
-                    <span className="active-members">{community.activeMembers}</span>
+                    <span className="active-members">
+                      {community.activeMembers}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -204,10 +233,13 @@ const Community = () => {
                   <div className="avatar">👤</div>
                   <div className="avatar">👤</div>
                   <div className="avatar">👤</div>
-                  <span className="more-members">+{Math.floor(Math.random() * 50) + 20}</span>
+                  <span className="more-members">+{community.memberPreview}</span>
                 </div>
-                <button className="join-btn">
-                  {Math.random() > 0.5 ? "Joined" : "Join"}
+                <button 
+                  className={`join-btn ${community.joined ? 'joined' : ''}`}
+                  onClick={() => handleJoinCommunity(community.id, community.joined)}
+                >
+                  {community.joined ? 'Joined' : 'Join'}
                 </button>
               </div>
             </div>
@@ -224,6 +256,18 @@ const Community = () => {
       </div>
     </div>
   );
+};
+
+const getMoodIcon = (mood) => {
+  switch(mood?.toLowerCase()) {
+    case 'dark': return '🌙';
+    case 'emotional': return '💖';
+    case 'comedy': return '😂';
+    case 'mysterious': return '🔮';
+    case 'inspiring': return '✨';
+    case 'light': return '☀️';
+    default: return '📚';
+  }
 };
 
 export default Community;
