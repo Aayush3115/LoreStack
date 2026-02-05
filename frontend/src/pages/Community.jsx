@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../styles/community.css";
-import axios from "axios";
+import api from "../api/api";
 
 const Community = () => {
   const [communities, setCommunities] = useState([]);
@@ -12,36 +12,36 @@ const Community = () => {
   const moods = ["All", "Dark", "Light", "Comedy", "Emotional", "Mysterious", "Inspiring"];
   const discoverOptions = ["Trending", "Top Rated", "New", "Most Active"];
 
-useEffect(() => {
-  const fetchCommunities = async () => {
-    try {
-      setLoading(true);
-      // Call backend directly on port 5000
-      const response = await axios.get('http://localhost:5000/api/community/');
-      setCommunities(response.data);
-      setError(null);
-    } catch (err) {
-      setError(`Failed to load communities: ${err.message}`);
-      console.error("Error fetching communities:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    const fetchCommunities = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get('community/');
+        setCommunities(response.data);
+        setError(null);
+      } catch (err) {
+        setError(`Failed to load communities: ${err.message}`);
+        console.error("Error fetching communities:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchCommunities();
-}, []);
+    fetchCommunities();
+  }, []);
 
   const handleJoinCommunity = async (communityId, currentlyJoined) => {
     try {
       if (currentlyJoined) {
-        await axios.post(`/api/community/${communityId}/leave`);
+        await api.post(`community/${communityId}/leave/`);
       } else {
-        await axios.post(`/api/community/${communityId}/join`);
+        await api.post(`community/${communityId}/join/`);
       }
-      
+
+
       // Update local state
-      setCommunities(prev => prev.map(community => 
-        community.id === communityId 
+      setCommunities(prev => prev.map(community =>
+        community.id === communityId
           ? { ...community, joined: !currentlyJoined }
           : community
       ));
@@ -50,7 +50,7 @@ useEffect(() => {
     }
   };
 
-  const filteredCommunities = communities.filter(community => 
+  const filteredCommunities = communities.filter(community =>
     activeMood === "All" || community.mood === activeMood
   );
 
@@ -103,13 +103,13 @@ useEffect(() => {
           <div className="logo-icon">📚</div>
           <h1 className="logo-text">LoreStack</h1>
         </div>
-        
+
         <div className="filter-section">
           <h2>FILTER BY MOOD</h2>
           <ul className="mood-list">
             {moods.map((mood, index) => (
-              <li 
-                key={index} 
+              <li
+                key={index}
                 className={activeMood === mood ? "active" : ""}
                 onClick={() => setActiveMood(mood)}
               >
@@ -119,13 +119,13 @@ useEffect(() => {
             ))}
           </ul>
         </div>
-        
+
         <div className="discover-section">
           <h2>DISCOVER</h2>
           <ul className="discover-list">
             {discoverOptions.map((option, index) => (
-              <li 
-                key={index} 
+              <li
+                key={index}
                 className={activeDiscover === option ? "active" : ""}
                 onClick={() => setActiveDiscover(option)}
               >
@@ -235,7 +235,7 @@ useEffect(() => {
                   <div className="avatar">👤</div>
                   <span className="more-members">+{community.memberPreview}</span>
                 </div>
-                <button 
+                <button
                   className={`join-btn ${community.joined ? 'joined' : ''}`}
                   onClick={() => handleJoinCommunity(community.id, community.joined)}
                 >
@@ -259,7 +259,7 @@ useEffect(() => {
 };
 
 const getMoodIcon = (mood) => {
-  switch(mood?.toLowerCase()) {
+  switch (mood?.toLowerCase()) {
     case 'dark': return '🌙';
     case 'emotional': return '💖';
     case 'comedy': return '😂';
