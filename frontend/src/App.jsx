@@ -9,26 +9,33 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Community from './pages/Community';
 import Errors from './pages/Error.jsx';
+import Navbar from './Components/Navbar';   // ⚠️ make sure this is correct
 
 const App = () => {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/home" element={
-          <ProtectedRoute>
-            <Home />
-          </ProtectedRoute>
-        } />
-        <Route path='/Notification' element={<Notification />} />
-        <Route path='/profile' element={<Profile />} />
-        <Route path='/settings' element={<Settings />} />
-        <Route path='/community' element={<Community />} />
-        <Route path='/Community' element={<Community />} />
-        <Route path='*' element={<Errors />} />
+      <div className='app'>
+        <div className="navbar">
+          <Navbar />
+        </div>
 
-      </Routes>
+        <div className="page-content">
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/home" element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            } />
+            <Route path='/notification' element={<Notification />} />
+            <Route path='/profile' element={<Profile />} />
+            <Route path='/settings' element={<Settings />} />
+            <Route path='/community' element={<Community />} />
+            <Route path='*' element={<Errors />} />
+          </Routes>
+        </div>
+      </div>
     </Router>
   );
 };
