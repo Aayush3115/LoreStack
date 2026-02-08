@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from 'react';
-import Navbar from '../components/Navbar';
 import '../Styles/Home.css';
 
 const Home = () => {
@@ -54,7 +53,6 @@ const onDrag = (e) => {
 
 return (
     <div className="home-container">
-        <Navbar />
 
         <main className="main-content">
             <header className="top-header">

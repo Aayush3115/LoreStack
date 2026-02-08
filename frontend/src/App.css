@@ -3,12 +3,16 @@
 }
 
 .navbar {
-  width: 250px;
+  padding-left: 0;
+  width: 260px;
   height: 100vh;
-  background: #f5f5f5;
+  position: fixed;
+  left: 0;
+  top: 0;
 }
 
 .page-content {
-  flex: 1;
-  padding: 20px;
+  margin-left: 260px;   /* pushes content to the right */
+  width: calc(100% - 260px);
+  padding: 5px;
 }

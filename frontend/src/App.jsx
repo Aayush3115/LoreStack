@@ -9,7 +9,7 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Community from './pages/Community';
 import Errors from './pages/Error.jsx';
-import Navbar from './Components/Navbar';   // ⚠️ make sure this is correct
+import Navbar from './Components/Navbar'; 
 
 const App = () => {
   return (
@@ -21,17 +21,17 @@ const App = () => {
 
         <div className="page-content">
           <Routes>
-            <Route path="/" element={<Landing />} />
+            <Route path="/" element={<Landing />}  />
             <Route path="/login" element={<Login />} />
             <Route path="/home" element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
+            
+               <Home/>
+            
             } />
             <Route path='/notification' element={<Notification />} />
             <Route path='/profile' element={<Profile />} />
             <Route path='/settings' element={<Settings />} />
-            <Route path='/community' element={<Community />} />
+            <Route path='/community' element={<Community /> } />
             <Route path='*' element={<Errors />} />
           </Routes>
         </div>

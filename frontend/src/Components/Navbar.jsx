@@ -1,72 +1,61 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { LogOut, Settings, User, Bell, Popcorn, HeartHandshake } from 'lucide-react';
 import '../Styles/Navbar.css';
 import logo from '../assets/logo.png';
 
 const Navbar = () => {
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
-
-const handleLogout = () => {
+  const handleLogout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     navigate('/login');
-};
+  };
 
-return (
+  return (
     <aside className="sidebar">
-        <div className="sidebar-header">
-            <div className="sidebar-logo">
-                <img src={logo} alt="LoreStack Logo" className="logo-img" />
-            </div>
+      <div className="sidebar-header">
+        <div className="sidebar-logo">
+          <img src={logo} alt="LoreStack Logo" className="logo-img" />
         </div>
+      </div>
 
-        <nav className="sidebar-nav">
-            <button className="nav-item active">
-                <Popcorn size={20} />
-                <span>Home</span>
-            </button>
+      <nav className="sidebar-nav">
+        <NavLink to="/home" style={{ textDecoration: 'none' }} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+          <Popcorn size={20} />
+          <span>Home</span>
+        </NavLink>
 
-            <Link to='/Community' style={{ textDecoration: 'none' }}>
-                <button className="nav-item">
-                    <HeartHandshake size={20} />
-                    <span>Communities</span>
-                </button>
-            </Link>
+        <NavLink to="/community" style={{ textDecoration: 'none' }} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+          <HeartHandshake size={20} />
+          <span>Communities</span>
+        </NavLink>
 
-            <Link to='/Notification' style={{ textDecoration: 'none' }}>
-                <button className="nav-item">
-                    <Bell size={20} />
-                    <span>Notifications</span>
-                </button>
-            </Link>
+        <NavLink to="/notification" style={{ textDecoration: 'none' }} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+          <Bell size={20} />
+          <span>Notifications</span>
+        </NavLink>
 
-            <Link to='/Profile' style={{ textDecoration: 'none' }}>
-                <button className="nav-item">
-                    <User size={20} />
-                    <span>Profile</span>
-                </button>
-            </Link>
+        <NavLink to="/profile" style={{ textDecoration: 'none' }} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+          <User size={20} />
+          <span>Profile</span>
+        </NavLink>
 
-            <Link to='/Settings' style={{ textDecoration: 'none' }}>
-                <button className="nav-item">
-                    <Settings size={20} />
-                    <span>Settings</span>
-                </button>
-            </Link>
-        </nav>
+        <NavLink to="/settings" style={{ textDecoration: 'none' }} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+          <Settings size={20} />
+          <span>Settings</span>
+        </NavLink>
+      </nav>
 
-        <div className="sidebar-footer">
-            <button className="logout-btn" onClick={handleLogout}>
-                <LogOut size={20} />
-                <span>Logout</span>
-            </button>
-        </div>
+      <div className="sidebar-footer">
+        <button className="logout-btn" onClick={handleLogout}>
+          <LogOut size={20} />
+          <span>Logout</span>
+        </button>
+      </div>
     </aside>
-);
-
-
+  );
 };
 
 export default Navbar;
