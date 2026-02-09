@@ -5,14 +5,20 @@ import Sidebar from '../Components/Sidebar/Sidebar';
 
 
 const Home = () => {
+    const navigate = useNavigate();
     const [trendingMovies, setTrendingMovies] = useState([]);
     const [error, setError] = useState(null);
-
 
     const scrollRef = useRef(null);
     const isDragging = useRef(false);
     const startX = useRef(0);
     const scrollLeft = useRef(0);
+
+    const handleLogout = () => {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        navigate('/login');
+    };
 
     useEffect(() => {
         const fetchTrending = async () => {
@@ -25,10 +31,14 @@ const Home = () => {
                     setError("Failed to load trending movies.");
                     console.error("Invalid data format from backend:", data);
                 }
-            };
+            } catch (error) {
+                setError("Could not connect to the server.");
+                console.error("Failed to fetch trending movies:", error);
+            }
+        };
 
-            fetchTrending();
-        }, []);
+        fetchTrending();
+    }, []);
 
     const startDrag = (e) => {
         isDragging.current = true;
@@ -37,23 +47,87 @@ const Home = () => {
         scrollRef.current.classList.add('dragging');
     };
 
-    fetchTrending();
-}, []);
+    const stopDrag = () => {
+        isDragging.current = false;
+        scrollRef.current.classList.remove('dragging');
+    };
 
-const onDrag = (e) => {
-    if (!isDragging.current) return;
-    e.preventDefault();
-    const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX.current) * 2;
-    scrollRef.current.scrollLeft = scrollLeft.current - walk;
+    const onDrag = (e) => {
+        if (!isDragging.current) return;
+        e.preventDefault();
+        const x = e.pageX - scrollRef.current.offsetLeft;
+        const walk = (x - startX.current) * 2;
+        scrollRef.current.scrollLeft = scrollLeft.current - walk;
+    };
+
+    return (
+        <div className="home-container">
+            <Sidebar />
+
+
+            {/* Main Content */}
+            <main className="main-content">
+                <header className="top-header">
+                    <h2 className="page-title">Home</h2>
+                    <div className="header-actions">
+                        <div className="space-badge">Personal Space</div>
+                        <div className="user-avatar"></div>
+                    </div>
+                </header>
+
+                {/* Trending Movies Section with Scroll Buttons */}
+                <section className="dashboard-section">
+                    <h2 className="section-title">Trending Movies</h2>
+
+                    <div className="trending-wrapper-edge">
+                        {/* Left Scroll Button */}
+                        <button
+                            className="scroll-btn left"
+                            onClick={() => scrollRef.current.scrollBy({ left: -300, behavior: 'smooth' })}
+                        >
+                            ‹
+                        </button>
+
+                        {/* Horizontal Scroll Container */}
+                        <div
+                            className="horizontal-scroll"
+                            ref={scrollRef}
+                            onMouseDown={startDrag}
+                            onMouseLeave={stopDrag}
+                            onMouseUp={stopDrag}
+                            onMouseMove={onDrag}
+                        >
+                            {error ? (
+                                <p className="error-text">{error}</p>
+                            ) : trendingMovies.length > 0 ? (
+                                trendingMovies.map((movie) => (
+                                    <div className="movie-card" key={movie.id}>
+                                        <img
+                                            src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                                            alt={movie.title}
+                                            className="movie-poster"
+                                        />
+                                        <p className="movie-title">{movie.title}</p>
+                                    </div>
+                                ))
+                            ) : (
+                                <p>Loading trending movies...</p>
+                            )}
+                        </div>
+
+                        {/* RIGHT BUTTON */}
+                        <button
+                            className="scroll-btn right"
+                            onClick={() => scrollRef.current.scrollBy({ left: 300, behavior: 'smooth' })}
+                        >
+                            ›
+                        </button>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    );
 };
 
-return (
-    <div className="home-container">
-        <Sidebar />
-
-
-
-};
-
-        export default Home;
+export default Home;
