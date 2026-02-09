@@ -23,13 +23,13 @@ class CommunityViewSet(ModelViewSet):
         serializer.save(created_by=self.request.user)
 
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticatedOrReadOnly])
     def join(self, request, pk=None):
         community = self.get_object()
         community.members.add(request.user)
         return Response({'status': 'joined'})
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticatedOrReadOnly])
     def leave(self, request, pk=None):
         community = self.get_object()
         community.members.remove(request.user)
