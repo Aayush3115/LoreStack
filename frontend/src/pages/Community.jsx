@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../styles/community.css";
+import Sidebar from "../Components/Sidebar/Sidebar";
 import api from "../api/api";
 
 const Community = () => {
@@ -72,6 +73,7 @@ const Community = () => {
   if (loading) {
     return (
       <div className="community-page">
+        <Sidebar />
         <div className="loading-container">
           <div className="loading-spinner"></div>
           <p>Loading communities...</p>
@@ -83,6 +85,7 @@ const Community = () => {
   if (error && communities.length === 0) {
     return (
       <div className="community-page">
+        <Sidebar />
         <div className="error-container">
           <div className="error-icon">⚠️</div>
           <h3>Error loading communities</h3>
@@ -97,61 +100,7 @@ const Community = () => {
 
   return (
     <div className="community-page">
-      {/* Sidebar - Keep as is */}
-      <div className="sidebar">
-        <div className="logo-section">
-          <div className="logo-icon">📚</div>
-          <h1 className="logo-text">LoreStack</h1>
-        </div>
-
-        <div className="filter-section">
-          <h2>FILTER BY MOOD</h2>
-          <ul className="mood-list">
-            {moods.map((mood, index) => (
-              <li
-                key={index}
-                className={activeMood === mood ? "active" : ""}
-                onClick={() => setActiveMood(mood)}
-              >
-                {mood}
-                {activeMood === mood && <div className="active-indicator"></div>}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="discover-section">
-          <h2>DISCOVER</h2>
-          <ul className="discover-list">
-            {discoverOptions.map((option, index) => (
-              <li
-                key={index}
-                className={activeDiscover === option ? "active" : ""}
-                onClick={() => setActiveDiscover(option)}
-              >
-                {option}
-                {activeDiscover === option && <div className="active-indicator"></div>}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="sidebar-footer">
-          <div className="user-stats">
-            <div className="stat-item">
-              <span className="stat-number">124</span>
-              <span className="stat-label">Following</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-number">42</span>
-              <span className="stat-label">Stories</span>
-            </div>
-          </div>
-          <button className="create-community-btn">
-            + Create Community
-          </button>
-        </div>
-      </div>
+      <Sidebar />
 
       {/* Main content */}
       <div className="main-content">
@@ -161,18 +110,40 @@ const Community = () => {
             <p className="community-subtitle">
               Find your people. Share stories that match your emotion.
             </p>
+
+            <div className="horizontal-filters">
+              <div className="mood-filters">
+                {moods.map((mood, index) => (
+                  <button
+                    key={index}
+                    className={`mood-chip ${activeMood === mood ? "active" : ""}`}
+                    onClick={() => setActiveMood(mood)}
+                  >
+                    {mood}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
           <div className="header-right">
+            <div className="discover-options">
+              {discoverOptions.map((option, index) => (
+                <button
+                  key={index}
+                  className={`discover-chip ${activeDiscover === option ? "active" : ""}`}
+                  onClick={() => setActiveDiscover(option)}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
             <div className="search-bar">
               <span className="search-icon">🔍</span>
               <input type="text" placeholder="Search communities..." />
             </div>
-            <button className="filter-btn">
-              <span>Filter</span>
-              <span>⚙️</span>
-            </button>
           </div>
         </div>
+
 
         <div className="stats-bar">
           <div className="stat-card">
@@ -189,7 +160,7 @@ const Community = () => {
           </div>
           <div className="stat-card">
             <span className="stat-value">{activeNow.toLocaleString()}</span>
-            <span className="stat-label">Active Now</span>
+            <span className="stat-label">Active Users</span>
           </div>
         </div>
 

@@ -1,106 +1,11 @@
+/* Sidebar styles moved to Components/Sidebar/Sidebar.css */
+
 .home-container {
     min-height: 100vh;
     background-color: #0a0a0a;
     color: white;
     display: flex;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
-
-.sidebar {
-    width: 260px;
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(24px);
-    display: flex;
-    flex-direction: column;
-}
-
-.sidebar-header {
-    padding: 24px;
-    display: flex;
-    align-items: center;
-    height: 100px;
-    justify-content: center;
-    overflow: visible;
-}
-
-.sidebar-logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.logo-img {
-    width: 240px;
-    height: auto;
-    object-fit: contain;
-    pointer-events: none;
-}
-
-.sidebar-brand {
-    font-weight: 700;
-    font-size: 18px;
-}
-
-.sidebar-nav {
-    flex: 1;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-
-}
-
-.nav-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    border-radius: 12px;
-    border: none;
-    background: transparent;
-    color: #64748b;
-    font-weight: 500;
-    font-size: 15px;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: left;
-
-}
-
-
-.nav-item:hover {
-    color: white;
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.nav-item.active {
-    color: white;
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.sidebar-footer {
-    padding: 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.logout-btn {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    border-radius: 12px;
-    border: none;
-    background: transparent;
-    color: #f87171;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.logout-btn:hover {
-    background: rgba(248, 113, 113, 0.1);
 }
 
 .main-content {
@@ -110,12 +15,12 @@
 }
 
 .top-header {
-    height: 80px;
+    height: 60px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 32px;
+    padding: 0 24px;
     background: rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(12px);
 }
@@ -126,6 +31,12 @@
 }
 
 .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header-left-content {
     display: flex;
     align-items: center;
     gap: 16px;
@@ -150,7 +61,7 @@
 }
 
 .dashboard-section {
-    padding: 32px;
+    padding: 16px 24px;
 }
 
 .stats-grid {
@@ -249,23 +160,6 @@
     .stats-grid {
         grid-template-columns: 1fr;
     }
-
-    .sidebar {
-        width: 80px;
-    }
-
-    .sidebar-brand,
-    .nav-item span,
-    .logout-btn span {
-        display: none;
-    }
-
-    .sidebar-header,
-    .nav-item,
-    .logout-btn {
-        justify-content: center;
-        padding: 16px;
-    }
 }
 
 /* Trending Section */
@@ -299,99 +193,73 @@
 
 /* Movie Card */
 .movie-card {
-    min-width: 180px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
+    flex: 0 0 150px;
+    position: relative;
+    border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    background: transparent;
+    border: none;
 }
 
 .movie-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 2;
 }
 
 .movie-poster {
     width: 100%;
-    height: 240px;
-    object-fit: cover;
-}
-
-.movie-title {
-    padding: 12px;
-    font-size: 14px;
-    text-align: center;
-    color: #cbd5e1;
-}
-
-.loading-text {
-    color: #64748b;
-}
-
-.section-title {
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 16px;
-}
-
-.horizontal-scroll {
-    display: flex;
-    gap: 16px;
-    overflow-x: auto;
-    padding-bottom: 12px;
-    scrollbar-width: thin;
-}
-
-.horizontal-scroll::-webkit-scrollbar {
-    height: 8px;
-}
-
-.horizontal-scroll::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-}
-
-.movie-card {
-    min-width: 160px;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 12px;
-    border-radius: 16px;
-    text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.movie-poster {
-    width: 100%;
-    height: 220px;
+    height: 225px;
     object-fit: cover;
     border-radius: 12px;
+    transition: filter 0.3s ease;
+}
+
+.movie-card:hover .movie-poster {
+    filter: brightness(1.1);
 }
 
 .movie-title {
-    margin-top: 8px;
-    font-size: 14px;
+    padding: 10px;
+    font-size: 13px;
     font-weight: 600;
+    text-align: center;
+    color: #e2e8f0;
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
+/* Horizontal Scroll Container */
 .trending-wrapper-edge {
     position: relative;
     width: 100%;
+    padding: 0 16px;
 }
 
-/* Horizontal scroll container */
 .horizontal-scroll {
     display: flex;
-    gap: 16px;
+    gap: 24px;
     overflow-x: auto;
+    padding: 20px 0;
     scroll-behavior: smooth;
     cursor: grab;
     user-select: none;
+    scrollbar-width: none;
+    /* Firefox */
 }
 
-/* Hide scrollbar */
 .horizontal-scroll::-webkit-scrollbar {
     display: none;
+    /* Chrome/Safari */
+}
+
+.horizontal-scroll.dragging {
+    cursor: grabbing;
+    scroll-behavior: auto;
 }
 
 /* Scroll Buttons */
@@ -399,98 +267,44 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    z-index: 5;
-    width: 40px;
-    height: 40px;
+    z-index: 10;
+    width: 48px;
+    height: 48px;
     border: none;
     border-radius: 50%;
     font-size: 24px;
-    font-weight: bold;
     cursor: pointer;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(255, 255, 255, 0.1);
     color: white;
+    backdrop-filter: blur(8px);
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: 0.2s ease;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    opacity: 0;
+}
+
+.trending-wrapper-edge:hover .scroll-btn {
+    opacity: 1;
 }
 
 .scroll-btn:hover {
-    background: rgba(0, 0, 0, 0.8);
-}
-
-/* LEFT button: on top of the first movie */
-.scroll-btn.left {
-    left: 0;
-    /* start of movie row */
-}
-
-/* RIGHT button: at container's right edge */
-.scroll-btn.right {
-    right: 0;
-    /* end of container */
-}
-
-.trending-wrapper-edge {
-    position: relative;
-    display: flex;
-    align-items: center;
-    margin: 20px 0;
-}
-
-.horizontal-scroll {
-    display: flex;
-    gap: 16px;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    padding: 16px 0;
-    cursor: grab;
-    user-select: none;
-}
-
-.horizontal-scroll.dragging {
-    cursor: grabbing;
-}
-
-.horizontal-scroll::-webkit-scrollbar {
-    display: none;
-}
-
-.movie-card {
-    flex: 0 0 150px;
-    text-align: center;
-    border-radius: 8px;
-    transition: transform 0.2s;
-}
-
-.movie-card:hover {
-    transform: scale(1.05);
-}
-
-.movie-poster {
-    width: 100%;
-    border-radius: 8px;
-}
-
-.scroll-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-    width: 40px;
-    height: 40px;
-    font-size: 24px;
-    border-radius: 50%;
-    border: none;
-    background: rgba(0, 0, 0, 0.5);
-    color: white;
-    cursor: pointer;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-50%) scale(1.1);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .scroll-btn.left {
-    left: 0;
+    left: 10px;
 }
 
 .scroll-btn.right {
-    right: 0;
+    right: 10px;
+}
+
+.loading-text {
+    color: #94a3b8;
+    font-size: 1.1rem;
+    padding: 2rem;
 }

@@ -1,9 +1,7 @@
-import React, { useEffect, useState , useRef} from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Layout, LogOut, Settings, User, Bell, Search, Sparkles, Popcorn, Clapperboard, HeartHandshake } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../Styles/Home.css'
-import logo from '../assets/logo.png';
-
+import Sidebar from '../Components/Sidebar/Sidebar';
 
 
 const Home = () => {
@@ -41,6 +39,7 @@ const Home = () => {
 
         fetchTrending();
     }, []);
+
     const startDrag = (e) => {
         isDragging.current = true;
         startX.current = e.pageX - scrollRef.current.offsetLeft;
@@ -60,50 +59,11 @@ const Home = () => {
         const walk = (x - startX.current) * 2;
         scrollRef.current.scrollLeft = scrollLeft.current - walk;
     };
+
     return (
         <div className="home-container">
+            <Sidebar />
 
-            {/* Sidebar */}
-            <aside className="sidebar">
-                <div className="sidebar-header">
-                    <div className="sidebar-logo">
-                        <img src={logo} alt="LoreStack Logo" className="logo-img" />
-                    </div>
-                </div>
-                <nav className="sidebar-nav">
-                    <button className="nav-item active">
-                        <Popcorn size={20} />
-                        <span>Home</span>
-                    </button>
-                    <Link to='/Community' style={{ textDecoration: 'none' }}><button to='/Community' className="nav-item">
-                        <HeartHandshake size={20} />
-                        <span>Communities</span>
-                    </button></Link>
-                    <Link to='/Notification' style={{ textDecoration: 'none' }}><button className="nav-item">
-                        <Bell size={20} />
-                        <span>Notifications</span>
-                    </button></Link>
-                    <Link to='/Profile' style={{ textDecoration: 'none' }}> <button className="nav-item">
-                        <User size={20} />
-                        <span>Profile</span>
-                    </button></Link>
-                    <Link to='/Settings' style={{ textDecoration: 'none' }}><button className="nav-item">
-                        <Settings size={20} />
-                        <span>Settings</span>
-                    </button></Link>
-
-
-
-
-                </nav>
-
-                <div className="sidebar-footer">
-                    <button className="logout-btn" onClick={handleLogout}>
-                        <LogOut size={20} />
-                        <span>Logout</span>
-                    </button>
-                </div>
-            </aside>
 
             {/* Main Content */}
             <main className="main-content">
