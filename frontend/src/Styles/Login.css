@@ -8,42 +8,25 @@
 
  .login-container {
    min-height: 100vh;
-   background: linear-gradient(135deg, #0a0a0a 0%, #171717 50%, #1c1917 100%);
+   background:
+    radial-gradient(circle at 20% 20%, rgba(150, 200, 255, 0.55), transparent 52%),
+    radial-gradient(circle at 80% 10%, rgba(160, 120, 255, 0.55), transparent 56%),
+    radial-gradient(circle at 80% 85%, rgba(90, 60, 255, 0.45), transparent 55%),
+    linear-gradient(135deg, #1A1A2C 100%, #8e7bff 20%, #1A1A2C 100%);
+
    display: flex;
    align-items: center;
    justify-content: center;
    padding: 20px;
    position: relative;
    overflow: hidden;
-   font-family: 'Source Sans Pro', sans-serif;
+   
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
  }
 
- .bg-orb-1 {
-   position: absolute;
-   top: 25%;
-   left: 25%;
-   width: 400px;
-   height: 400px;
-   background: #d97706;
-   border-radius: 50%;
-   filter: blur(80px);
-   opacity: 0.2;
-   animation: pulse1 8s ease-in-out infinite;
- }
+ 
 
- .bg-orb-2 {
-   position: absolute;
-   bottom: 25%;
-   right: 25%;
-   width: 400px;
-   height: 400px;
-   background: #e11d48;
-   border-radius: 50%;
-   filter: blur(80px);
-   opacity: 0.2;
-   animation: pulse2 12s ease-in-out infinite;
-   animation-delay: 2s;
- }
+ 
 
  .grain-overlay {
    position: absolute;
@@ -92,16 +75,11 @@
    object-fit: contain;
    position: relative;
    z-index: 2;
+   
    pointer-events: none;
  }
 
- .logo-glow {
-   position: absolute;
-   inset: 0;
-   background: #f59e0b;
-   filter: blur(24px);
-   opacity: 0.4;
- }
+ 
 
  .logo-text {
    font-family: 'Playfair Display', serif;
@@ -115,7 +93,7 @@
  }
 
  .tagline {
-   color: #a1a1aa;
+   color: whitesmoke;
    font-size: 15px;
    line-height: 1.4;
  }
@@ -150,9 +128,10 @@
  }
 
  .tab-button.active {
-   background: linear-gradient(to right, #d97706, #ea580c);
+   
+    background: linear-gradient(to right, #4f46e5, #9333ea);
    color: white;
-   box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.3);
+   box-shadow: 0 8px 24px rgba(79, 70, 229, 0.3);
  }
 
  .tab-button.inactive {
@@ -261,7 +240,7 @@
  .forgot-button {
    background: none;
    border: none;
-   color: #f59e0b;
+   color: rgba(170, 190, 255, 0.95);
    cursor: pointer;
    font-size: 14px;
    font-family: 'Source Sans Pro', sans-serif;
@@ -271,21 +250,21 @@
  .submit-button {
    width: 100%;
    padding: 16px;
-   background: linear-gradient(to right, #d97706, #ea580c);
+   background: linear-gradient(to right, #4f46e5, #9333ea);
    color: white;
    font-weight: 700;
    font-size: 15px;
    border: none;
    border-radius: 8px;
    cursor: pointer;
-   box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.3);
+   box-shadow: 0 8px 24px rgba(79, 70, 229, 0.3);
    transition: all 0.3s ease;
    font-family: 'Source Sans Pro', sans-serif;
    margin-top: 10px;
  }
 
  .submit-button:hover {
-   background: linear-gradient(to right, #f59e0b, #f97316);
+    box-shadow: 0 12px 32px rgba(79, 70, 229, 0.4);
    transform: translateY(-2px);
  }
 
