@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../styles/community.css";
 import Sidebar from "../Components/Sidebar/Sidebar";
 import api from "../api/api";
+import { useNavigate } from 'react-router-dom';
 
 const Community = () => {
   const [communities, setCommunities] = useState([]);
@@ -138,53 +139,9 @@ const Community = () => {
           </div>
 
           {/* Stats Bar */}
-          <div className="stats-bar">
-            <div className="stat-card">
-              <span className="stat-value">{totalCommunities}</span>
-              <span className="stat-label">Total Communities</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-value">1.2k</span>
-              <span className="stat-label">Active Members</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-value">48</span>
-              <span className="stat-label">Online Now</span>
-            </div>
-          </div>
 
-          {/* Filters Section */}
-          <div className="filters-section">
-            <div className="section-header">
-              <h3>Filter by Mood</h3>
-              <div className="discover-options">
-                {discoverOptions.map((option, index) => (
-                  <button
-                    key={index}
-                    className={`discover-chip ${activeDiscover === option ? "active" : ""}`}
-                    onClick={() => setActiveDiscover(option)}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            <div className="mood-filters-container">
-              <div className="mood-filters">
-                {moods.map((mood, index) => (
-                  <button
-                    key={index}
-                    className={`mood-chip ${activeMood === mood ? "active" : ""}`}
-                    onClick={() => setActiveMood(mood)}
-                  >
-                    {mood}
-                    {mood === activeMood && <span className="chip-indicator"></span>}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+
+        
         </div>
 
         {/* Communities Grid */}
@@ -194,10 +151,6 @@ const Community = () => {
               {activeMood === "All" ? "All Communities" : `${activeMood} Communities`}
               <span className="count-badge">{filteredCommunities.length}</span>
             </h2>
-            <div className="view-options">
-              <button className="view-option active">Grid</button>
-              <button className="view-option">List</button>
-            </div>
           </div>
 
           {error && (
@@ -210,9 +163,6 @@ const Community = () => {
             {filteredCommunities.map((community) => (
               <div className="community-card" key={community.id}>
                 <div className="card-header">
-                  <div className="community-avatar">
-                    {community.name.charAt(0)}
-                  </div>
                   <div className="community-info">
                     <h3 className="community-name">{community.name}</h3>
                     <span className="community-category">{community.category || "General"}</span>
@@ -227,20 +177,13 @@ const Community = () => {
                     <span className="meta-value">{community.memberCount || "245"}</span>
                   </div>
                   <div className="meta-item">
-                    <span className="meta-icon">💬</span>
-                    <span className="meta-value">{community.postCount || "1.2k"}</span>
-                  </div>
-                  <div className="meta-item">
-                    <span className={`mood-tag mood-${community.mood.toLowerCase()}`}>
-                      {community.mood}
-                    </span>
                   </div>
                 </div>
                 
                 <div className="card-actions">
                   <button
                     className={`join-btn ${community.joined ? "joined" : ""}`}
-                    onClick={() => handleJoinCommunity(community.id, community.joined)}
+                    onClick={() => navigate('/home')}
                   >
                     {community.joined ? (
                       <>
@@ -248,10 +191,10 @@ const Community = () => {
                         Joined
                       </>
                     ) : (
-                      "Join Community"
+                      "View"
                     )}
                   </button>
-                  <button className="view-btn">View</button>
+
                 </div>
               </div>
             ))}
