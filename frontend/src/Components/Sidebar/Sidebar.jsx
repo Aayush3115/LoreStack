@@ -32,10 +32,10 @@ const Sidebar = () => {
                         <span>Home</span>
                     </button>
                 </Link>
-                <Link to='/Community' style={{ textDecoration: 'none' }}>
-                    <button className={`nav-item ${isActive('/Community') ? 'active' : ''}`}>
+                <Link to='/loreroom' style={{ textDecoration: 'none' }}>
+                    <button className={`nav-item ${isActive('/loreroom') ? 'active' : ''}`}>
                         <HeartHandshake size={20} />
-                        <span>Communities</span>
+                        <span>LoreRooms</span>
                     </button>
                 </Link>
                 <Link to='/Notification' style={{ textDecoration: 'none' }}>
