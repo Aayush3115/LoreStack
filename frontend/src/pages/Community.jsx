@@ -8,7 +8,6 @@ const Community = () => {
   const [communities, setCommunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeMood, setActiveMood] = useState("All");
   const [activeDiscover, setActiveDiscover] = useState("Trending");
 
   // CREATE COMMUNITY STATES
@@ -16,19 +15,12 @@ const Community = () => {
   const [newCommunity, setNewCommunity] = useState({
     name: "",
     description: "",
-    mood: "Light",
-    privacy: "public",
-    category: "General"
+    avatar_icon: "🌎"
   });
 
-  const moods = ["All", "Dark", "Light", "Comedy", "Emotional", "Mysterious", "Inspiring", "Romantic", "Adventure"];
+  const avatarOptions = ["🌎", "🌌", "📚", "🎨", "🎭", "🍕", "🎮", "🚀", "⚔️", "💎", "🐉", "🌵"];
+
   const discoverOptions = ["Trending", "Top Rated", "New", "Most Active"];
-  const privacyOptions = [
-    { value: "public", label: "Public - Anyone can join" },
-    { value: "private", label: "Private - Requires approval" },
-    { value: "hidden", label: "Hidden - Invite only" }
-  ];
-  const categoryOptions = ["General", "Writing", "Reading", "Discussion", "Support", "Creative", "Book Club", "Fan Fiction"];
 
   useEffect(() => {
     fetchCommunities();
@@ -37,7 +29,7 @@ const Community = () => {
   const fetchCommunities = async () => {
     try {
       setLoading(true);
-      const response = await api.get("community/");
+      const response = await api.get("loreroom/");
       setCommunities(response.data);
       setError(null);
     } catch (err) {
@@ -50,12 +42,11 @@ const Community = () => {
   // CREATE COMMUNITY FUNCTION
   const handleCreateCommunity = async () => {
     if (!newCommunity.name.trim() || !newCommunity.description.trim()) {
-      alert("Please fill in all required fields");
       return;
     }
 
     try {
-      const response = await api.post("community/", newCommunity);
+      const response = await api.post("loreroom/", newCommunity);
 
       // Add newly created community to UI
       setCommunities(prev => [response.data, ...prev]);
@@ -64,25 +55,21 @@ const Community = () => {
       setNewCommunity({
         name: "",
         description: "",
-        mood: "Light",
-        privacy: "public",
-        category: "General"
+        avatar_icon: "🌎"
       });
 
       setShowCreateModal(false);
-      alert("Community created successfully!");
     } catch (err) {
       console.error("Error creating community:", err);
-      alert("Failed to create community");
     }
   };
 
   const handleJoinCommunity = async (communityId, currentlyJoined) => {
     try {
       if (currentlyJoined) {
-        await api.post(`community/${communityId}/leave/`);
+        await api.post(`loreroom/${communityId}/leave/`);
       } else {
-        await api.post(`community/${communityId}/join/`);
+        await api.post(`loreroom/${communityId}/join/`);
       }
 
       setCommunities(prev =>
@@ -97,11 +84,15 @@ const Community = () => {
     }
   };
 
-  const filteredCommunities = communities.filter(community =>
-    activeMood === "All" || community.mood === activeMood
-  );
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
-  const totalCommunities = communities.length;
+  const filteredCommunities = communities.filter(community => {
+    const matchesSearch = community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      community.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSearch;
+  });
+
 
   if (loading) {
     return (
@@ -109,7 +100,7 @@ const Community = () => {
         <Sidebar />
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Loading communities...</p>
+          <p>Discovering universes...</p>
         </div>
       </div>
     );
@@ -123,35 +114,37 @@ const Community = () => {
         <div className="content-header">
           <div className="header-top">
             <div className="header-title-section">
-              <h1 className="community-title">Communities</h1>
+              <h1 className="community-title">LoreRooms</h1>
               <p className="community-subtitle">
-                Find your people. Share stories that match your emotion.
+                Step into LoreRooms. Share, discuss, and discover theories.
               </p>
             </div>
-            
-            <button
-              className="create-community-btn"
-              onClick={() => setShowCreateModal(true)}
-            >
-              <span className="btn-icon">+</span>
-              Create Community
-            </button>
+
+            <div className="header-actions">
+              <div className="search-bar">
+                <span className="search-icon">🔍</span>
+                <input
+                  type="text"
+                  placeholder="Explore LoreRooms..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <button
+                className="create-community-btn"
+                onClick={() => setShowCreateModal(true)}
+              >
+                <span className="btn-icon">+</span>
+                Create
+              </button>
+            </div>
           </div>
-
-          {/* Stats Bar */}
-
-
-        
         </div>
+
 
         {/* Communities Grid */}
         <div className="communities-section">
-          <div className="section-header">
-            <h2>
-              {activeMood === "All" ? "All Communities" : `${activeMood} Communities`}
-              <span className="count-badge">{filteredCommunities.length}</span>
-            </h2>
-          </div>
+          
 
           {error && (
             <div className="error-message">
@@ -160,180 +153,116 @@ const Community = () => {
           )}
 
           <div className="community-grid">
-            {filteredCommunities.map((community) => (
-              <div className="community-card" key={community.id}>
-                <div className="card-header">
-                  <div className="community-info">
-                    <h3 className="community-name">{community.name}</h3>
-                    <span className="community-category">{community.category || "General"}</span>
+            {filteredCommunities.length > 0 ? (
+              filteredCommunities.map((community) => (
+                <div className="community-card" key={community.id}>
+                  <div className="card-header">
+                    <div className="community-icon">
+                      {community.avatar_icon || '🌎'}
+                    </div>
+                    <div className="community-info">
+                      <div className="community-header">
+                        <h3>{community.name}</h3>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                
-                <p className="community-description">{community.description}</p>
-                
-                <div className="community-meta">
-                  <div className="meta-item">
-                    <span className="meta-icon">👥</span>
-                    <span className="meta-value">{community.memberCount || "245"}</span>
-                  </div>
-                  <div className="meta-item">
-                  </div>
-                </div>
-                
-                <div className="card-actions">
-                  <button
-                    className={`join-btn ${community.joined ? "joined" : ""}`}
-                    onClick={() => navigate('/home')}
-                  >
-                    {community.joined ? (
-                      <>
-                        <span className="joined-icon">✓</span>
-                        Joined
-                      </>
-                    ) : (
-                      "View"
-                    )}
-                  </button>
 
+                  <p className="community-desc">{community.description}</p>
+
+                  <div className="community-stats">
+                    <div className="stat">
+                      <span className="stat-icon">👥</span>
+                      {community.memberCount || 0} Members
+                    </div>
+                  </div>
+
+                  <div className="community-footer">
+                    <button
+                      className="join-btn"
+                      onClick={() => navigate('/home')}
+                    >
+                      View
+                    </button>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="no-results">
+                <span className="no-results-icon">🛸</span>
+                <h3>No LoreRooms found</h3>
+                <p>Try adjusting your search to find what you're looking for.</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>
 
-      {/* CREATE COMMUNITY MODAL */}
+      {/* SUBTLE & NAVIGABLE REALM BUILDER */}
       {showCreateModal && (
-        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
-          <div className="create-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Create New Community</h2>
-              <button 
-                className="close-modal"
-                onClick={() => setShowCreateModal(false)}
-              >
-                ×
-              </button>
+        <div className="new-realm-overlay" onClick={() => setShowCreateModal(false)}>
+          <div className="subtle-builder-card" onClick={(e) => e.stopPropagation()}>
+            <div className="builder-header">
+              <div className="header-info">
+                <h2>Create LoreRoom</h2>
+                <p>Set up your room</p>
+              </div>
+              <button className="builder-close" onClick={() => setShowCreateModal(false)}>×</button>
             </div>
 
-            <div className="modal-content">
-              <div className="form-group">
-                <label htmlFor="communityName">
-                  Community Name *
-                  <span className="character-count">{newCommunity.name.length}/50</span>
-                </label>
-                <input
-                  id="communityName"
-                  type="text"
-                  placeholder="Enter community name"
-                  maxLength={50}
-                  value={newCommunity.name}
-                  onChange={(e) =>
-                    setNewCommunity({ ...newCommunity, name: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="communityDescription">
-                  Description *
-                  <span className="character-count">{newCommunity.description.length}/200</span>
-                </label>
-                <textarea
-                  id="communityDescription"
-                  placeholder="Describe your community"
-                  rows={4}
-                  maxLength={200}
-                  value={newCommunity.description}
-                  onChange={(e) =>
-                    setNewCommunity({ ...newCommunity, description: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="communityMood">Mood</label>
-                  <select
-                    id="communityMood"
-                    value={newCommunity.mood}
-                    onChange={(e) =>
-                      setNewCommunity({ ...newCommunity, mood: e.target.value })
-                    }
-                  >
-                    {moods
-                      .filter(m => m !== "All")
-                      .map((mood, i) => (
-                        <option key={i} value={mood}>
-                          {mood}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="communityCategory">Category</label>
-                  <select
-                    id="communityCategory"
-                    value={newCommunity.category}
-                    onChange={(e) =>
-                      setNewCommunity({ ...newCommunity, category: e.target.value })
-                    }
-                  >
-                    {categoryOptions.map((category, i) => (
-                      <option key={i} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Privacy Settings</label>
-                <div className="privacy-options">
-                  {privacyOptions.map((option) => (
-                    <label key={option.value} className="privacy-option">
-                      <input
-                        type="radio"
-                        name="privacy"
-                        value={option.value}
-                        checked={newCommunity.privacy === option.value}
-                        onChange={(e) =>
-                          setNewCommunity({ ...newCommunity, privacy: e.target.value })
-                        }
-                      />
-                      <div className="option-content">
-                        <span className="option-title">{option.value.charAt(0).toUpperCase() + option.value.slice(1)}</span>
-                        <span className="option-description">{option.label}</span>
-                      </div>
-                    </label>
+            <div className="builder-main">
+              {/* LEFT: SYMBOL PICKER */}
+              <div className="builder-sidebar">
+                <label>Symbol</label>
+                <div className="symbol-scroller">
+                  {avatarOptions.map((icon) => (
+                    <button
+                      key={icon}
+                      className={`symbol-tile ${newCommunity.avatar_icon === icon ? 'active' : ''}`}
+                      onClick={() => setNewCommunity({ ...newCommunity, avatar_icon: icon })}
+                    >
+                      {icon}
+                    </button>
                   ))}
                 </div>
               </div>
 
-              <div className="form-group">
-                <label className="checkbox-label">
-                  <input type="checkbox" defaultChecked />
-                  Make me a moderator of this community
-                </label>
+              {/* RIGHT: CORE INFO */}
+              <div className="builder-form">
+                <div className="input-field">
+                  <label>LoreRoom Name</label>
+                  <input
+                    placeholder="E.g. The Writing Guild"
+                    maxLength={50}
+                    value={newCommunity.name}
+                    onChange={(e) => setNewCommunity({ ...newCommunity, name: e.target.value })}
+                  />
+                </div>
+
+                <div className="input-field">
+                  <label>Description</label>
+                  <textarea
+                    placeholder="What happens in this realm?"
+                    maxLength={200}
+                    rows={4}
+                    value={newCommunity.description}
+                    onChange={(e) => setNewCommunity({ ...newCommunity, description: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="modal-actions">
-              <button 
-                className="cancel-btn"
-                onClick={() => setShowCreateModal(false)}
-              >
-                Cancel
-              </button>
-              <button 
-                className="create-btn"
-                onClick={handleCreateCommunity}
-                disabled={!newCommunity.name.trim() || !newCommunity.description.trim()}
-              >
-                Create Community
-              </button>
+            <div className="builder-footer">
+              {/* <span className="privacy-hint">🌎 Always Public</span> */}
+              <div className="footer-btns">
+                <button className="secondary-btn" onClick={() => setShowCreateModal(false)}>Cancel</button>
+                <button
+                  className="primary-btn"
+                  onClick={handleCreateCommunity}
+                  disabled={!newCommunity.name.trim() || !newCommunity.description.trim()}
+                >
+                  Create
+                </button>
+              </div>
             </div>
           </div>
         </div>

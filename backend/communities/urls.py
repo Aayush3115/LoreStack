@@ -3,7 +3,7 @@ from .views import CommunityViewSet
 from django.urls import path, include
 
 router = DefaultRouter()
-router.register(r'community', CommunityViewSet, basename='community')
+router.register(r'loreroom', CommunityViewSet, basename='community')
 
 urlpatterns = [
     path('', include(router.urls)),

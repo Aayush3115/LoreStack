@@ -4,18 +4,10 @@ from accounts.models import User
 # Create your models here.
 
 class Community(models.Model):
-    MOOD_CHOICES = [
-        ('Dark', 'Dark'),
-        ('Light', 'Light'),
-        ('Comedy', 'Comedy'),
-        ('Emotional', 'Emotional'),
-        ('Mysterious', 'Mysterious'),
-        ('Inspiring', 'Inspiring'),
-    ]
-
     name = models.CharField(max_length=100)
     description = models.TextField()
-    mood = models.CharField(max_length=20, choices=MOOD_CHOICES, default='Light')
+    avatar_icon = models.CharField(max_length=10, default='🌎')
+    category = models.CharField(max_length=50, default='General')
     created_by = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
