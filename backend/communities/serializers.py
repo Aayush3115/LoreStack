@@ -9,9 +9,7 @@ class CommunitySerializer(serializers.ModelSerializer):
     member_ids = serializers.PrimaryKeyRelatedField(
         many=True, read_only=True, source='members'
     )
-    activeMembers = serializers.SerializerMethodField()
-    storiesCount = serializers.SerializerMethodField()
-    memberPreview = serializers.SerializerMethodField()
+    memberCount = serializers.SerializerMethodField()
     joined = serializers.SerializerMethodField()
 
     class Meta:
@@ -20,14 +18,12 @@ class CommunitySerializer(serializers.ModelSerializer):
             'id',
             'name',
             'description',
-            'mood',
+            'avatar_icon',
             'created_by',
             'created_by_username',
             'members',
             'member_ids',
-            'activeMembers',
-            'storiesCount',
-            'memberPreview',
+            'memberCount',
             'joined',
             'created_at'
         ]
@@ -40,19 +36,8 @@ class CommunitySerializer(serializers.ModelSerializer):
         return str(count)
 
 
-    def get_activeMembers(self, obj):
-        import random
-        count = random.randint(1, 50)
-        return f"{count} Active Now"
-
-    def get_storiesCount(self, obj):
-        import random
-        count = random.randint(10, 500)
-        return f"{count} Stories"
-
-    def get_memberPreview(self, obj):
-        count = obj.members.count()
-        return max(0, count - 3)
+    def get_memberCount(self, obj):
+        return obj.members.count()
 
     def get_joined(self, obj):
         request = self.context.get('request')
