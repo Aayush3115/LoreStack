@@ -16,12 +16,13 @@ body,
 }
 
 body {
-  background-color: #0f172a;
+  background-color: #050505;
   color: white;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  
+  font-family: 'Outfit', 'Inter', sans-serif;
 }
+
 /* *{
   text-decoration: none;
 } */
