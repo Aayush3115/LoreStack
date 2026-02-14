@@ -13,14 +13,6 @@ class Post(models.Model):
     )
     title = models.CharField(max_length=255)
     content = models.TextField()
-    mood = models.ForeignKey(
-        Mood,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='posts'
-    )
-    rating = models.IntegerField(null=True, blank=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

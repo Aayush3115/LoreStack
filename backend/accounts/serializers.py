@@ -22,7 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
             'username',
             'email',
             'bio',
-            'avatar',
+            'profile_picture',
             'preferred_moods',
             'first_name',
             'last_name',
@@ -47,14 +47,14 @@ class RegisterSerializer(serializers.ModelSerializer):
             'first_name', 
             'last_name',
             'bio',
-            'avatar'
+            'profile_picture'
         )
         extra_kwargs = {
             'first_name': {'required': True},
             'last_name': {'required': True},
             'email': {'required': True},
             'bio': {'required': False},
-            'avatar': {'required': False}
+            'profile_picture': {'required': False}
         }
     
     def validate(self, attrs):
@@ -77,5 +77,5 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             'last_name',
             'email',
             'bio',
-            'avatar'
+            'profile_picture'
         )

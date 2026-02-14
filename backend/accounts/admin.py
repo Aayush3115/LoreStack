@@ -6,10 +6,10 @@ from django.contrib.auth.admin import UserAdmin
 
 class CustomUserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
-        ('Additional Info', {'fields': ('bio', 'avatar', 'preferred_moods')}),
+        ('Additional Info', {'fields': ('bio', 'profile_picture', 'preferred_moods')}),
     )
     add_fieldsets = UserAdmin.add_fieldsets + (
-        ('Additional Info', {'fields': ('bio', 'avatar')}),
+        ('Additional Info', {'fields': ('bio', 'profile_picture')}),
     )
 
 admin.site.register(User, CustomUserAdmin)
