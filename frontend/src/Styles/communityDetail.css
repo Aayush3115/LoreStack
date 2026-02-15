@@ -1,0 +1,526 @@
+/* communityDetail.css */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.community-detail-page {
+  display: flex;
+  min-height: 100vh;
+  background: #0a0c10;
+  color: #ffffff;
+}
+
+.community-detail-content {
+  flex: 1;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+/* Header Section */
+.community-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #1e1e1e;
+}
+
+.community-name {
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #ffffff;
+}
+
+.community-description {
+  color: #8f8f8f;
+  font-size: 15px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.community-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.member-count {
+  color: #3b82f6;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.join-button {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.join-button:hover:not(:disabled) {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.join-button.joined {
+  background: #2c2c2c;
+  color: #8f8f8f;
+  cursor: default;
+}
+
+.join-button.joined:hover {
+  background: #2c2c2c;
+  transform: none;
+}
+
+.join-button.loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.join-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Create Post Container */
+.create-post-container {
+  background: #111315;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 32px;
+  border: 1px solid #1e1e1e;
+}
+
+.create-post-header {
+  margin-bottom: 20px;
+}
+
+.create-post-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #ffffff;
+}
+
+.create-post-header p {
+  color: #8f8f8f;
+  font-size: 14px;
+}
+
+.create-post-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.post-input {
+  width: 100%;
+  background: #1a1c20;
+  border: 1px solid #2c2c2c;
+  border-radius: 12px;
+  padding: 16px;
+  color: white;
+  font-size: 15px;
+  min-height: 100px;
+  resize: vertical;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.post-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.post-input:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.post-input::placeholder {
+  color: #5a5a5a;
+}
+
+.post-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.option-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.option-item {
+  flex: 1;
+  min-width: 200px;
+}
+
+.option-item.full-width {
+  width: 100%;
+}
+
+.option-item label {
+  display: block;
+  color: #8f8f8f;
+  font-size: 13px;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.option-select,
+.tags-input {
+  width: 100%;
+  background: #1a1c20;
+  border: 1px solid #2c2c2c;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: white;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.option-select:focus,
+.tags-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.option-select:disabled,
+.tags-input:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.option-select option {
+  background: #111315;
+  color: white;
+}
+
+.tags-input::placeholder {
+  color: #5a5a5a;
+}
+
+.post-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.post-button {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.post-button:hover:not(:disabled) {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.post-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.post-button.posting {
+  opacity: 0.8;
+  cursor: wait;
+}
+
+/* Join Prompt */
+.join-prompt {
+  background: #111315;
+  border-radius: 16px;
+  padding: 48px 32px;
+  margin-bottom: 32px;
+  text-align: center;
+  border: 1px solid #1e1e1e;
+}
+
+.join-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.join-prompt h3 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: white;
+}
+
+.join-prompt p {
+  color: #8f8f8f;
+  font-size: 15px;
+  max-width: 400px;
+  margin: 0 auto 24px;
+  line-height: 1.6;
+}
+
+.join-now-button {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 14px 36px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.join-now-button:hover:not(:disabled) {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.join-now-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Posts Feed */
+.posts-feed {
+  margin-top: 32px;
+}
+
+.feed-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: white;
+}
+
+/* Empty Feed */
+.empty-feed {
+  background: #111315;
+  border-radius: 16px;
+  padding: 64px 32px;
+  text-align: center;
+  border: 1px solid #1e1e1e;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-feed h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: white;
+}
+
+.empty-feed p {
+  color: #8f8f8f;
+  font-size: 15px;
+  margin-bottom: 24px;
+}
+
+.empty-feed-button {
+  background: transparent;
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.empty-feed-button:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.empty-feed-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Post Card */
+.post-card {
+  background: #111315;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 16px;
+  border: 1px solid #1e1e1e;
+  transition: all 0.2s ease;
+}
+
+.post-card:hover {
+  border-color: #2c2c2c;
+}
+
+.post-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.post-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #3b82f6;
+}
+
+.post-user-details {
+  flex: 1;
+}
+
+.post-username {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: white;
+}
+
+.post-timestamp {
+  font-size: 12px;
+  color: #6b6b6b;
+}
+
+.post-meta-badges {
+  display: flex;
+  gap: 8px;
+}
+
+.badge {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge.mood {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.badge.rating {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.post-body {
+  color: #e0e0e0;
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.post-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.tag {
+  background: #1a1c20;
+  color: #3b82f6;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  border: 1px solid #2c2c2c;
+}
+
+.post-footer {
+  display: flex;
+  gap: 24px;
+  border-top: 1px solid #1e1e1e;
+  padding-top: 16px;
+}
+
+.action {
+  background: none;
+  border: none;
+  color: #8f8f8f;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.action:hover:not(:disabled) {
+  background: #1a1c20;
+  color: white;
+}
+
+.action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action.liked {
+  color: #ef4444;
+}
+
+.action-icon {
+  font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .community-detail-content {
+    padding: 20px 16px;
+  }
+
+  .community-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .join-button {
+    width: 100%;
+  }
+
+  .option-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .option-item {
+    min-width: 100%;
+  }
+
+  .post-card-header {
+    flex-wrap: wrap;
+  }
+
+  .post-meta-badges {
+    width: 100%;
+    margin-left: 56px;
+  }
+}
