@@ -14,6 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
         queryset=Mood.objects.all(),
         required=False
     )
+    profile_picture = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -28,6 +29,15 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name',
         ]
         read_only_fields = ('id','preferred_moods')
+
+    def get_profile_picture(self, obj):
+        request = self.context.get('request')
+        if obj.profile_picture:
+            url = obj.profile_picture.url
+            if request:
+                return request.build_absolute_uri(url)
+            return url
+        return None
 
 class RegisterSerializer(serializers.ModelSerializer):
     password=serializers.CharField(
