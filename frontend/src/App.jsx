@@ -9,6 +9,10 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Community from './pages/Community';
 import Errors from './pages/Error.jsx';
+import CommunityDetail from "./pages/CommunityDetail";
+
+
+
 
 const App = () => {
   return (
@@ -26,6 +30,7 @@ const App = () => {
         <Route path='/settings' element={<Settings />} />
         <Route path='/loreroom' element={<Community />} />
         <Route path='*' element={<Errors />} />
+        <Route path="/community/:id" element={<CommunityDetail />} />
 
       </Routes>
     </Router>

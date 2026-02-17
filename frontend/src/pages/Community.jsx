@@ -144,7 +144,7 @@ const Community = () => {
 
         {/* Communities Grid */}
         <div className="communities-section">
-          
+
 
           {error && (
             <div className="error-message">
@@ -179,10 +179,11 @@ const Community = () => {
                   <div className="community-footer">
                     <button
                       className="join-btn"
-                      onClick={() => navigate('/home')}
+                      onClick={() => navigate(`/community/${community.id}`)}
                     >
                       View
                     </button>
+
                   </div>
                 </div>
               ))

@@ -1,9 +1,6 @@
 from django.db import models
 from accounts.models import User
-from moods.models import Mood
-
-# Create your models here.
-
+from communities.models import Community
 
 class Post(models.Model):
     author = models.ForeignKey(
@@ -11,10 +8,17 @@ class Post(models.Model):
         on_delete=models.CASCADE,
         related_name='posts'
     )
-    title = models.CharField(max_length=255)
+    community = models.ForeignKey(
+        Community,
+        on_delete=models.CASCADE,
+        related_name='posts',
+        null=True,
+        blank=True
+    )
+    title = models.CharField(max_length=255, blank=True, null=True)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.title
+        return f"{self.author.username}'s post in {self.community.name if self.community else 'General'}"
