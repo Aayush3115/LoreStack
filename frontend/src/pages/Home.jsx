@@ -7,6 +7,7 @@ import Sidebar from '../Components/Sidebar/Sidebar';
 const Home = () => {
     const navigate = useNavigate();
     const [trendingMovies, setTrendingMovies] = useState([]);
+    const [userData, setUserData] = useState(null);
     const [error, setError] = useState(null);
 
     const scrollRef = useRef(null);
@@ -21,6 +22,25 @@ const Home = () => {
     };
 
     useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const token = localStorage.getItem('access_token');
+                if (!token) return;
+
+                const response = await fetch("http://localhost:8000/api/auth/profile/", {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    setUserData(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch user data:", error);
+            }
+        };
+
         const fetchTrending = async () => {
             try {
                 const response = await fetch("http://localhost:8000/api/movies/trending/");
@@ -37,6 +57,7 @@ const Home = () => {
             }
         };
 
+        fetchUserData();
         fetchTrending();
     }, []);
 
@@ -70,8 +91,16 @@ const Home = () => {
                 <header className="top-header">
                     <h2 className="page-title">Home</h2>
                     <div className="header-actions">
-                        <div className="space-badge">Personal Space</div>
-                        <div className="user-avatar"></div>
+                        <div className="space-badge">{userData ? `${userData.username}'s Space` : 'Personal Space'}</div>
+                        <div className="user-avatar-container">
+                            {userData?.profile_picture ? (
+                                <img src={userData.profile_picture} alt="Avatar" className="user-avatar-img" />
+                            ) : (
+                                <div className="user-avatar-placeholder">
+                                    {userData?.username?.[0]?.toUpperCase() || 'U'}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </header>
 
@@ -129,5 +158,4 @@ const Home = () => {
         </div>
     );
 };
-
 export default Home;
