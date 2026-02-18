@@ -1,5 +1,13 @@
 from rest_framework import serializers
-from .models import Community
+from .models import Community, CommunityRequest
+
+class CommunityRequestSerializer(serializers.ModelSerializer):
+    requested_by_username = serializers.ReadOnlyField(source='requested_by.username')
+
+    class Meta:
+        model = CommunityRequest
+        fields = ['id', 'community_name', 'reason', 'requested_by', 'requested_by_username', 'requested_at']
+        read_only_fields = ['requested_by']
 
 class CommunitySerializer(serializers.ModelSerializer):
     created_by_username = serializers.ReadOnlyField(

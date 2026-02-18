@@ -25,10 +25,24 @@ const App = () => {
             <Home />
           </ProtectedRoute>
         } />
-        <Route path='/Notification' element={<Notification />} />
-        <Route path='/profile' element={<Profile />} />
-        <Route path='/settings' element={<Settings />} />
-        <Route path='/loreroom' element={<Community />} />
+        <Route path='/Notification' element={
+          <ProtectedRoute>
+          <Notification />
+          </ProtectedRoute>} />
+        <Route path='/profile' element={
+          <ProtectedRoute>
+          <Profile />
+          </ProtectedRoute>
+          } />
+        <Route path='/settings' element={
+          <ProtectedRoute>
+          <Settings />
+          </ProtectedRoute>} />
+        <Route path='/loreroom' element={
+          <ProtectedRoute>
+            <Community />
+          </ProtectedRoute>
+        } />
         <Route path='*' element={<Errors />} />
         <Route path="/community/:id" element={<CommunityDetail />} />
 
