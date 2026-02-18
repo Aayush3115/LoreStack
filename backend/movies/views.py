@@ -3,6 +3,7 @@ from rest_framework.decorators import api_view, permission_classes
 from django.conf import settings 
 from rest_framework.response import Response
 import requests
+from rest_framework import status
 
 
 @api_view(["GET"])
@@ -30,3 +31,20 @@ def trending(request):
             "error": "An unexpected error occurred",
             "details": str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def movie_details(request,movie_id):
+    try:
+        url = f"https://api.themoviedb.org/3/movie/{movie_id}"
+        params = {"api_key":settings.TMDB_API_KEY}
+
+        response = requests.get(url, params=params, timeout=5)
+        response.raise_for_status()
+        return Response({
+            "status_code": response.status_code,
+            "data": response.json()
+        })
+    except requests.exceptions.RequestException as e:
+        return Response({"error": "Failed to fetch movie details"}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        
