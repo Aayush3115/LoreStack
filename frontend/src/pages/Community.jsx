@@ -9,6 +9,11 @@ const Community = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeDiscover, setActiveDiscover] = useState("Trending");
+  const [isStaff, setIsStaff] = useState(false);
+  const [requestReason, setRequestReason] = useState("");
+  const [requestSuccess, setRequestSuccess] = useState(false);
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [showRequests, setShowRequests] = useState(false);
 
   // CREATE COMMUNITY STATES
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -24,7 +29,29 @@ const Community = () => {
 
   useEffect(() => {
     fetchCommunities();
+    checkUserRole();
   }, []);
+
+  const checkUserRole = async () => {
+    try {
+      const response = await api.get("profile/");
+      setIsStaff(response.data.is_staff);
+      if (response.data.is_staff) {
+        fetchPendingRequests();
+      }
+    } catch (err) {
+      console.error("Error fetching user role:", err);
+    }
+  };
+
+  const fetchPendingRequests = async () => {
+    try {
+      const response = await api.get("community-requests/");
+      setPendingRequests(response.data);
+    } catch (err) {
+      console.error("Error fetching requests:", err);
+    }
+  };
 
   const fetchCommunities = async () => {
     try {
@@ -41,15 +68,33 @@ const Community = () => {
 
   // CREATE COMMUNITY FUNCTION
   const handleCreateCommunity = async () => {
-    if (!newCommunity.name.trim() || !newCommunity.description.trim()) {
+    if (!newCommunity.name.trim()) {
       return;
     }
 
     try {
-      const response = await api.post("loreroom/", newCommunity);
-
-      // Add newly created community to UI
-      setCommunities(prev => [response.data, ...prev]);
+      if (isStaff) {
+        // ADMIN FLOW: Direct creation
+        if (!newCommunity.description.trim()) return;
+        const response = await api.post("loreroom/", newCommunity);
+        setCommunities(prev => [response.data, ...prev]);
+        setShowCreateModal(false);
+      } else {
+        // REGULAR FLOW: Submit request
+        if (!requestReason.trim()) {
+          setError("Please provide a reason for your request.");
+          return;
+        }
+        await api.post("community-requests/", {
+          community_name: newCommunity.name,
+          reason: requestReason
+        });
+        setRequestSuccess(true);
+        setTimeout(() => {
+          setShowCreateModal(false);
+          setRequestSuccess(false);
+        }, 3000);
+      }
 
       // Reset form
       setNewCommunity({
@@ -57,10 +102,11 @@ const Community = () => {
         description: "",
         avatar_icon: "🌎"
       });
+      setRequestReason("");
 
-      setShowCreateModal(false);
     } catch (err) {
-      console.error("Error creating community:", err);
+      console.error("Error processing community action:", err);
+      setError(err.response?.data?.detail || "An error occurred. Please try again.");
     }
   };
 
@@ -134,9 +180,18 @@ const Community = () => {
                 className="create-community-btn"
                 onClick={() => setShowCreateModal(true)}
               >
-                <span className="btn-icon">+</span>
-                Create
+                <span className="btn-icon">{isStaff ? "+" : "✉️"}</span>
+                {isStaff ? "Create" : "Request Room"}
               </button>
+              {isStaff && (
+                <button
+                  className={`request-toggle-btn ${showRequests ? 'active' : ''}`}
+                  onClick={() => setShowRequests(!showRequests)}
+                >
+                  <span className="btn-icon">📋</span>
+                  {showRequests ? "Show Rooms" : `Requests (${pendingRequests.length})`}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -144,57 +199,98 @@ const Community = () => {
 
         {/* Communities Grid */}
         <div className="communities-section">
-
-
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
-          )}
-
-          <div className="community-grid">
-            {filteredCommunities.length > 0 ? (
-              filteredCommunities.map((community) => (
-                <div className="community-card" key={community.id}>
-                  <div className="card-header">
-                    <div className="community-icon">
-                      {community.avatar_icon || '🌎'}
-                    </div>
-                    <div className="community-info">
-                      <div className="community-header">
-                        <h3>{community.name}</h3>
+          {showRequests && isStaff ? (
+            <div className="requests-container">
+              <h2 className="section-title">Pending Community Requests</h2>
+              <div className="requests-list">
+                {pendingRequests.length > 0 ? (
+                  pendingRequests.map((req) => (
+                    <div className="request-card" key={req.id}>
+                      <div className="request-header">
+                        <h3>{req.community_name}</h3>
+                        <span className="request-date">
+                          {new Date(req.requested_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="request-reason">{req.reason}</p>
+                      <div className="request-user">
+                        Requested by: <strong>{req.requested_by_username}</strong>
+                      </div>
+                      <div className="request-actions">
+                        <button
+                          className="approve-btn"
+                          onClick={() => {
+                            setNewCommunity({ ...newCommunity, name: req.community_name });
+                            setShowCreateModal(true);
+                          }}
+                        >
+                          Create from Request
+                        </button>
                       </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="no-results">
+                    <span className="no-results-icon">✨</span>
+                    <h3>No pending requests</h3>
+                    <p>You're all caught up!</p>
                   </div>
-
-                  <p className="community-desc">{community.description}</p>
-
-                  <div className="community-stats">
-                    <div className="stat">
-                      <span className="stat-icon">👥</span>
-                      {community.memberCount || 0} Members
-                    </div>
-                  </div>
-
-                  <div className="community-footer">
-                    <button
-                      className="join-btn"
-                      onClick={() => navigate(`/community/${community.id}`)}
-                    >
-                      View
-                    </button>
-
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="no-results">
-                <span className="no-results-icon">🛸</span>
-                <h3>No LoreRooms found</h3>
-                <p>Try adjusting your search to find what you're looking for.</p>
+                )}
               </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <>
+              {error && (
+                <div className="error-message">
+                  {error}
+                </div>
+              )}
+
+              <div className="community-grid">
+                {filteredCommunities.length > 0 ? (
+                  filteredCommunities.map((community) => (
+                    <div className="community-card" key={community.id}>
+                      <div className="card-header">
+                        <div className="community-icon">
+                          {community.avatar_icon || '🌎'}
+                        </div>
+                        <div className="community-info">
+                          <div className="community-header">
+                            <h3>{community.name}</h3>
+                          </div>
+                        </div>
+                      </div>
+
+                      <p className="community-desc">{community.description}</p>
+
+                      <div className="community-stats">
+                        <div className="stat">
+                          <span className="stat-icon">👥</span>
+                          {community.memberCount || 0} Members
+                        </div>
+                      </div>
+
+                      <div className="community-footer">
+                        <button
+                          className="join-btn"
+                          onClick={() => navigate(`/community/${community.id}`)}
+                        >
+                          View
+                        </button>
+
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="no-results">
+                    <span className="no-results-icon">🛸</span>
+                    <h3>No LoreRooms found</h3>
+                    <p>Try adjusting your search to find what you're looking for.</p>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -204,51 +300,75 @@ const Community = () => {
           <div className="subtle-builder-card" onClick={(e) => e.stopPropagation()}>
             <div className="builder-header">
               <div className="header-info">
-                <h2>Create LoreRoom</h2>
-                <p>Set up your room</p>
+                <h2>{isStaff ? "Create LoreRoom" : "Request LoreRoom"}</h2>
+                <p>{isStaff ? "Set up your room" : "Suggest a new community"}</p>
               </div>
               <button className="builder-close" onClick={() => setShowCreateModal(false)}>×</button>
             </div>
 
-            <div className="builder-main">
-              {/* LEFT: SYMBOL PICKER */}
-              <div className="builder-sidebar">
-                <label>Symbol</label>
-                <div className="symbol-scroller">
-                  {avatarOptions.map((icon) => (
-                    <button
-                      key={icon}
-                      className={`symbol-tile ${newCommunity.avatar_icon === icon ? 'active' : ''}`}
-                      onClick={() => setNewCommunity({ ...newCommunity, avatar_icon: icon })}
-                    >
-                      {icon}
-                    </button>
-                  ))}
+            <div className={`builder-main ${!isStaff ? 'request-layout' : ''}`}>
+              {/* LEFT: SYMBOL PICKER (Only for staff) */}
+              {isStaff && (
+                <div className="builder-sidebar">
+                  <label>Symbol</label>
+                  <div className="symbol-scroller">
+                    {avatarOptions.map((icon) => (
+                      <button
+                        key={icon}
+                        className={`symbol-tile ${newCommunity.avatar_icon === icon ? 'active' : ''}`}
+                        onClick={() => setNewCommunity({ ...newCommunity, avatar_icon: icon })}
+                      >
+                        {icon}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* RIGHT: CORE INFO */}
               <div className="builder-form">
-                <div className="input-field">
-                  <label>LoreRoom Name</label>
-                  <input
-                    placeholder="E.g. The Writing Guild"
-                    maxLength={50}
-                    value={newCommunity.name}
-                    onChange={(e) => setNewCommunity({ ...newCommunity, name: e.target.value })}
-                  />
-                </div>
+                {requestSuccess ? (
+                  <div className="success-message-modal">
+                    <h3 style={{ color: '#4ade80', marginBottom: '10px' }}>🎉 Request Sent!</h3>
+                    <p>The project creator will review your suggestion for "{newCommunity.name}".</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="input-field">
+                      <label>LoreRoom Name</label>
+                      <input
+                        placeholder="E.g. Marvel"
+                        maxLength={50}
+                        value={newCommunity.name}
+                        onChange={(e) => setNewCommunity({ ...newCommunity, name: e.target.value })}
+                      />
+                    </div>
 
-                <div className="input-field">
-                  <label>Description</label>
-                  <textarea
-                    placeholder="What happens in this realm?"
-                    maxLength={200}
-                    rows={4}
-                    value={newCommunity.description}
-                    onChange={(e) => setNewCommunity({ ...newCommunity, description: e.target.value })}
-                  />
-                </div>
+                    {isStaff ? (
+                      <div className="input-field">
+                        <label>Description</label>
+                        <textarea
+                          placeholder="What happens in this realm?"
+                          maxLength={200}
+                          rows={4}
+                          value={newCommunity.description}
+                          onChange={(e) => setNewCommunity({ ...newCommunity, description: e.target.value })}
+                        />
+                      </div>
+                    ) : (
+                      <div className="input-field">
+                        <label>Why are you requesting this?</label>
+                        <textarea
+                          placeholder="Tell the creator why this room would be awesome!"
+                          maxLength={300}
+                          rows={4}
+                          value={requestReason}
+                          onChange={(e) => setRequestReason(e.target.value)}
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
 
@@ -256,13 +376,15 @@ const Community = () => {
               {/* <span className="privacy-hint">🌎 Always Public</span> */}
               <div className="footer-btns">
                 <button className="secondary-btn" onClick={() => setShowCreateModal(false)}>Cancel</button>
-                <button
-                  className="primary-btn"
-                  onClick={handleCreateCommunity}
-                  disabled={!newCommunity.name.trim() || !newCommunity.description.trim()}
-                >
-                  Create
-                </button>
+                {!requestSuccess && (
+                  <button
+                    className="primary-btn"
+                    onClick={handleCreateCommunity}
+                    disabled={!newCommunity.name.trim() || (isStaff ? !newCommunity.description.trim() : !requestReason.trim())}
+                  >
+                    {isStaff ? "Create" : "Submit Request"}
+                  </button>
+                )}
               </div>
             </div>
           </div>

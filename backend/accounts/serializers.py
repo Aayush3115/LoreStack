@@ -27,8 +27,9 @@ class UserSerializer(serializers.ModelSerializer):
             'preferred_moods',
             'first_name',
             'last_name',
+            'is_staff',
         ]
-        read_only_fields = ('id','preferred_moods')
+        read_only_fields = ('id','preferred_moods', 'is_staff')
 
     def get_profile_picture(self, obj):
         request = self.context.get('request')

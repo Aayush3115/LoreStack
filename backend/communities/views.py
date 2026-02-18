@@ -2,11 +2,12 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Community
-from .serializers import CommunitySerializer
+from .models import Community, CommunityRequest
+from .serializers import CommunitySerializer, CommunityRequestSerializer
 from posts.models import Post
 from posts.serializers import PostSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.exceptions import PermissionDenied
 
 class CommunityViewSet(ModelViewSet):
     queryset = Community.objects.all()
@@ -22,7 +23,23 @@ class CommunityViewSet(ModelViewSet):
         return [IsAuthenticated()]
 
     def perform_create(self, serializer):
+        if not self.request.user.is_staff:
+            raise PermissionDenied("Only the project creator can create communities.")
         serializer.save(created_by=self.request.user)
+
+class CommunityRequestViewSet(ModelViewSet):
+    queryset = CommunityRequest.objects.all()
+    serializer_class = CommunityRequestSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(requested_by=self.request.user)
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return CommunityRequest.objects.all()
+        return CommunityRequest.objects.filter(requested_by=self.request.user)
 
     @action(detail=True, methods=['get', 'post'])
     def posts(self, request, pk=None):
