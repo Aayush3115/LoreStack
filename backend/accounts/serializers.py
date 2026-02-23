@@ -34,11 +34,19 @@ class UserSerializer(serializers.ModelSerializer):
     def get_profile_picture(self, obj):
         request = self.context.get('request')
         if obj.profile_picture:
-            url = obj.profile_picture.url
+            try:
+                url = obj.profile_picture.url
+            except ValueError:
+                url = '/media/profile_pics/default.jpg'
+            
             if request:
                 return request.build_absolute_uri(url)
             return url
-        return None
+        
+        default_url = '/media/profile_pics/default.jpg'
+        if request:
+            return request.build_absolute_uri(default_url)
+        return default_url
 
 class RegisterSerializer(serializers.ModelSerializer):
     password=serializers.CharField(
