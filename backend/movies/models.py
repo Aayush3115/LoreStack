@@ -21,3 +21,17 @@ class MovieRating(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.movie_id}: {self.rating}"
+
+class MovieActivity(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    movie_id = models.IntegerField()
+    is_watchlist = models.BooleanField(default=False)
+    is_logged = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'movie_id')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.movie_id} Activity"

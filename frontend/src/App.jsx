@@ -10,6 +10,7 @@ import Settings from './pages/Settings';
 import Community from './pages/Community';
 import Errors from './pages/Error.jsx';
 import CommunityDetail from "./pages/CommunityDetail";
+import MovieDetails from "./pages/MovieDetails";
 
 
 
@@ -41,6 +42,11 @@ const App = () => {
         <Route path='/loreroom' element={
           <ProtectedRoute>
             <Community />
+          </ProtectedRoute>
+        } />
+        <Route path="/movie/:id" element={
+          <ProtectedRoute>
+            <MovieDetails />
           </ProtectedRoute>
         } />
         <Route path='*' element={<Errors />} />

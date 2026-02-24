@@ -1,0 +1,776 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import Sidebar from '../Components/Sidebar/Sidebar';
+import '../Styles/MovieDetails.css';
+import { MoreVertical, Edit2, Trash2, Loader2, Bookmark, Eye, Check, X } from 'lucide-react';
+
+const MovieDetails = () => {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [movie, setMovie] = useState(null);
+    const [userData, setUserData] = useState(null);
+    const [userRating, setUserRating] = useState(null);
+    const [userReview, setUserReview] = useState("");
+    const [allReviews, setAllReviews] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isEditingReview, setIsEditingReview] = useState(false);
+    const [activePeopleTab, setActivePeopleTab] = useState('cast');
+    const [isLogged, setIsLogged] = useState(false);
+    const [isWatchlist, setIsWatchlist] = useState(false);
+    const [showActionMenu, setShowActionMenu] = useState(null);
+    const [showLogModal, setShowLogModal] = useState(false);
+    const [hoveredRatingData, setHoveredRatingData] = useState(null);
+
+    const fetchAllReviews = async () => {
+        try {
+            const token = localStorage.getItem('access_token');
+            const response = await fetch(`http://localhost:8000/api/movies/${id}/rating/?all=true`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            const data = await response.json();
+            if (response.ok) {
+                setAllReviews(data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch all reviews:", error);
+        }
+    };
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const token = localStorage.getItem('access_token');
+                if (!token) return;
+
+                const response = await fetch("http://localhost:8000/api/auth/profile/", {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    setUserData(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch user data:", error);
+            }
+        };
+
+        const fetchMovieDetails = async () => {
+            try {
+                const response = await fetch(`http://localhost:8000/api/movies/${id}/`);
+                const data = await response.json();
+
+                if (data.status_code === 200) {
+                    setMovie(data.data);
+                } else {
+                    setError('Failed to fetch movie details');
+                }
+            } catch (err) {
+                console.error('Error fetching movie details:', err);
+                setError('Could not connect to the server');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const fetchUserRating = async () => {
+            try {
+                const token = localStorage.getItem('access_token');
+                if (!token) return;
+
+                const response = await fetch(`http://localhost:8000/api/movies/${id}/rating/`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+                if (response.ok && data.rating) {
+                    setUserRating(data.rating);
+                    setUserReview(data.review || "");
+                    if (data.review) setIsEditingReview(false);
+                }
+            } catch (error) {
+                console.error("Failed to fetch user rating:", error);
+            }
+        };
+
+        const fetchMovieActivity = async () => {
+            try {
+                const token = localStorage.getItem('access_token');
+                if (!token) return;
+                const response = await fetch(`http://localhost:8000/api/movies/${id}/activity/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    setIsLogged(data.is_logged);
+                    setIsWatchlist(data.is_watchlist);
+                }
+            } catch (error) {
+                console.error("Failed to fetch activity:", error);
+            }
+        };
+
+        fetchUserData();
+        fetchMovieDetails();
+        fetchUserRating();
+        fetchAllReviews();
+        fetchMovieActivity();
+    }, [id]);
+
+    const handleRatingSelect = (val) => {
+        // If they click the same rating that is already saved, do nothing
+        if (val === userRating && !isEditingReview) return;
+
+        setUserRating(val);
+        setIsEditingReview(true);
+        // Scroll to review section for better UX
+        const reviewSection = document.querySelector('.community-reviews-section');
+        if (reviewSection) {
+            reviewSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    const handleRate = async () => {
+        setIsSaving(true);
+        try {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                alert("Please login to rate movies!");
+                setIsSaving(false);
+                return;
+            }
+
+            const response = await fetch(`http://localhost:8000/api/movies/${id}/rating/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    rating: userRating,
+                    review: userReview
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setUserRating(data.rating);
+                setUserReview(data.review || "");
+                setIsEditingReview(false);
+                setIsLogged(true); // Rating a movie implies logging it
+                fetchAllReviews(); // Refresh all reviews
+            } else {
+                console.error("Failed to submit rating");
+            }
+        } catch (error) {
+            console.error("Error submitting rating:", error);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleActivityToggle = async (type) => {
+        try {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                alert("Please login to track movies!");
+                return;
+            }
+
+            if (type === 'logged') {
+                if (!isLogged) {
+                    setShowLogModal(true);
+                    return;
+                }
+            }
+
+            const newValue = type === 'logged' ? !isLogged : !isWatchlist;
+            const body = type === 'logged' ? { is_logged: newValue } : { is_watchlist: newValue };
+
+            const response = await fetch(`http://localhost:8000/api/movies/${id}/activity/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (response.ok) {
+                if (type === 'logged') setIsLogged(newValue);
+                else setIsWatchlist(newValue);
+            }
+        } catch (error) {
+            console.error("Failed to update activity:", error);
+        }
+    };
+
+    const handleDeleteReview = async () => {
+        try {
+            const token = localStorage.getItem('access_token');
+            const response = await fetch(`http://localhost:8000/api/movies/${id}/rating/`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                setUserRating(null);
+                setUserReview("");
+                setIsEditingReview(true);
+                fetchAllReviews();
+                setShowActionMenu(null);
+            }
+        } catch (error) {
+            console.error("Failed to delete review:", error);
+        }
+    };
+
+    const getRatingDistribution = () => {
+        const counts = { skip: 0, timepass: 0, goforit: 0, perfection: 0 };
+        allReviews.forEach(rev => {
+            if (counts.hasOwnProperty(rev.rating)) {
+                counts[rev.rating]++;
+            }
+        });
+        const total = allReviews.length || 1;
+        return ['skip', 'timepass', 'goforit', 'perfection'].map(key => ({
+            label: key,
+            count: counts[key],
+            percent: (counts[key] / total) * 100
+        }));
+    };
+
+    const getMajorityRating = () => {
+        if (allReviews.length === 0) return null;
+        const dist = getRatingDistribution();
+        return dist.reduce((prev, current) => (prev.count >= current.count) ? prev : current);
+    };
+
+    const formatRatingLabel = (label) => {
+        if (!label) return "";
+        if (label === 'goforit') return "Go For It";
+        return label.charAt(0).toUpperCase() + label.slice(1);
+    };
+
+    const getLoreScore = () => {
+        if (allReviews.length === 0) return null;
+        const values = { perfection: 10, goforit: 8, timepass: 5, skip: 2 };
+        const sum = allReviews.reduce((acc, rev) => acc + (values[rev.rating] || 0), 0);
+        return (sum / allReviews.length).toFixed(1);
+    };
+
+    const getColorByRating = (rating) => {
+        const colors = {
+            'skip': '#ef4444',
+            'timepass': '#f59e0b',
+            'goforit': '#10b981',
+            'perfection': '#6366f1'
+        };
+        return colors[rating] || 'var(--accent-color)';
+    };
+
+    return (
+        <div className="movie-details-container">
+            <Sidebar />
+            <main className="movie-details-content">
+                <header className="top-header">
+                    <button className="back-btn-pill" onClick={() => navigate('/home')}>
+                        ← Back
+                    </button>
+                    <div className="header-actions">
+                        {userData && (
+                            <>
+                                <div className="space-badge">{userData.username}'s Space</div>
+                                <div className="user-avatar-container">
+                                    <img
+                                        src={userData.profile_picture}
+                                        alt="Avatar"
+                                        className="user-avatar-img"
+                                    />
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </header>
+
+                {loading ? (
+                    <div className="content-loading">
+                        <div className="loader"></div>
+                        <p>Fetching movie details...</p>
+                    </div>
+                ) : error || !movie ? (
+                    <div className="error-message-container">
+                        <div className="error-card">
+                            <span className="error-icon">🎬</span>
+                            <h2>{error || 'Movie Not Found'}</h2>
+                            <p>We couldn't find the lore for this item. It might have been lost in the multiverse.</p>
+                            <button className="back-home-btn" onClick={() => navigate('/home')}>
+                                Back to Home
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="details-scroll-container">
+                        <div className="movie-hero">
+                            <img
+                                src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`}
+                                alt={movie.title}
+                                className="movie-backdrop"
+                            />
+                            <div className="hero-overlay">
+                                <img
+                                    src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                                    alt={movie.title}
+                                    className="movie-poster-large"
+                                />
+                                <div className="hero-text">
+                                    <h1>{movie.title}</h1>
+                                    <div className="movie-meta">
+                                        <span className="certification-badge">
+                                            {movie.release_dates?.results?.find(r => r.iso_3166_1 === 'US')?.release_dates?.find(d => d.certification)?.certification ||
+                                                movie.release_dates?.results?.[0]?.release_dates?.find(d => d.certification)?.certification || 'NR'}
+                                        </span>
+                                        <span>•</span>
+                                        <span>{new Date(movie.release_date).getFullYear()}</span>
+                                        <span>•</span>
+                                        <span>{Math.floor(movie.runtime / 60)}h {movie.runtime % 60}m</span>
+                                        <span>•</span>
+                                        <div className="hero-ratings-group">
+                                            <span className="rating-badge star-rating">★ {movie.vote_average.toFixed(1)}</span>
+                                            {userRating ? (
+                                                <span
+                                                    className="rating-badge lore-rating user-verdict-badge"
+                                                    style={{ backgroundColor: getColorByRating(userRating), color: 'white', border: 'none' }}
+                                                >
+                                                    {userRating === 'goforit' ? 'Go For It' : userRating.charAt(0).toUpperCase() + userRating.slice(1)}
+                                                </span>
+                                            ) : (
+                                                !isEditingReview && getLoreScore() && (
+                                                    <span className="rating-badge lore-rating">🛡️ {getLoreScore()}</span>
+                                                )
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="movie-main-info">
+                            <div className="info-left-column">
+                                <section className="info-section">
+                                    <h3>Overview</h3>
+                                    <p className="overview-text">{movie.overview}</p>
+                                </section>
+
+                                {movie.credits?.cast?.length > 0 && (
+                                    <section className="cast-section">
+                                        <div className="section-tabs">
+                                            <button
+                                                className={`tab-btn ${activePeopleTab === 'cast' ? 'active' : ''}`}
+                                                onClick={() => setActivePeopleTab('cast')}
+                                            >
+                                                Top Cast
+                                            </button>
+                                            <button
+                                                className={`tab-btn ${activePeopleTab === 'crew' ? 'active' : ''}`}
+                                                onClick={() => setActivePeopleTab('crew')}
+                                            >
+                                                Top Crew
+                                            </button>
+                                        </div>
+
+                                        {activePeopleTab === 'cast' ? (
+                                            <div className="cast-grid">
+                                                {movie.credits.cast.slice(0, 6).map(person => (
+                                                    <div key={person.id} className="cast-card">
+                                                        <div className="cast-image-container">
+                                                            {person.profile_path ? (
+                                                                <img
+                                                                    src={`https://image.tmdb.org/t/p/w185${person.profile_path}`}
+                                                                    alt={person.name}
+                                                                    className="cast-image"
+                                                                />
+                                                            ) : (
+                                                                <div className="cast-placeholder">
+                                                                    {person.name[0]}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="cast-info">
+                                                            <p className="cast-name">{person.name}</p>
+                                                            <p className="cast-character">{person.character}</p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="cast-grid">
+                                                {movie.credits?.crew
+                                                    ?.filter(person => ['Director', 'Writer', 'Screenplay', 'Story', 'Executive Producer', 'Director of Photography', 'Editor', 'Original Music Composer'].includes(person.job))
+                                                    ?.reduce((acc, current) => {
+                                                        const x = acc.find(item => item.id === current.id);
+                                                        if (!x) return acc.concat([current]);
+                                                        else return acc;
+                                                    }, [])
+                                                    ?.slice(0, 8)
+                                                    ?.map((person, idx) => (
+                                                        <div key={`${person.id}-${idx}`} className="cast-card">
+                                                            <div className="cast-image-container">
+                                                                {person.profile_path ? (
+                                                                    <img
+                                                                        src={`https://image.tmdb.org/t/p/w185${person.profile_path}`}
+                                                                        alt={person.name}
+                                                                        className="cast-image"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="cast-placeholder">
+                                                                        {person.name[0]}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="cast-info">
+                                                                <p className="cast-name">{person.name}</p>
+                                                                <p className="cast-character">{person.job}</p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                            </div>
+                                        )}
+                                    </section>
+                                )}
+
+                                <section className="community-reviews-section">
+                                    <div className="section-header-row">
+                                        <h3>Community Reviews</h3>
+                                    </div>
+
+
+                                    {/* User's active writing area (Only for NEW reviews) */}
+                                    {isEditingReview && userRating && !allReviews.some(r => r.username === userData?.username) && (
+                                        <div className="user-review-input-box">
+                                            <textarea
+                                                className="lore-review-textarea"
+                                                placeholder="What's the lore on this one? Write your review..."
+                                                value={userReview}
+                                                onChange={(e) => setUserReview(e.target.value)}
+                                                rows={4}
+                                            />
+                                            <button
+                                                className="save-review-btn-pill"
+                                                onClick={handleRate}
+                                                disabled={isSaving}
+                                            >
+                                                {isSaving ? "Posting..." : "Post Review"}
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    <div className="reviews-list">
+                                        {allReviews.length > 0 ? (
+                                            allReviews.map((rev) => (
+                                                <div key={rev.id} className="review-card-lore">
+                                                    <div className="review-user-info">
+                                                        <div className="review-avatar">
+                                                            <img src={rev.profile_picture} alt={rev.username} />
+                                                        </div>
+                                                        <div className="review-user-meta">
+                                                            <span className="review-username">
+                                                                {rev.username} {rev.username === userData?.username && "(You)"}
+                                                            </span>
+                                                            <span className="review-date">
+                                                                {new Date(rev.updated_at).toLocaleDateString()}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="review-card-actions">
+                                                            <div
+                                                                className="review-rating-badge"
+                                                                style={{ backgroundColor: getColorByRating(rev.rating) }}
+                                                            >
+                                                                {rev.rating}
+                                                            </div>
+
+                                                            {rev.username === userData?.username && (
+                                                                <div className="action-menu-container">
+                                                                    <button
+                                                                        className="three-dots-btn"
+                                                                        onClick={() => setShowActionMenu(showActionMenu === rev.id ? null : rev.id)}
+                                                                    >
+                                                                        <MoreVertical size={18} />
+                                                                    </button>
+
+                                                                    {showActionMenu === rev.id && (
+                                                                        <div className="action-dropdown">
+                                                                            <button onClick={() => {
+                                                                                setIsEditingReview(true);
+                                                                                setShowActionMenu(null);
+                                                                                // Scroll to top of review section
+                                                                                document.querySelector('.community-reviews-section').scrollIntoView({ behavior: 'smooth' });
+                                                                            }}>
+                                                                                <Edit2 size={14} /> Edit Lore
+                                                                            </button>
+                                                                            <button className="delete-opt" onClick={handleDeleteReview}>
+                                                                                <Trash2 size={14} /> Delete Lore
+                                                                            </button>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    {rev.username === userData?.username && isEditingReview ? (
+                                                        <div className="inline-review-editor">
+                                                            <textarea
+                                                                className="lore-review-textarea"
+                                                                value={userReview}
+                                                                onChange={(e) => setUserReview(e.target.value)}
+                                                                rows={4}
+                                                                autoFocus
+                                                            />
+                                                            <div className="inline-editor-actions">
+                                                                <button
+                                                                    className="save-review-btn-pill"
+                                                                    onClick={handleRate}
+                                                                    disabled={isSaving}
+                                                                >
+                                                                    {isSaving ? "Updating..." : "Update Lore"}
+                                                                </button>
+                                                                <button
+                                                                    className="cancel-edit-btn"
+                                                                    onClick={() => setIsEditingReview(false)}
+                                                                >
+                                                                    Cancel
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        rev.review && (
+                                                            <div className="review-content-lore">
+                                                                <p>{rev.review}</p>
+                                                            </div>
+                                                        )
+                                                    )}
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className="no-reviews">No reviews yet. Be the first to start the lore!</p>
+                                        )}
+                                    </div>
+                                </section>
+                            </div>
+
+                            <aside className="details-sidebar">
+                                <section className="sidebar-section quick-actions">
+                                    <button
+                                        className={`action-btn-lore ${isLogged ? 'active-logged' : ''}`}
+                                        onClick={() => handleActivityToggle('logged')}
+                                    >
+                                        {isLogged ? <Check size={20} /> : <Eye size={20} />}
+                                        <span>{isLogged ? 'Logged' : 'Log Movie'}</span>
+                                    </button>
+                                    <button
+                                        className={`action-btn-lore ${isWatchlist ? 'active-watchlist' : ''}`}
+                                        onClick={() => handleActivityToggle('watchlist')}
+                                    >
+                                        <Bookmark size={20} fill={isWatchlist ? 'currentColor' : 'none'} />
+                                        <span>Watchlist</span>
+                                    </button>
+                                </section>
+
+                                {(isLogged || userRating) && (
+                                    <div className="rating-section-lore">
+                                        <span className="detail-label">Community Rating</span>
+                                        {allReviews.length > 0 ? (
+                                            <div className="speedometer-container">
+                                                <div className="speedometer">
+                                                    <svg viewBox="0 0 100 55" className="gauge-svg">
+                                                        {/* Gauge Background Tracks */}
+                                                        <path d="M10 50 A40 40 0 0 1 90 50" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" strokeLinecap="round" />
+
+                                                        {/* Segmented active colored paths */}
+                                                        {(() => {
+                                                            let cumulativeLength = 0;
+                                                            return getRatingDistribution().map((item) => {
+                                                                const segmentLength = (item.percent / 100) * 125.6;
+                                                                const currentOffset = -cumulativeLength;
+                                                                cumulativeLength += segmentLength;
+
+                                                                return (
+                                                                    <path
+                                                                        key={item.label}
+                                                                        d="M10 50 A40 40 0 0 1 90 50"
+                                                                        fill="none"
+                                                                        stroke={getColorByRating(item.label)}
+                                                                        strokeWidth="8"
+                                                                        strokeLinecap="round"
+                                                                        strokeDasharray={`${segmentLength} 125.6`}
+                                                                        strokeDashoffset={currentOffset}
+                                                                        className={`gauge-segment ${hoveredRatingData?.label === item.label ? 'hovered' : ''}`}
+                                                                        onMouseEnter={() => setHoveredRatingData(item)}
+                                                                        onMouseLeave={() => setHoveredRatingData(null)}
+                                                                    />
+                                                                );
+                                                            });
+                                                        })()}
+                                                    </svg>
+                                                    <div className="gauge-score-container">
+                                                        <span className="gauge-value verdict-text" style={{ color: getColorByRating(hoveredRatingData?.label || getMajorityRating()?.label) }}>
+                                                            {formatRatingLabel(hoveredRatingData?.label || getMajorityRating()?.label)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="gauge-labels">
+                                                    <span>Skip</span>
+                                                    <span>Mix</span>
+                                                    <span>Lore</span>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p className="no-lore-text">No lore recorded yet.</p>
+                                        )}
+
+                                        {userRating && (
+                                            <button
+                                                className="edit-lore-btn-sidebar"
+                                                onClick={() => {
+                                                    setShowLogModal(true);
+                                                }}
+                                            >
+                                                Edit Your Lore
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+
+                                <div className="detail-item">
+                                    <span className="detail-label">Status</span>
+                                    <span className="detail-value">{movie.status}</span>
+                                </div>
+                                <div className="detail-item">
+                                    <span className="detail-label">Budget</span>
+                                    <span className="detail-value">
+                                        {movie.budget > 0 ? `$${movie.budget.toLocaleString()}` : 'N/A'}
+                                    </span>
+                                </div>
+                                <div className="detail-item">
+                                    <span className="detail-label">Revenue</span>
+                                    <span className="detail-value">
+                                        {movie.revenue > 0 ? `$${movie.revenue.toLocaleString()}` : 'N/A'}
+                                    </span>
+                                </div>
+                                <div className="detail-item">
+                                    <span className="detail-label">Languages</span>
+                                    <div className="languages-list">
+                                        {movie.spoken_languages?.map(lang => (
+                                            <span key={lang.iso_639_1} className="detail-value">{lang.english_name}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="detail-item">
+                                    <span className="detail-label">Genres</span>
+                                    <div className="genres-list">
+                                        {movie.genres?.map(genre => (
+                                            <span key={genre.id} className="genre-tag">{genre.name}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                )}
+            </main>
+
+            {/* Log Movie Modal */}
+            {showLogModal && (
+                <div className="log-modal-overlay">
+                    <div className="log-modal-content">
+                        <div className="log-modal-header">
+                            <div>
+                                <h2>Log Movie</h2>
+                                <p className="modal-subtitle">Add to your cinematic diary</p>
+                            </div>
+                            <button className="close-log-modal" onClick={() => setShowLogModal(false)}>
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div className="log-modal-body">
+                            <div className="log-movie-info">
+                                <img
+                                    src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`}
+                                    className="modal-movie-poster"
+                                    alt={movie.title}
+                                />
+                                <div className="modal-movie-details">
+                                    <h3>{movie.title}</h3>
+                                    <p>{new Date(movie.release_date).getFullYear()}</p>
+                                </div>
+                            </div>
+
+                            <div className="modal-rating-section">
+                                <h4>HOW WAS IT?</h4>
+                                <div className="rating-options-container horizontal">
+                                    {[
+                                        { id: 'skip', label: 'Skip', color: '#ef4444' },
+                                        { id: 'timepass', label: 'Timepass', color: '#f59e0b' },
+                                        { id: 'goforit', label: 'Go For It', color: '#10b981' },
+                                        { id: 'perfection', label: 'Perfection', color: '#6366f1' }
+                                    ].map(opt => (
+                                        <button
+                                            key={opt.id}
+                                            className={`lore-rating-btn ${userRating === opt.id ? 'active' : ''}`}
+                                            onClick={() => setUserRating(opt.id)}
+                                            style={{ '--hover-color': opt.color }}
+                                        >
+                                            {opt.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="modal-review-section">
+                                <h4>ANY THOUGHTS? (OPTIONAL)</h4>
+                                <textarea
+                                    className="modal-review-textarea"
+                                    placeholder="Tell the world about the lore..."
+                                    value={userReview}
+                                    onChange={(e) => setUserReview(e.target.value)}
+                                    rows={4}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="log-modal-footer">
+                            <button className="btn-secondary-lore" onClick={() => setShowLogModal(false)}>Cancel</button>
+                            <button
+                                className="btn-primary-lore"
+                                onClick={async () => {
+                                    if (!userRating) {
+                                        alert("Please select a rating to log!");
+                                        return;
+                                    }
+                                    await handleRate();
+                                    // Log status is already handled by handleRate on the server/frontend
+                                    setShowLogModal(false);
+                                }}
+                            >
+                                Save Entry
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default MovieDetails;
+
