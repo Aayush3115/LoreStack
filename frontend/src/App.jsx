@@ -10,7 +10,7 @@ import Settings from './pages/Settings';
 import Community from './pages/Community';
 import Errors from './pages/Error.jsx';
 import CommunityDetail from "./pages/CommunityDetail";
-import MovieDetail from "./pages/MovieDetail";
+import MovieDetails from "./pages/MovieDetails";
 
 
 
@@ -44,9 +44,13 @@ const App = () => {
             <Community />
           </ProtectedRoute>
         } />
+        <Route path="/movie/:id" element={
+          <ProtectedRoute>
+            <MovieDetails />
+          </ProtectedRoute>
+        } />
         <Route path='*' element={<Errors />} />
         <Route path="/community/:id" element={<CommunityDetail />} />
-        <Route path="/movie/:id" element={<MovieDetail />} />
 
       </Routes>
     </Router>
