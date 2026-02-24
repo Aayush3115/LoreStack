@@ -140,7 +140,9 @@ const Home = () => {
                                     </div>
                                 ))
                             ) : (
-                                <p>Loading trending movies...</p>
+                                <div className="loading-container">
+                                    <div className="loading-spinner"></div>
+                                </div>
                             )}
                         </div>
 

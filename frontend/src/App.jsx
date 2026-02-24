@@ -28,16 +28,16 @@ const App = () => {
         } />
         <Route path='/Notification' element={
           <ProtectedRoute>
-          <Notification />
+            <Notification />
           </ProtectedRoute>} />
         <Route path='/profile' element={
           <ProtectedRoute>
-          <Profile />
+            <Profile />
           </ProtectedRoute>
-          } />
+        } />
         <Route path='/settings' element={
           <ProtectedRoute>
-          <Settings />
+            <Settings />
           </ProtectedRoute>} />
         <Route path='/loreroom' element={
           <ProtectedRoute>
