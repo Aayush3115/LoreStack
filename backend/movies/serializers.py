@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import MovieRating
+from .models import MovieRating, MovieActivity
 
 class MovieRatingSerializer(serializers.ModelSerializer):
     username = serializers.ReadOnlyField(source='user.username')
@@ -26,3 +26,9 @@ class MovieRatingSerializer(serializers.ModelSerializer):
         if request:
             return request.build_absolute_uri(default_url)
         return default_url
+
+class MovieActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MovieActivity
+        fields = ['id', 'user', 'movie_id', 'is_watchlist', 'is_logged', 'created_at', 'updated_at']
+        read_only_fields = ['user']
