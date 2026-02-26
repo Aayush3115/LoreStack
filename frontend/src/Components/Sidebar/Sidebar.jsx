@@ -1,12 +1,14 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Settings, User, Bell, HeartHandshake, Popcorn } from 'lucide-react';
+import { LogOut, Settings, User, Bell, HeartHandshake, Popcorn, ChevronLeft, ChevronRight } from 'lucide-react';
 import './Sidebar.css';
+import { useSidebar } from '../../Context/SidebarContext';
 import logo from '../../assets/logo.png';
 
 const Sidebar = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { isSidebarOpen, toggleSidebar } = useSidebar();
 
     const handleLogout = () => {
         localStorage.removeItem('access_token');
@@ -19,7 +21,10 @@ const Sidebar = () => {
     };
 
     return (
-        <aside className="sidebar">
+        <aside className={`sidebar ${!isSidebarOpen ? 'collapsed' : ''}`}>
+            <button className="sidebar-toggle-btn" onClick={toggleSidebar}>
+                {isSidebarOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+            </button>
             <div className="sidebar-header">
                 <div className="sidebar-logo">
                     <img src={logo} alt="LoreStack Logo" className="logo-img" />
