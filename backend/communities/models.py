@@ -23,3 +23,16 @@ class Community(models.Model):
 
     def __str__(self):
         return self.name
+
+class CommunityRequest(models.Model):
+    community_name = models.CharField(max_length=100)
+    reason = models.TextField()
+    requested_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='community_requests'
+    )
+    requested_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Request for {self.community_name} by {self.requested_by.username}"
