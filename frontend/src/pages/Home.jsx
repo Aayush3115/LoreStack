@@ -8,14 +8,19 @@ import { Search, Loader2 } from 'lucide-react';
 const Home = () => {
     const navigate = useNavigate();
     const [trendingMovies, setTrendingMovies] = useState([]);
+    const [trendingTV, setTrendingTV] = useState([]);
+    const [trendingAnime, setTrendingAnime] = useState([]);
     const [userData, setUserData] = useState(null);
     const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
     const [showResults, setShowResults] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const scrollRef = useRef(null);
+    const movieScrollRef = useRef(null);
+    const tvScrollRef = useRef(null);
+    const animeScrollRef = useRef(null);
     const isDragging = useRef(false);
     const startX = useRef(0);
     const scrollLeft = useRef(0);
@@ -47,18 +52,34 @@ const Home = () => {
         };
 
         const fetchTrending = async () => {
+            setIsLoading(true);
             try {
-                const response = await fetch("http://localhost:8000/api/movies/trending/");
-                const data = await response.json();
-                if (data.status_code === 200 && data.data && data.data.results) {
-                    setTrendingMovies(data.data.results);
-                } else {
-                    setError("Failed to load trending movies.");
-                    console.error("Invalid data format from backend:", data);
+                const [movieRes, tvRes, animeRes] = await Promise.all([
+                    fetch("http://localhost:8000/api/movies/trending-movies/"),
+                    fetch("http://localhost:8000/api/movies/trending-tv/"),
+                    fetch("http://localhost:8000/api/movies/trending-anime/")
+                ]);
+
+                const movieData = await movieRes.json();
+                const tvData = await tvRes.json();
+                const animeData = await animeRes.json();
+
+                if (movieData.status_code === 200) {
+                    setTrendingMovies(movieData.data.results);
+                }
+
+                if (tvData.status_code === 200) {
+                    setTrendingTV(tvData.data.results);
+                }
+
+                if (animeData.status_code === 200) {
+                    setTrendingAnime(animeData.data);
                 }
             } catch (error) {
                 setError("Could not connect to the server.");
-                console.error("Failed to fetch trending movies:", error);
+                console.error("Failed to fetch trending content:", error);
+            } finally {
+                setIsLoading(false);
             }
         };
 
@@ -93,35 +114,41 @@ const Home = () => {
 
     const hasMoved = useRef(false);
 
-    const startDrag = (e) => {
+    const startDrag = (e, ref) => {
         isDragging.current = true;
         hasMoved.current = false;
-        startX.current = e.pageX - scrollRef.current.offsetLeft;
-        scrollLeft.current = scrollRef.current.scrollLeft;
-        scrollRef.current.classList.add('dragging');
+        startX.current = e.pageX - ref.current.offsetLeft;
+        scrollLeft.current = ref.current.scrollLeft;
+        ref.current.classList.add('dragging');
     };
 
-    const stopDrag = () => {
+    const stopDrag = (ref) => {
         isDragging.current = false;
-        scrollRef.current.classList.remove('dragging');
+        if (ref.current) ref.current.classList.remove('dragging');
     };
 
-    const onDrag = (e) => {
+    const onDrag = (e, ref) => {
         if (!isDragging.current) return;
 
-        const x = e.pageX - scrollRef.current.offsetLeft;
+        const x = e.pageX - ref.current.offsetLeft;
         const walk = (x - startX.current) * 2;
 
         if (Math.abs(x - startX.current) > 5) {
             hasMoved.current = true;
             e.preventDefault();
-            scrollRef.current.scrollLeft = scrollLeft.current - walk;
+            ref.current.scrollLeft = scrollLeft.current - walk;
         }
     };
 
     const handleMovieClick = (movieId) => {
         if (!hasMoved.current) {
             navigate(`/movie/${movieId}`);
+        }
+    };
+
+    const handleTVClick = (tvId) => {
+        if (!hasMoved.current) {
+            console.log("TV clicked:", tvId);
         }
     };
 
@@ -154,23 +181,34 @@ const Home = () => {
                         {showResults && searchQuery.trim() && (
                             <div className="search-results-dropdown">
                                 {searchResults.length > 0 ? (
-                                    searchResults.map(movie => (
+                                    searchResults.map(item => (
                                         <div
-                                            key={movie.id}
+                                            key={`${item.media_type}-${item.id}`}
                                             className="search-result-item"
                                             onClick={() => {
-                                                navigate(`/movie/${movie.id}`);
+                                                if (item.media_type === "movie") {
+                                                    navigate(`/movie/${item.id}`);
+                                                } else {
+                                                    console.log(`${item.media_type} clicked:`, item.id);
+                                                }
                                                 setShowResults(false);
                                                 setSearchQuery("");
                                             }}
                                         >
                                             <img
-                                                src={movie.poster_path ? `https://image.tmdb.org/t/p/w92${movie.poster_path}` : 'https://via.placeholder.com/45x68?text=No+Logo'}
-                                                alt={movie.title}
+                                                src={item.poster_path
+                                                    ? (item.poster_path.startsWith('http')
+                                                        ? item.poster_path
+                                                        : `https://image.tmdb.org/t/p/w92${item.poster_path}`)
+                                                    : 'https://via.placeholder.com/45x68?text=No+Logo'}
+                                                alt={item.title || item.name}
                                             />
                                             <div className="search-result-info">
-                                                <span className="result-title">{movie.title}</span>
-                                                <span className="result-year">{movie.release_date?.split('-')[0]}</span>
+                                                <div className="result-top-row">
+                                                    <span className="result-title">{item.title || item.name}</span>
+                                                    <span className="result-type-badge">{item.media_type}</span>
+                                                </div>
+                                                <span className="result-year">{(item.release_date || item.first_air_date)?.split('-')[0] || 'N/A'}</span>
                                             </div>
                                         </div>
                                     ))
@@ -190,29 +228,27 @@ const Home = () => {
                     </div>
                 </header>
 
-                {/* Trending Movies Section with Scroll Buttons */}
+                {/* Trending Movies Section */}
                 <section className="dashboard-section">
-                    <h2 className="section-title">Trending Movies</h2>
+                    {!isLoading && <h2 className="section-title">Trending Movies</h2>}
 
                     <div className="trending-wrapper-edge">
-                        {/* Left Scroll Button */}
                         {!error && trendingMovies.length > 0 && (
                             <button
                                 className="scroll-btn left"
-                                onClick={() => scrollRef.current.scrollBy({ left: -300, behavior: 'smooth' })}
+                                onClick={() => movieScrollRef.current.scrollBy({ left: -300, behavior: 'smooth' })}
                             >
                                 ‹
                             </button>
                         )}
 
-                        {/* Horizontal Scroll Container */}
                         <div
                             className="horizontal-scroll"
-                            ref={scrollRef}
-                            onMouseDown={startDrag}
-                            onMouseLeave={stopDrag}
-                            onMouseUp={stopDrag}
-                            onMouseMove={onDrag}
+                            ref={movieScrollRef}
+                            onMouseDown={(e) => startDrag(e, movieScrollRef)}
+                            onMouseLeave={() => stopDrag(movieScrollRef)}
+                            onMouseUp={() => stopDrag(movieScrollRef)}
+                            onMouseMove={(e) => onDrag(e, movieScrollRef)}
                         >
                             {error ? (
                                 <p className="error-text">{error}</p>
@@ -239,11 +275,126 @@ const Home = () => {
                             )}
                         </div>
 
-                        {/* RIGHT BUTTON */}
                         {!error && trendingMovies.length > 0 && (
                             <button
                                 className="scroll-btn right"
-                                onClick={() => scrollRef.current.scrollBy({ left: 300, behavior: 'smooth' })}
+                                onClick={() => movieScrollRef.current.scrollBy({ left: 300, behavior: 'smooth' })}
+                            >
+                                ›
+                            </button>
+                        )}
+                    </div>
+                </section>
+
+                {/* Trending Webseries Section */}
+                <section className="dashboard-section">
+                    {!isLoading && <h2 className="section-title">Trending Web-Series</h2>}
+
+                    <div className="trending-wrapper-edge">
+                        {!error && trendingTV.length > 0 && (
+                            <button
+                                className="scroll-btn left"
+                                onClick={() => tvScrollRef.current.scrollBy({ left: -300, behavior: 'smooth' })}
+                            >
+                                ‹
+                            </button>
+                        )}
+
+                        <div
+                            className="horizontal-scroll"
+                            ref={tvScrollRef}
+                            onMouseDown={(e) => startDrag(e, tvScrollRef)}
+                            onMouseLeave={() => stopDrag(tvScrollRef)}
+                            onMouseUp={() => stopDrag(tvScrollRef)}
+                            onMouseMove={(e) => onDrag(e, tvScrollRef)}
+                        >
+                            {error ? (
+                                <p className="error-text">{error}</p>
+                            ) : trendingTV.length > 0 ? (
+                                trendingTV.map((show) => (
+                                    <div
+                                        className="movie-card"
+                                        key={show.id}
+                                        onClick={() => handleTVClick(show.id)}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        <img
+                                            src={`https://image.tmdb.org/t/p/w500${show.poster_path}`}
+                                            alt={show.name}
+                                            className="movie-poster"
+                                        />
+                                        <p className="movie-title">{show.name}</p>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="loading-container">
+                                    <div className="loading-spinner"></div>
+                                </div>
+                            )}
+                        </div>
+
+                        {!error && trendingTV.length > 0 && (
+                            <button
+                                className="scroll-btn right"
+                                onClick={() => tvScrollRef.current.scrollBy({ left: 300, behavior: 'smooth' })}
+                            >
+                                ›
+                            </button>
+                        )}
+                    </div>
+                </section>
+
+                {/* Trending Anime Section */}
+                <section className="dashboard-section">
+                    {!isLoading && <h2 className="section-title">Trending Anime</h2>}
+
+                    <div className="trending-wrapper-edge">
+                        {!error && trendingAnime.length > 0 && (
+                            <button
+                                className="scroll-btn left"
+                                onClick={() => animeScrollRef.current.scrollBy({ left: -300, behavior: 'smooth' })}
+                            >
+                                ‹
+                            </button>
+                        )}
+
+                        <div
+                            className="horizontal-scroll"
+                            ref={animeScrollRef}
+                            onMouseDown={(e) => startDrag(e, animeScrollRef)}
+                            onMouseLeave={() => stopDrag(animeScrollRef)}
+                            onMouseUp={() => stopDrag(animeScrollRef)}
+                            onMouseMove={(e) => onDrag(e, animeScrollRef)}
+                        >
+                            {error ? (
+                                <p className="error-text">{error}</p>
+                            ) : trendingAnime.length > 0 ? (
+                                trendingAnime.map((anime) => (
+                                    <div
+                                        className="movie-card"
+                                        key={anime.id}
+                                        onClick={() => console.log("Anime clicked:", anime.id)}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        <img
+                                            src={anime.coverImage.extraLarge || anime.coverImage.large}
+                                            alt={anime.title.english || anime.title.romaji}
+                                            className="movie-poster"
+                                        />
+                                        <p className="movie-title">{anime.title.english || anime.title.romaji}</p>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="loading-container">
+                                    <div className="loading-spinner"></div>
+                                </div>
+                            )}
+                        </div>
+
+                        {!error && trendingAnime.length > 0 && (
+                            <button
+                                className="scroll-btn right"
+                                onClick={() => animeScrollRef.current.scrollBy({ left: 300, behavior: 'smooth' })}
                             >
                                 ›
                             </button>
