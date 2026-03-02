@@ -25,21 +25,13 @@ class CommunityViewSet(ModelViewSet):
     def perform_create(self, serializer):
         if not self.request.user.is_staff:
             raise PermissionDenied("Only the project creator can create communities.")
-        serializer.save(created_by=self.request.user)
+        community = serializer.save(created_by=self.request.user)
+        community.members.add(self.request.user)
 
-class CommunityRequestViewSet(ModelViewSet):
-    queryset = CommunityRequest.objects.all()
-    serializer_class = CommunityRequestSerializer
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def perform_create(self, serializer):
-        serializer.save(requested_by=self.request.user)
-
-    def get_queryset(self):
-        if self.request.user.is_staff:
-            return CommunityRequest.objects.all()
-        return CommunityRequest.objects.filter(requested_by=self.request.user)
+    def perform_destroy(self, instance):
+        if not self.request.user.is_staff:
+            raise PermissionDenied("Only the project creator can delete communities.")
+        instance.delete()
 
     @action(detail=True, methods=['get', 'post'])
     def posts(self, request, pk=None):
@@ -71,4 +63,24 @@ class CommunityRequestViewSet(ModelViewSet):
         community = self.get_object()
         community.members.remove(request.user)
         return Response({'status': 'left'})
+
+class CommunityRequestViewSet(ModelViewSet):
+    queryset = CommunityRequest.objects.all()
+    serializer_class = CommunityRequestSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(requested_by=self.request.user)
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return CommunityRequest.objects.all()
+        return CommunityRequest.objects.filter(requested_by=self.request.user)
+
+    def perform_destroy(self, instance):
+        if not self.request.user.is_staff:
+            raise PermissionDenied("Only staff members can delete requests.")
+        instance.delete()
+
 
