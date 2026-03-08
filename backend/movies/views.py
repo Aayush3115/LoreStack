@@ -338,4 +338,20 @@ def universal_search(request):
             "results": flattened_results
         }
     })
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def user_watchlist(request):
+    try:
+        activities = MovieActivity.objects.filter(user=request.user, is_watchlist=True).order_by("-updated_at")
+        serializer = MovieActivitySerializer(activities, many=True)
+        return Response({
+            "status_code": 200,
+            "data": serializer.data
+        })
+    except Exception as e:
+        return Response({
+            "error": "Failed to fetch watchlist",
+            "details": str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
