@@ -4,6 +4,7 @@ from .models import Post
 class PostSerializer(serializers.ModelSerializer):
     username = serializers.ReadOnlyField(source='author.username')
     user_id = serializers.ReadOnlyField(source='author.id')
+    community_name = serializers.ReadOnlyField(source='community.name')
     user_avatar = serializers.SerializerMethodField()
     likes = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
@@ -18,6 +19,7 @@ class PostSerializer(serializers.ModelSerializer):
             'user_id',
             'user_avatar',
             'community',
+            'community_name',
             'title',
             'content',
             'likes',
