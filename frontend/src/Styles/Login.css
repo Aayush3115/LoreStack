@@ -9,10 +9,10 @@
  .login-container {
    min-height: 100vh;
    background:
-    radial-gradient(circle at 20% 20%, rgba(150, 200, 255, 0.55), transparent 52%),
-    radial-gradient(circle at 80% 10%, rgba(160, 120, 255, 0.55), transparent 56%),
-    radial-gradient(circle at 80% 85%, rgba(90, 60, 255, 0.45), transparent 55%),
-    linear-gradient(135deg, #1A1A2C 100%, #8e7bff 20%, #1A1A2C 100%);
+     radial-gradient(circle at 20% 20%, rgba(150, 200, 255, 0.55), transparent 52%),
+     radial-gradient(circle at 80% 10%, rgba(160, 120, 255, 0.55), transparent 56%),
+     radial-gradient(circle at 80% 85%, rgba(90, 60, 255, 0.45), transparent 55%),
+     linear-gradient(135deg, #1A1A2C 100%, #8e7bff 20%, #1A1A2C 100%);
 
    display: flex;
    align-items: center;
@@ -20,13 +20,13 @@
    padding: 20px;
    position: relative;
    overflow: hidden;
-   
-    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+
+   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
  }
 
- 
 
- 
+
+
 
  .grain-overlay {
    position: absolute;
@@ -45,9 +45,7 @@
  }
 
  .header {
-   text-align: center;
    margin-bottom: 20px;
-   animation: fadeIn 0.8s ease-out;
    display: flex;
    flex-direction: column;
    align-items: center;
@@ -55,31 +53,49 @@
 
  .logo-wrapper {
    display: flex;
-   justify-content: center;
+   flex-direction: column;
    align-items: center;
-   height: 120px;
-   /* Logical height */
-   margin-bottom: 15px;
-   overflow: visible;
    width: 100%;
-   position: relative;
+   margin-bottom: 0;
  }
 
  .logo-icon-container {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
    position: relative;
+   width: 100%;
+   margin-bottom: 0;
  }
 
+ .login-brand-name {
+   font-size: 52px;
+   font-weight: 800;
+   text-align: center;
+   background: linear-gradient(to right, #ffffff, #cbd5e1);
+   -webkit-background-clip: text;
+   background-clip: text;
+   -webkit-text-fill-color: transparent;
+   letter-spacing: -2px;
+   font-family: 'Outfit', sans-serif;
+   margin-top: -50px;
+   /* Pull text tight to the larger logo */
+   position: relative;
+   z-index: 5;
+ }
+
+
  .logo-img-login {
-   width: 400px;
-   height: auto;
+   height: 180px;
+   width: auto;
    object-fit: contain;
    position: relative;
    z-index: 2;
-   
    pointer-events: none;
+   margin-bottom: 0;
  }
 
- 
+
 
  .logo-text {
    font-family: 'Playfair Display', serif;
@@ -128,8 +144,8 @@
  }
 
  .tab-button.active {
-   
-    background: linear-gradient(to right, #4f46e5, #9333ea);
+
+   background: linear-gradient(to right, #4f46e5, #9333ea);
    color: white;
    box-shadow: 0 8px 24px rgba(79, 70, 229, 0.3);
  }
@@ -264,7 +280,7 @@
  }
 
  .submit-button:hover {
-    box-shadow: 0 12px 32px rgba(79, 70, 229, 0.4);
+   box-shadow: 0 12px 32px rgba(79, 70, 229, 0.4);
    transform: translateY(-2px);
  }
 

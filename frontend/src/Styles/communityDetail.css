@@ -9,8 +9,8 @@
 .community-detail-page {
   display: flex;
   min-height: 100vh;
-  background: #0a0c10;
-  color: #ffffff;
+  background: var(--bg-color);
+  color: var(--text-color);
 }
 
 .community-detail-content {
@@ -27,7 +27,7 @@
   align-items: flex-start;
   margin-bottom: 32px;
   padding-bottom: 24px;
-  border-bottom: 1px solid #1e1e1e;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .community-name {
@@ -38,7 +38,7 @@
 }
 
 .community-description {
-  color: #8f8f8f;
+  color: var(--secondary-text);
   font-size: 15px;
   margin-bottom: 12px;
   line-height: 1.5;
@@ -96,11 +96,11 @@
 
 /* Create Post Container */
 .create-post-container {
-  background: #111315;
+  background: var(--card-bg);
   border-radius: 16px;
   padding: 24px;
   margin-bottom: 32px;
-  border: 1px solid #1e1e1e;
+  border: 1px solid var(--border-color);
 }
 
 .create-post-header {
@@ -115,7 +115,7 @@
 }
 
 .create-post-header p {
-  color: #8f8f8f;
+  color: var(--secondary-text);
   font-size: 14px;
 }
 
@@ -127,11 +127,11 @@
 
 .post-input {
   width: 100%;
-  background: #1a1c20;
-  border: 1px solid #2c2c2c;
+  background: var(--hover-bg);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 16px;
-  color: white;
+  color: var(--text-color);
   font-size: 15px;
   min-height: 100px;
   resize: vertical;
@@ -250,12 +250,12 @@
 
 /* Join Prompt */
 .join-prompt {
-  background: #111315;
+  background: var(--card-bg);
   border-radius: 16px;
   padding: 48px 32px;
   margin-bottom: 32px;
   text-align: center;
-  border: 1px solid #1e1e1e;
+  border: 1px solid var(--border-color);
 }
 
 .join-icon {
@@ -364,11 +364,11 @@
 
 /* Post Card */
 .post-card {
-  background: #111315;
+  background: var(--card-bg);
   border-radius: 16px;
   padding: 24px;
   margin-bottom: 16px;
-  border: 1px solid #1e1e1e;
+  border: 1px solid var(--border-color);
   transition: all 0.2s ease;
 }
 

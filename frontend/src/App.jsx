@@ -12,48 +12,51 @@ import Errors from './pages/Error.jsx';
 import CommunityDetail from "./pages/CommunityDetail";
 import MovieDetails from "./pages/MovieDetails";
 import { SidebarProvider } from './Context/SidebarContext';
+import { ThemeProvider } from './Context/ThemeContext';
 
 const App = () => {
   return (
-    <SidebarProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/home" element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          } />
-          <Route path='/Notification' element={
-            <ProtectedRoute>
-              <Notification />
-            </ProtectedRoute>} />
-          <Route path='/profile' element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          } />
-          <Route path='/settings' element={
-            <ProtectedRoute>
-              <Settings />
-            </ProtectedRoute>} />
-          <Route path='/loreroom' element={
-            <ProtectedRoute>
-              <Community />
-            </ProtectedRoute>
-          } />
-          <Route path="/movie/:id" element={
-            <ProtectedRoute>
-              <MovieDetails />
-            </ProtectedRoute>
-          } />
-          <Route path='*' element={<Errors />} />
-          <Route path="/community/:id" element={<CommunityDetail />} />
+    <Router>
+      <ThemeProvider>
+        <SidebarProvider>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/home" element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            } />
+            <Route path='/Notification' element={
+              <ProtectedRoute>
+                <Notification />
+              </ProtectedRoute>} />
+            <Route path='/profile' element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } />
+            <Route path='/settings' element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>} />
+            <Route path='/loreroom' element={
+              <ProtectedRoute>
+                <Community />
+              </ProtectedRoute>
+            } />
+            <Route path="/movie/:id" element={
+              <ProtectedRoute>
+                <MovieDetails />
+              </ProtectedRoute>
+            } />
+            <Route path='*' element={<Errors />} />
+            <Route path="/community/:id" element={<CommunityDetail />} />
 
-        </Routes>
-      </Router>
-    </SidebarProvider>
+          </Routes>
+        </SidebarProvider>
+      </ThemeProvider>
+    </Router>
   );
 };
 

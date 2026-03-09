@@ -282,7 +282,7 @@ const MovieDetails = () => {
             <Sidebar />
             <main className="movie-details-content">
                 <header className="top-header">
-                    <button className="back-btn-pill" onClick={() => navigate('/home')}>
+                    <button className="back-btn-pill" onClick={() => navigate(-1)}>
                         ← Back
                     </button>
                     <div className="header-actions">
@@ -312,8 +312,8 @@ const MovieDetails = () => {
                             <span className="error-icon">🎬</span>
                             <h2>{error || 'Movie Not Found'}</h2>
                             <p>We couldn't find the lore for this item. It might have been lost in the multiverse.</p>
-                            <button className="back-home-btn" onClick={() => navigate('/home')}>
-                                Back to Home
+                            <button className="back-home-btn" onClick={() => navigate(-1)}>
+                                Back to Previous Page
                             </button>
                         </div>
                     </div>

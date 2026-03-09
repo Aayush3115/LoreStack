@@ -1,14 +1,17 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Settings, User, Bell, HeartHandshake, Popcorn, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LogOut, Settings, User, Bell, HeartHandshake, Popcorn, ChevronLeft, ChevronRight, Sun, Moon } from 'lucide-react';
 import './Sidebar.css';
 import { useSidebar } from '../../Context/SidebarContext';
-import logo from '../../assets/logo.png';
+import { useTheme } from '../../Context/ThemeContext';
+import logo from '../../assets/logo_no_bg.png';
+import logoNoName from '../../assets/logo_no_bg.png';
 
 const Sidebar = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { isSidebarOpen, toggleSidebar } = useSidebar();
+    const { theme, toggleTheme } = useTheme();
 
     const handleLogout = () => {
         localStorage.removeItem('access_token');
@@ -27,9 +30,14 @@ const Sidebar = () => {
             </button>
             <div className="sidebar-header">
                 <div className="sidebar-logo">
-                    <img src={logo} alt="LoreStack Logo" className="logo-img" />
+                    <img src={isSidebarOpen ? logo : logoNoName} alt="LoreStack Logo" className="logo-img" />
                 </div>
             </div>
+            {isSidebarOpen && (
+                <div className="sidebar-brand-name">
+                    LoreStack
+                </div>
+            )}
             <nav className="sidebar-nav">
                 <Link to='/home' style={{ textDecoration: 'none' }}>
                     <button className={`nav-item ${isActive('/home') ? 'active' : ''}`}>
@@ -64,6 +72,10 @@ const Sidebar = () => {
             </nav>
 
             <div className="sidebar-footer">
+                <button className="theme-toggle-btn" onClick={toggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
+                    {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+                    <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+                </button>
                 <button className="logout-btn" onClick={handleLogout}>
                     <LogOut size={20} />
                     <span>Logout</span>

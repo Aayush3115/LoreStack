@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Layout, Shield, Sparkles, ArrowRight, Star, LayoutDashboard, Brain, Heart, Compass } from 'lucide-react';
 import '../Styles/Landing.css'
 
-import logo from '../assets/logo.png';
+import logo from '../assets/logo_no_bg.png';
 
 const Landing = () => {
     const navigate = useNavigate();
