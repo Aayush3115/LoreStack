@@ -15,12 +15,37 @@ body,
   box-sizing: border-box;
 }
 
+:root {
+  --bg-color: #050505;
+  --text-color: #ffffff;
+  --sidebar-bg: #0a0a0a;
+  --card-bg: rgba(255, 255, 255, 0.03);
+  --border-color: rgba(255, 255, 255, 0.05);
+  --secondary-text: #94a3b8;
+  --accent-color: #6366f1;
+  --hover-bg: rgba(255, 255, 255, 0.05);
+  --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.light-mode {
+  --bg-color: #f8fafc;
+  --text-color: #0f172a;
+  --sidebar-bg: #ffffff;
+  --card-bg: #ffffff;
+  --border-color: #e2e8f0;
+  --secondary-text: #64748b;
+  --accent-color: #4f46e5;
+  --hover-bg: rgba(0, 0, 0, 0.05);
+  --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
 body {
-  background-color: #050505;
-  color: white;
+  background-color: var(--bg-color);
+  color: var(--text-color);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   font-family: 'Outfit', 'Inter', sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* *{
