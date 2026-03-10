@@ -354,4 +354,115 @@ def user_watchlist(request):
             "error": "Failed to fetch watchlist",
             "details": str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def movie_recommendations(request, movie_id):
+    """
+    Content-based filtering: recommend movies similar to a given movie using
+    genres, keywords, director, and top actors from TMDB.
+    """
+    api_key = settings.TMDB_API_KEY
+
+    try:
+        # 1. Fetch full movie details (includes credits)
+        detail_res = requests.get(
+            f"https://api.themoviedb.org/3/movie/{movie_id}",
+            params={"api_key": api_key, "append_to_response": "credits,keywords"},
+            timeout=8
+        )
+        detail_res.raise_for_status()
+        movie = detail_res.json()
+
+        # 2. Extract content-based signals
+        genre_ids = [g["id"] for g in movie.get("genres", [])]
+        keyword_ids = [k["id"] for k in movie.get("keywords", {}).get("keywords", [])][:5]
+
+        # Director
+        director = next(
+            (p for p in movie.get("credits", {}).get("crew", []) if p.get("job") == "Director"),
+            None
+        )
+        director_id = director["id"] if director else None
+
+        # Top 3 actors
+        top_cast_ids = [p["id"] for p in movie.get("credits", {}).get("cast", [])[:3]]
+
+        seen_ids = {movie_id}
+        recommendations = []
+
+        def discover(params, limit=6):
+            """Helper to call TMDB Discover and return results."""
+            base = {
+                "api_key": api_key,
+                "language": "en-US",
+                "sort_by": "vote_average.desc",
+                "vote_count.gte": 50,
+                "include_adult": False,
+                "page": 1,
+            }
+            base.update(params)
+            r = requests.get("https://api.themoviedb.org/3/discover/movie", params=base, timeout=8)
+            if r.ok:
+                return r.json().get("results", [])[:limit]
+            return []
+
+        # 3. Signal 1 — Director + Genre
+        if director_id and genre_ids:
+            results = discover({
+                "with_crew": str(director_id),
+                "with_genres": ",".join(str(g) for g in genre_ids[:2]),
+            })
+            for m in results:
+                if m["id"] not in seen_ids:
+                    m["match_reason"] = f"From director {director['name']}"
+                    recommendations.append(m)
+                    seen_ids.add(m["id"])
+
+        # 4. Signal 2 — Keywords + Genre
+        if keyword_ids and genre_ids:
+            results = discover({
+                "with_keywords": "|".join(str(k) for k in keyword_ids),
+                "with_genres": ",".join(str(g) for g in genre_ids[:2]),
+            })
+            for m in results:
+                if m["id"] not in seen_ids:
+                    m["match_reason"] = "Similar themes & genre"
+                    recommendations.append(m)
+                    seen_ids.add(m["id"])
+
+        # 5. Signal 3 — Top cast members
+        if top_cast_ids:
+            results = discover({
+                "with_cast": ",".join(str(a) for a in top_cast_ids[:2]),
+                "with_genres": ",".join(str(g) for g in genre_ids[:1]) if genre_ids else "",
+            }, limit=8)
+            for m in results:
+                if m["id"] not in seen_ids:
+                    m["match_reason"] = "Shared cast"
+                    recommendations.append(m)
+                    seen_ids.add(m["id"])
+
+        # 6. Signal 4 — Genre-only fallback to ensure we always return something
+        if len(recommendations) < 8 and genre_ids:
+            results = discover({
+                "with_genres": ",".join(str(g) for g in genre_ids[:2]),
+                "sort_by": "popularity.desc",
+            }, limit=12)
+            for m in results:
+                if m["id"] not in seen_ids and len(recommendations) < 18:
+                    m["match_reason"] = "Same genre"
+                    recommendations.append(m)
+                    seen_ids.add(m["id"])
+
+        # Sort by vote_average desc and cap at 18
+        recommendations.sort(key=lambda x: x.get("vote_average", 0), reverse=True)
+        final = recommendations[:18]
+
+        return Response({"status_code": 200, "data": final})
+
+    except requests.exceptions.RequestException as e:
+        return Response({"error": "Failed to fetch recommendations", "details": str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+    except Exception as e:
+        return Response({"error": "An unexpected error occurred", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

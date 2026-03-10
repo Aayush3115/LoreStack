@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import trending_movies, trending_tv, trending_anime, movie_details, tv_details, movie_rating, universal_search, movie_activity, user_watchlist
+from .views import trending_movies, trending_tv, trending_anime, movie_details, tv_details, movie_rating, universal_search, movie_activity, user_watchlist, movie_recommendations
 
 urlpatterns = [
     path("trending-movies/", trending_movies, name="trending_movies"),
@@ -11,4 +11,5 @@ urlpatterns = [
     path("tv/<int:tv_id>/", tv_details, name="tv_details"),
     path("<int:movie_id>/rating/", movie_rating, name="movie_rating"),
     path("<int:movie_id>/activity/", movie_activity, name="movie_activity"),
+    path("<int:movie_id>/recommendations/", movie_recommendations, name="movie_recommendations"),
 ]
