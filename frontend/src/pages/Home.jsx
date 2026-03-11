@@ -158,7 +158,7 @@ const Home = () => {
 
 
             {/* Main Content */}
-            <main className="main-content">
+            <main className="main-content" style={{ marginTop: "0px", paddingTop: "0px"}}>
                 <header className="top-header">
                     <div className="header-left">
                         <h2 className="page-title">Home</h2>

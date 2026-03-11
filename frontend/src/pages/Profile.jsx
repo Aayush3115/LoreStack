@@ -73,7 +73,7 @@ const Profile = () => {
   return (
     <div className="home-container">
       <Sidebar />
-      <main className="main-content">
+      <main className="main-content" style={{ marginTop: "0px", paddingTop: "0px"}}>
         <header className="top-header">
           <div className="header-left">
             <h2 className="page-title">Profile</h2>
