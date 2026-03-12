@@ -5,7 +5,7 @@ const Settings = () => {
   return (
     <div className="home-container">
       <Sidebar />
-      <main className="main-content">
+      <main className="main-content" style={{ marginTop: "0px", paddingTop: "0px"}}>
         <header className="top-header">
           <h2 className="page-title">Settings</h2>
         </header>
