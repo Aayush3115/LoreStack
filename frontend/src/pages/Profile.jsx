@@ -44,15 +44,19 @@ const Profile = () => {
         });
         const data = await response.json();
         if (data.status_code === 200) {
-          // Fetch details for each movie in the watchlist
           const details = await Promise.all(
             data.data.map(async (item) => {
               try {
-                const movieRes = await fetch(`http://localhost:8000/api/movies/${item.movie_id}/`);
-                const movieData = await movieRes.json();
-                return movieData.data;
+                let url = '';
+                if (item.media_type === 'movie') url = `http://localhost:8000/api/movies/${item.id}/`;
+                else if (item.media_type === 'tv') url = `http://localhost:8000/api/movies/tv/${item.id}/`;
+                else if (item.media_type === 'anime') url = `http://localhost:8000/api/movies/anime/${item.id}/`;
+
+                const res = await fetch(url);
+                const detailData = await res.json();
+                return { ...detailData.data, media_type: item.media_type };
               } catch (err) {
-                console.error(`Failed to fetch details for movie ${item.movie_id}`, err);
+                console.error(`Failed to fetch details for ${item.media_type} ${item.id}`, err);
                 return null;
               }
             })
@@ -69,6 +73,15 @@ const Profile = () => {
     fetchUserData();
     fetchWatchlist();
   }, [navigate]);
+
+  const getPosterUrl = (item) => {
+    if (item.media_type === 'anime') return item.coverImage.large;
+    return `https://image.tmdb.org/t/p/w500${item.poster_path}`;
+  };
+
+  const getTitle = (item) => {
+    return item.title?.english || item.title?.romaji || item.title || item.name;
+  };
 
   return (
     <div className="home-container">
@@ -102,20 +115,20 @@ const Profile = () => {
             </div>
           ) : watchlistDetails.length > 0 ? (
             <div className="communities-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}>
-              {watchlistDetails.map((movie) => (
+              {watchlistDetails.map((item) => (
                 <div
-                  key={movie.id}
+                  key={`${item.media_type}-${item.id}`}
                   className="movie-card"
-                  onClick={() => navigate(`/movie/${movie.id}`)}
+                  onClick={() => navigate(`/${item.media_type === 'movie' ? 'movie' : item.media_type}/${item.id}`)}
                   style={{ flex: 'unset', width: '100%' }}
                 >
                   <img
-                    src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                    alt={movie.title}
+                    src={getPosterUrl(item)}
+                    alt={getTitle(item)}
                     className="movie-poster"
-                    style={{ height: '270px' }}
+                    style={{ height: '270px', objectFit: 'cover' }}
                   />
-                  <p className="movie-title">{movie.title}</p>
+                  <p className="movie-title">{getTitle(item)}</p>
                 </div>
               ))}
             </div>
@@ -126,10 +139,10 @@ const Profile = () => {
               </div>
               <h3 className="welcome-title">Your watchlist is empty</h3>
               <p className="welcome-text">
-                You haven't added any movies to your watchlist yet. Start exploring and build your collection!
+                You haven't added any movies, shows, or anime to your watchlist yet. Start exploring and build your collection!
               </p>
-              <button className="create-btn" onClick={() => navigate('/')}>
-                Discover Movies
+              <button className="create-btn" onClick={() => navigate('/home')}>
+                Discover Content
               </button>
             </div>
           )}

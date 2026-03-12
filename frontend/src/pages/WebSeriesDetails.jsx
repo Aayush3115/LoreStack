@@ -5,10 +5,10 @@ import '../Styles/MovieDetails.css';
 import '../styles/communityDetail.css';
 import { MoreVertical, Edit2, Trash2, Loader2, Bookmark, Eye, Check, X } from 'lucide-react';
 
-const MovieDetails = () => {
+const WebSeriesDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [movie, setMovie] = useState(null);
+    const [series, setSeries] = useState(null);
     const [userData, setUserData] = useState(null);
     const [userRating, setUserRating] = useState(null);
     const [userReview, setUserReview] = useState("");
@@ -29,7 +29,7 @@ const MovieDetails = () => {
     const fetchAllReviews = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch(`http://localhost:8000/api/movies/${id}/rating/?all=true`, {
+            const response = await fetch(`http://localhost:8000/api/movies/tv/${id}/rating/?all=true`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -63,18 +63,18 @@ const MovieDetails = () => {
             }
         };
 
-        const fetchMovieDetails = async () => {
+        const fetchTVDetails = async () => {
             try {
-                const response = await fetch(`http://localhost:8000/api/movies/${id}/`);
+                const response = await fetch(`http://localhost:8000/api/movies/tv/${id}/`);
                 const data = await response.json();
 
                 if (data.status_code === 200) {
-                    setMovie(data.data);
+                    setSeries(data.data);
                 } else {
-                    setError('Failed to fetch movie details');
+                    setError('Failed to fetch webseries details');
                 }
             } catch (err) {
-                console.error('Error fetching movie details:', err);
+                console.error('Error fetching webseries details:', err);
                 setError('Could not connect to the server');
             } finally {
                 setLoading(false);
@@ -86,7 +86,7 @@ const MovieDetails = () => {
                 const token = localStorage.getItem('access_token');
                 if (!token) return;
 
-                const response = await fetch(`http://localhost:8000/api/movies/${id}/rating/`, {
+                const response = await fetch(`http://localhost:8000/api/movies/tv/${id}/rating/`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -102,11 +102,11 @@ const MovieDetails = () => {
             }
         };
 
-        const fetchMovieActivity = async () => {
+        const fetchTVActivity = async () => {
             try {
                 const token = localStorage.getItem('access_token');
                 if (!token) return;
-                const response = await fetch(`http://localhost:8000/api/movies/${id}/activity/`, {
+                const response = await fetch(`http://localhost:8000/api/movies/tv/${id}/activity/`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await response.json();
@@ -122,7 +122,7 @@ const MovieDetails = () => {
         const fetchRecommendations = async () => {
             try {
                 const token = localStorage.getItem('access_token');
-                const response = await fetch(`http://localhost:8000/api/movies/${id}/recommendations/`, {
+                const response = await fetch(`http://localhost:8000/api/movies/tv/${id}/recommendations/`, {
                     headers: token ? { 'Authorization': `Bearer ${token}` } : {}
                 });
                 const data = await response.json();
@@ -135,20 +135,17 @@ const MovieDetails = () => {
         };
 
         fetchUserData();
-        fetchMovieDetails();
+        fetchTVDetails();
         fetchUserRating();
         fetchAllReviews();
-        fetchMovieActivity();
+        fetchTVActivity();
         fetchRecommendations();
     }, [id]);
 
     const handleRatingSelect = (val) => {
-        // If they click the same rating that is already saved, do nothing
         if (val === userRating && !isEditingReview) return;
-
         setUserRating(val);
         setIsEditingReview(true);
-        // Scroll to review section for better UX
         const reviewSection = document.querySelector('.community-reviews-section');
         if (reviewSection) {
             reviewSection.scrollIntoView({ behavior: 'smooth' });
@@ -160,12 +157,12 @@ const MovieDetails = () => {
         try {
             const token = localStorage.getItem('access_token');
             if (!token) {
-                alert("Please login to rate movies!");
+                alert("Please login to rate webseries!");
                 setIsSaving(false);
                 return;
             }
 
-            const response = await fetch(`http://localhost:8000/api/movies/${id}/rating/`, {
+            const response = await fetch(`http://localhost:8000/api/movies/tv/${id}/rating/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -182,8 +179,8 @@ const MovieDetails = () => {
                 setUserRating(data.rating);
                 setUserReview(data.review || "");
                 setIsEditingReview(false);
-                setIsLogged(true); // Rating a movie implies logging it
-                fetchAllReviews(); // Refresh all reviews
+                setIsLogged(true);
+                fetchAllReviews();
             } else {
                 console.error("Failed to submit rating");
             }
@@ -198,7 +195,7 @@ const MovieDetails = () => {
         try {
             const token = localStorage.getItem('access_token');
             if (!token) {
-                alert("Please login to track movies!");
+                alert("Please login to track webseries!");
                 return;
             }
 
@@ -212,7 +209,7 @@ const MovieDetails = () => {
             const newValue = type === 'logged' ? !isLogged : !isWatchlist;
             const body = type === 'logged' ? { is_logged: newValue } : { is_watchlist: newValue };
 
-            const response = await fetch(`http://localhost:8000/api/movies/${id}/activity/`, {
+            const response = await fetch(`http://localhost:8000/api/movies/tv/${id}/activity/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -233,7 +230,7 @@ const MovieDetails = () => {
     const handleDeleteReview = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch(`http://localhost:8000/api/movies/${id}/rating/`, {
+            const response = await fetch(`http://localhost:8000/api/movies/tv/${id}/rating/`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -323,13 +320,13 @@ const MovieDetails = () => {
                 {loading ? (
                     <div className="content-loading">
                         <div className="loader"></div>
-                        <p>Fetching movie details...</p>
+                        <p>Fetching webseries details...</p>
                     </div>
-                ) : error || !movie ? (
+                ) : error || !series ? (
                     <div className="error-message-container">
                         <div className="error-card">
-                            <span className="error-icon">🎬</span>
-                            <h2>{error || 'Movie Not Found'}</h2>
+                            <span className="error-icon">📺</span>
+                            <h2>{error || 'WebSeries Not Found'}</h2>
                             <p>We couldn't find the lore for this item. It might have been lost in the multiverse.</p>
                             <button className="back-home-btn" onClick={() => navigate(-1)}>
                                 Back to Previous Page
@@ -340,30 +337,29 @@ const MovieDetails = () => {
                     <div className="details-scroll-container">
                         <div className="movie-hero">
                             <img
-                                src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`}
-                                alt={movie.title}
+                                src={`https://image.tmdb.org/t/p/original${series.backdrop_path}`}
+                                alt={series.name}
                                 className="movie-backdrop"
                             />
                             <div className="hero-overlay">
                                 <img
-                                    src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                                    alt={movie.title}
+                                    src={`https://image.tmdb.org/t/p/w500${series.poster_path}`}
+                                    alt={series.name}
                                     className="movie-poster-large"
                                 />
                                 <div className="hero-text">
-                                    <h1>{movie.title}</h1>
+                                    <h1>{series.name}</h1>
                                     <div className="movie-meta">
                                         <span className="certification-badge">
-                                            {movie.release_dates?.results?.find(r => r.iso_3166_1 === 'US')?.release_dates?.find(d => d.certification)?.certification ||
-                                                movie.release_dates?.results?.[0]?.release_dates?.find(d => d.certification)?.certification || 'NR'}
+                                            {series.content_ratings?.results?.find(r => r.iso_3166_1 === 'US')?.rating || 'NR'}
                                         </span>
                                         <span>•</span>
-                                        <span>{new Date(movie.release_date).getFullYear()}</span>
+                                        <span>{series.first_air_date ? new Date(series.first_air_date).getFullYear() : 'N/A'}</span>
                                         <span>•</span>
-                                        <span>{Math.floor(movie.runtime / 60)}h {movie.runtime % 60}m</span>
+                                        <span>{series.episode_run_time?.[0] || 'N/A'}m episodes</span>
                                         <span>•</span>
                                         <div className="hero-ratings-group">
-                                            <span className="rating-badge star-rating">★ {movie.vote_average.toFixed(1)}</span>
+                                            <span className="rating-badge star-rating">★ {series.vote_average.toFixed(1)}</span>
                                             {userRating ? (
                                                 <span
                                                     className="rating-badge lore-rating user-verdict-badge"
@@ -386,10 +382,10 @@ const MovieDetails = () => {
                             <div className="info-left-column">
                                 <section className="info-section">
                                     <h3>Overview</h3>
-                                    <p className="overview-text">{movie.overview}</p>
+                                    <p className="overview-text">{series.overview}</p>
                                 </section>
 
-                                {movie.credits?.cast?.length > 0 && (
+                                {series.credits?.cast?.length > 0 && (
                                     <section className="cast-section">
                                         <div className="section-tabs">
                                             <button
@@ -408,7 +404,7 @@ const MovieDetails = () => {
 
                                         {activePeopleTab === 'cast' ? (
                                             <div className="cast-grid">
-                                                {movie.credits.cast.slice(0, 15).map(person => (
+                                                {series.credits.cast.slice(0, 15).map(person => (
                                                     <div key={person.id} className="cast-card">
                                                         <div className="cast-image-container">
                                                             {person.profile_path ? (
@@ -432,8 +428,8 @@ const MovieDetails = () => {
                                             </div>
                                         ) : (
                                             <div className="cast-grid">
-                                                {movie.credits?.crew
-                                                    ?.filter(person => ['Director', 'Writer', 'Screenplay', 'Story', 'Executive Producer', 'Director of Photography', 'Editor', 'Original Music Composer'].includes(person.job))
+                                                {series.credits?.crew
+                                                    ?.filter(person => ['Director', 'Writer', 'Screenplay', 'Story', 'Executive Producer', 'Director of Photography', 'Editor', 'Original Music Composer', 'Creator'].includes(person.job))
                                                     ?.reduce((acc, current) => {
                                                         const x = acc.find(item => item.id === current.id);
                                                         if (!x) return acc.concat([current]);
@@ -471,8 +467,6 @@ const MovieDetails = () => {
                                         <h3>Community Reviews</h3>
                                     </div>
 
-
-                                    {/* User's active writing area (Only for NEW reviews) */}
                                     {isEditingReview && userRating && !allReviews.some(r => r.username === userData?.username) && (
                                         <div className="user-review-input-box">
                                             <textarea
@@ -589,35 +583,12 @@ const MovieDetails = () => {
                                     </div>
                                 </section>
 
-                                {/* More Like This */}
                                 {recommendations.length > 0 && (() => {
-                                    const directorRecs = recommendations.filter(r =>
-                                        r.match_reason?.toLowerCase().includes('director')
-                                    );
-                                    const themeRecs = recommendations.filter(r =>
-                                        !r.match_reason?.toLowerCase().includes('director')
-                                    );
-                                    const displayRecs = activeRecTab === 'director' ? directorRecs : themeRecs;
-
+                                    const displayRecs = recommendations;
                                     return (
                                         <section className="recommendations-section">
                                             <div className="recs-header">
                                                 <h3 className="section-title-recs">More Like This</h3>
-                                                <div className="rec-tabs">
-                                                    <button
-                                                        className={`rec-tab-btn ${activeRecTab === 'theme' ? 'active' : ''}`}
-                                                        onClick={() => setActiveRecTab('theme')}
-                                                    >
-                                                        Similar Theme
-                                                    </button>
-                                                    <button
-                                                        className={`rec-tab-btn ${activeRecTab === 'director' ? 'active' : ''}`}
-                                                        onClick={() => setActiveRecTab('director')}
-                                                        disabled={directorRecs.length === 0}
-                                                    >
-                                                        Same Director
-                                                    </button>
-                                                </div>
                                             </div>
 
                                             {displayRecs.length > 0 ? (
@@ -626,18 +597,18 @@ const MovieDetails = () => {
                                                         <div
                                                             key={rec.id}
                                                             className="rec-card"
-                                                            onClick={() => { window.location.href = `/movie/${rec.id}`; }}
+                                                            onClick={() => { window.location.href = `/tv/${rec.id}`; }}
                                                         >
                                                             <div className="rec-poster-wrap">
                                                                 {rec.poster_path ? (
                                                                     <img
                                                                         src={`https://image.tmdb.org/t/p/w300${rec.poster_path}`}
-                                                                        alt={rec.title}
+                                                                        alt={rec.name}
                                                                         className="rec-poster"
                                                                     />
                                                                 ) : (
                                                                     <div className="rec-poster-placeholder">
-                                                                        {rec.title?.[0]}
+                                                                        {rec.name?.[0]}
                                                                     </div>
                                                                 )}
                                                                 <div className="rec-overlay">
@@ -645,13 +616,13 @@ const MovieDetails = () => {
                                                                 </div>
                                                             </div>
                                                             <div className="rec-info">
-                                                                <p className="rec-title">{rec.title}</p>
+                                                                <p className="rec-title">{rec.name || rec.title}</p>
                                                             </div>
                                                         </div>
                                                     ))}
                                                 </div>
                                             ) : (
-                                                <p className="no-reviews" style={{ opacity: 0.5 }}>No matches found for this category.</p>
+                                                <p className="no-reviews" style={{ opacity: 0.5 }}>No matches found.</p>
                                             )}
                                         </section>
                                     );
@@ -665,7 +636,7 @@ const MovieDetails = () => {
                                         onClick={() => handleActivityToggle('logged')}
                                     >
                                         {isLogged ? <Check size={20} /> : <Eye size={20} />}
-                                        <span>{isLogged ? 'Logged' : 'Log Movie'}</span>
+                                        <span>{isLogged ? 'Logged' : 'Log Series'}</span>
                                     </button>
                                     <button
                                         className={`action-btn-lore ${isWatchlist ? 'active-watchlist' : ''}`}
@@ -683,10 +654,7 @@ const MovieDetails = () => {
                                             <div className="speedometer-container">
                                                 <div className="speedometer">
                                                     <svg viewBox="0 0 100 55" className="gauge-svg">
-                                                        {/* Gauge Background Tracks */}
                                                         <path d="M10 50 A40 40 0 0 1 90 50" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" strokeLinecap="round" />
-
-                                                        {/* Segmented active colored paths */}
                                                         {(() => {
                                                             let cumulativeLength = 0;
                                                             return getRatingDistribution().map((item) => {
@@ -743,24 +711,28 @@ const MovieDetails = () => {
 
                                 <div className="detail-item">
                                     <span className="detail-label">Status</span>
-                                    <span className="detail-value">{movie.status}</span>
+                                    <span className="detail-value">{series.status}</span>
                                 </div>
                                 <div className="detail-item">
-                                    <span className="detail-label">Budget</span>
-                                    <span className="detail-value">
-                                        {movie.budget > 0 ? `$${movie.budget.toLocaleString()}` : 'N/A'}
-                                    </span>
+                                    <span className="detail-label">Seasons</span>
+                                    <span className="detail-value">{series.number_of_seasons}</span>
                                 </div>
                                 <div className="detail-item">
-                                    <span className="detail-label">Revenue</span>
-                                    <span className="detail-value">
-                                        {movie.revenue > 0 ? `$${movie.revenue.toLocaleString()}` : 'N/A'}
-                                    </span>
+                                    <span className="detail-label">Episodes</span>
+                                    <span className="detail-value">{series.number_of_episodes}</span>
+                                </div>
+                                <div className="detail-item">
+                                    <span className="detail-label">Networks</span>
+                                    <div className="languages-list">
+                                        {series.networks?.map(net => (
+                                            <span key={net.id} className="detail-value">{net.name}</span>
+                                        ))}
+                                    </div>
                                 </div>
                                 <div className="detail-item">
                                     <span className="detail-label">Languages</span>
                                     <div className="languages-list">
-                                        {movie.spoken_languages?.map(lang => (
+                                        {series.spoken_languages?.map(lang => (
                                             <span key={lang.iso_639_1} className="detail-value">{lang.english_name}</span>
                                         ))}
                                     </div>
@@ -768,7 +740,7 @@ const MovieDetails = () => {
                                 <div className="detail-item">
                                     <span className="detail-label">Genres</span>
                                     <div className="genres-list">
-                                        {movie.genres?.map(genre => (
+                                        {series.genres?.map(genre => (
                                             <span key={genre.id} className="genre-tag">{genre.name}</span>
                                         ))}
                                     </div>
@@ -779,14 +751,13 @@ const MovieDetails = () => {
                 )}
             </main>
 
-            {/* Log Movie Modal */}
             {showLogModal && (
                 <div className="log-modal-overlay">
                     <div className="log-modal-content">
                         <div className="log-modal-header">
                             <div>
-                                <h2>Log Movie</h2>
-                                <p className="modal-subtitle">Add to your cinematic diary</p>
+                                <h2>Log Webseries</h2>
+                                <p className="modal-subtitle">Add to your series diary</p>
                             </div>
                             <button className="close-log-modal" onClick={() => setShowLogModal(false)}>
                                 <X size={24} />
@@ -796,13 +767,13 @@ const MovieDetails = () => {
                         <div className="log-modal-body">
                             <div className="log-movie-info">
                                 <img
-                                    src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`}
+                                    src={`https://image.tmdb.org/t/p/w200${series.poster_path}`}
                                     className="modal-movie-poster"
-                                    alt={movie.title}
+                                    alt={series.name}
                                 />
                                 <div className="modal-movie-details">
-                                    <h3>{movie.title}</h3>
-                                    <p>{new Date(movie.release_date).getFullYear()}</p>
+                                    <h3>{series.name}</h3>
+                                    <p>{series.first_air_date ? new Date(series.first_air_date).getFullYear() : 'N/A'}</p>
                                 </div>
                             </div>
 
@@ -849,7 +820,6 @@ const MovieDetails = () => {
                                         return;
                                     }
                                     await handleRate();
-                                    // Log status is already handled by handleRate on the server/frontend
                                     setShowLogModal(false);
                                 }}
                             >
@@ -863,5 +833,4 @@ const MovieDetails = () => {
     );
 };
 
-export default MovieDetails;
-
+export default WebSeriesDetails;

@@ -148,7 +148,13 @@ const Home = () => {
 
     const handleTVClick = (tvId) => {
         if (!hasMoved.current) {
-            console.log("TV clicked:", tvId);
+            navigate(`/tv/${tvId}`);
+        }
+    };
+
+    const handleAnimeClick = (animeId) => {
+        if (!hasMoved.current) {
+            navigate(`/anime/${animeId}`);
         }
     };
 
@@ -188,6 +194,10 @@ const Home = () => {
                                             onClick={() => {
                                                 if (item.media_type === "movie") {
                                                     navigate(`/movie/${item.id}`);
+                                                } else if (item.media_type === "tv") {
+                                                    navigate(`/tv/${item.id}`);
+                                                } else if (item.media_type === "anime") {
+                                                    navigate(`/anime/${item.id}`);
                                                 } else {
                                                     console.log(`${item.media_type} clicked:`, item.id);
                                                 }
@@ -373,7 +383,7 @@ const Home = () => {
                                     <div
                                         className="movie-card"
                                         key={anime.id}
-                                        onClick={() => console.log("Anime clicked:", anime.id)}
+                                        onClick={() => handleAnimeClick(anime.id)}
                                         style={{ cursor: 'pointer' }}
                                     >
                                         <img

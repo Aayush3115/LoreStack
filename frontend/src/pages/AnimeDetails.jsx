@@ -5,10 +5,10 @@ import '../Styles/MovieDetails.css';
 import '../styles/communityDetail.css';
 import { MoreVertical, Edit2, Trash2, Loader2, Bookmark, Eye, Check, X } from 'lucide-react';
 
-const MovieDetails = () => {
+const AnimeDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [movie, setMovie] = useState(null);
+    const [anime, setAnime] = useState(null);
     const [userData, setUserData] = useState(null);
     const [userRating, setUserRating] = useState(null);
     const [userReview, setUserReview] = useState("");
@@ -17,19 +17,17 @@ const MovieDetails = () => {
     const [error, setError] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
     const [isEditingReview, setIsEditingReview] = useState(false);
-    const [activePeopleTab, setActivePeopleTab] = useState('cast');
+    const [activePeopleTab, setActivePeopleTab] = useState('characters');
     const [isLogged, setIsLogged] = useState(false);
     const [isWatchlist, setIsWatchlist] = useState(false);
     const [showActionMenu, setShowActionMenu] = useState(null);
     const [showLogModal, setShowLogModal] = useState(false);
     const [hoveredRatingData, setHoveredRatingData] = useState(null);
-    const [recommendations, setRecommendations] = useState([]);
-    const [activeRecTab, setActiveRecTab] = useState('theme');
 
     const fetchAllReviews = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch(`http://localhost:8000/api/movies/${id}/rating/?all=true`, {
+            const response = await fetch(`http://localhost:8000/api/movies/anime/${id}/rating/?all=true`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -63,18 +61,18 @@ const MovieDetails = () => {
             }
         };
 
-        const fetchMovieDetails = async () => {
+        const fetchAnimeDetails = async () => {
             try {
-                const response = await fetch(`http://localhost:8000/api/movies/${id}/`);
+                const response = await fetch(`http://localhost:8000/api/movies/anime/${id}/`);
                 const data = await response.json();
 
                 if (data.status_code === 200) {
-                    setMovie(data.data);
+                    setAnime(data.data);
                 } else {
-                    setError('Failed to fetch movie details');
+                    setError('Failed to fetch anime details');
                 }
             } catch (err) {
-                console.error('Error fetching movie details:', err);
+                console.error('Error fetching anime details:', err);
                 setError('Could not connect to the server');
             } finally {
                 setLoading(false);
@@ -86,7 +84,7 @@ const MovieDetails = () => {
                 const token = localStorage.getItem('access_token');
                 if (!token) return;
 
-                const response = await fetch(`http://localhost:8000/api/movies/${id}/rating/`, {
+                const response = await fetch(`http://localhost:8000/api/movies/anime/${id}/rating/`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -102,11 +100,11 @@ const MovieDetails = () => {
             }
         };
 
-        const fetchMovieActivity = async () => {
+        const fetchAnimeActivity = async () => {
             try {
                 const token = localStorage.getItem('access_token');
                 if (!token) return;
-                const response = await fetch(`http://localhost:8000/api/movies/${id}/activity/`, {
+                const response = await fetch(`http://localhost:8000/api/movies/anime/${id}/activity/`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await response.json();
@@ -119,36 +117,17 @@ const MovieDetails = () => {
             }
         };
 
-        const fetchRecommendations = async () => {
-            try {
-                const token = localStorage.getItem('access_token');
-                const response = await fetch(`http://localhost:8000/api/movies/${id}/recommendations/`, {
-                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-                });
-                const data = await response.json();
-                if (data.status_code === 200) {
-                    setRecommendations(data.data);
-                }
-            } catch (err) {
-                console.error('Error fetching recommendations:', err);
-            }
-        };
-
         fetchUserData();
-        fetchMovieDetails();
+        fetchAnimeDetails();
         fetchUserRating();
         fetchAllReviews();
-        fetchMovieActivity();
-        fetchRecommendations();
+        fetchAnimeActivity();
     }, [id]);
 
     const handleRatingSelect = (val) => {
-        // If they click the same rating that is already saved, do nothing
         if (val === userRating && !isEditingReview) return;
-
         setUserRating(val);
         setIsEditingReview(true);
-        // Scroll to review section for better UX
         const reviewSection = document.querySelector('.community-reviews-section');
         if (reviewSection) {
             reviewSection.scrollIntoView({ behavior: 'smooth' });
@@ -160,12 +139,12 @@ const MovieDetails = () => {
         try {
             const token = localStorage.getItem('access_token');
             if (!token) {
-                alert("Please login to rate movies!");
+                alert("Please login to rate anime!");
                 setIsSaving(false);
                 return;
             }
 
-            const response = await fetch(`http://localhost:8000/api/movies/${id}/rating/`, {
+            const response = await fetch(`http://localhost:8000/api/movies/anime/${id}/rating/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -182,8 +161,9 @@ const MovieDetails = () => {
                 setUserRating(data.rating);
                 setUserReview(data.review || "");
                 setIsEditingReview(false);
-                setIsLogged(true); // Rating a movie implies logging it
-                fetchAllReviews(); // Refresh all reviews
+                setIsLogged(true);
+                fetchAllReviews();
+                setShowLogModal(false);
             } else {
                 console.error("Failed to submit rating");
             }
@@ -198,7 +178,7 @@ const MovieDetails = () => {
         try {
             const token = localStorage.getItem('access_token');
             if (!token) {
-                alert("Please login to track movies!");
+                alert("Please login to track anime!");
                 return;
             }
 
@@ -212,7 +192,7 @@ const MovieDetails = () => {
             const newValue = type === 'logged' ? !isLogged : !isWatchlist;
             const body = type === 'logged' ? { is_logged: newValue } : { is_watchlist: newValue };
 
-            const response = await fetch(`http://localhost:8000/api/movies/${id}/activity/`, {
+            const response = await fetch(`http://localhost:8000/api/movies/anime/${id}/activity/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -233,7 +213,7 @@ const MovieDetails = () => {
     const handleDeleteReview = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch(`http://localhost:8000/api/movies/${id}/rating/`, {
+            const response = await fetch(`http://localhost:8000/api/movies/anime/${id}/rating/`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -296,6 +276,11 @@ const MovieDetails = () => {
         return colors[rating] || 'var(--accent-color)';
     };
 
+    // AniList description usually contains HTML
+    const createMarkup = (html) => {
+        return { __html: html };
+    };
+
     return (
         <div className="movie-details-container">
             <Sidebar />
@@ -323,14 +308,14 @@ const MovieDetails = () => {
                 {loading ? (
                     <div className="content-loading">
                         <div className="loader"></div>
-                        <p>Fetching movie details...</p>
+                        <p>Fetching anime details...</p>
                     </div>
-                ) : error || !movie ? (
+                ) : error || !anime ? (
                     <div className="error-message-container">
                         <div className="error-card">
-                            <span className="error-icon">🎬</span>
-                            <h2>{error || 'Movie Not Found'}</h2>
-                            <p>We couldn't find the lore for this item. It might have been lost in the multiverse.</p>
+                            <span className="error-icon">🎌</span>
+                            <h2>{error || 'Anime Not Found'}</h2>
+                            <p>We couldn't find the lore for this anime. It might have been lost in the hidden leaf village.</p>
                             <button className="back-home-btn" onClick={() => navigate(-1)}>
                                 Back to Previous Page
                             </button>
@@ -339,31 +324,34 @@ const MovieDetails = () => {
                 ) : (
                     <div className="details-scroll-container">
                         <div className="movie-hero">
-                            <img
-                                src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`}
-                                alt={movie.title}
-                                className="movie-backdrop"
-                            />
+                            {anime.bannerImage ? (
+                                <img
+                                    src={anime.bannerImage}
+                                    alt={anime.title.english || anime.title.romaji}
+                                    className="movie-backdrop"
+                                />
+                            ) : (
+                                <div className="movie-backdrop no-banner" />
+                            )}
                             <div className="hero-overlay">
                                 <img
-                                    src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                                    alt={movie.title}
+                                    src={anime.coverImage.extraLarge}
+                                    alt={anime.title.english || anime.title.romaji}
                                     className="movie-poster-large"
                                 />
                                 <div className="hero-text">
-                                    <h1>{movie.title}</h1>
+                                    <h1>{anime.title.english || anime.title.romaji}</h1>
                                     <div className="movie-meta">
                                         <span className="certification-badge">
-                                            {movie.release_dates?.results?.find(r => r.iso_3166_1 === 'US')?.release_dates?.find(d => d.certification)?.certification ||
-                                                movie.release_dates?.results?.[0]?.release_dates?.find(d => d.certification)?.certification || 'NR'}
+                                            {anime.format || 'TV'}
                                         </span>
                                         <span>•</span>
-                                        <span>{new Date(movie.release_date).getFullYear()}</span>
+                                        <span>{anime.seasonYear || 'N/A'}</span>
                                         <span>•</span>
-                                        <span>{Math.floor(movie.runtime / 60)}h {movie.runtime % 60}m</span>
+                                        <span>{anime.episodes || '?'} ep</span>
                                         <span>•</span>
                                         <div className="hero-ratings-group">
-                                            <span className="rating-badge star-rating">★ {movie.vote_average.toFixed(1)}</span>
+                                            <span className="rating-badge star-rating">★ {((anime.averageScore || 0) / 10).toFixed(1)}</span>
                                             {userRating ? (
                                                 <span
                                                     className="rating-badge lore-rating user-verdict-badge"
@@ -385,84 +373,46 @@ const MovieDetails = () => {
                         <div className="movie-main-info">
                             <div className="info-left-column">
                                 <section className="info-section">
-                                    <h3>Overview</h3>
-                                    <p className="overview-text">{movie.overview}</p>
+                                    <h3>Storyline</h3>
+                                    <div 
+                                        className="overview-text anime-description" 
+                                        dangerouslySetInnerHTML={createMarkup(anime.description)} 
+                                    />
                                 </section>
 
-                                {movie.credits?.cast?.length > 0 && (
+                                {anime.characters?.edges?.length > 0 && (
                                     <section className="cast-section">
                                         <div className="section-tabs">
                                             <button
-                                                className={`tab-btn ${activePeopleTab === 'cast' ? 'active' : ''}`}
-                                                onClick={() => setActivePeopleTab('cast')}
+                                                className={`tab-btn active`}
                                             >
-                                                Top Cast
-                                            </button>
-                                            <button
-                                                className={`tab-btn ${activePeopleTab === 'crew' ? 'active' : ''}`}
-                                                onClick={() => setActivePeopleTab('crew')}
-                                            >
-                                                Top Crew
+                                                Characters
                                             </button>
                                         </div>
 
-                                        {activePeopleTab === 'cast' ? (
-                                            <div className="cast-grid">
-                                                {movie.credits.cast.slice(0, 15).map(person => (
-                                                    <div key={person.id} className="cast-card">
-                                                        <div className="cast-image-container">
-                                                            {person.profile_path ? (
-                                                                <img
-                                                                    src={`https://image.tmdb.org/t/p/w185${person.profile_path}`}
-                                                                    alt={person.name}
-                                                                    className="cast-image"
-                                                                />
-                                                            ) : (
-                                                                <div className="cast-placeholder">
-                                                                    {person.name[0]}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <div className="cast-info">
-                                                            <p className="cast-name">{person.name}</p>
-                                                            <p className="cast-character">{person.character}</p>
-                                                        </div>
+                                        <div className="cast-grid">
+                                            {anime.characters.edges.map(edge => (
+                                                <div key={edge.node.id} className="cast-card">
+                                                    <div className="cast-image-container">
+                                                        {edge.node.image?.large ? (
+                                                            <img
+                                                                src={edge.node.image.large}
+                                                                alt={edge.node.name.full}
+                                                                className="cast-image"
+                                                            />
+                                                        ) : (
+                                                            <div className="cast-placeholder">
+                                                                {edge.node.name.full[0]}
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="cast-grid">
-                                                {movie.credits?.crew
-                                                    ?.filter(person => ['Director', 'Writer', 'Screenplay', 'Story', 'Executive Producer', 'Director of Photography', 'Editor', 'Original Music Composer'].includes(person.job))
-                                                    ?.reduce((acc, current) => {
-                                                        const x = acc.find(item => item.id === current.id);
-                                                        if (!x) return acc.concat([current]);
-                                                        else return acc;
-                                                    }, [])
-                                                    ?.slice(0, 12)
-                                                    ?.map((person, idx) => (
-                                                        <div key={`${person.id}-${idx}`} className="cast-card">
-                                                            <div className="cast-image-container">
-                                                                {person.profile_path ? (
-                                                                    <img
-                                                                        src={`https://image.tmdb.org/t/p/w185${person.profile_path}`}
-                                                                        alt={person.name}
-                                                                        className="cast-image"
-                                                                    />
-                                                                ) : (
-                                                                    <div className="cast-placeholder">
-                                                                        {person.name[0]}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                            <div className="cast-info">
-                                                                <p className="cast-name">{person.name}</p>
-                                                                <p className="cast-character">{person.job}</p>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                            </div>
-                                        )}
+                                                    <div className="cast-info">
+                                                        <p className="cast-name">{edge.node.name.full}</p>
+                                                        <p className="cast-character">{edge.role}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </section>
                                 )}
 
@@ -471,13 +421,11 @@ const MovieDetails = () => {
                                         <h3>Community Reviews</h3>
                                     </div>
 
-
-                                    {/* User's active writing area (Only for NEW reviews) */}
                                     {isEditingReview && userRating && !allReviews.some(r => r.username === userData?.username) && (
                                         <div className="user-review-input-box">
                                             <textarea
                                                 className="lore-review-textarea"
-                                                placeholder="What's the lore on this one? Write your review..."
+                                                placeholder="What's your take on this? Write your review..."
                                                 value={userReview}
                                                 onChange={(e) => setUserReview(e.target.value)}
                                                 rows={4}
@@ -584,78 +532,48 @@ const MovieDetails = () => {
                                                     </div>
                                                 ))
                                         ) : (
-                                            <p className="no-reviews">No text reviews yet. Be the first to start the lore!</p>
+                                            <p className="no-reviews">No text reviews yet. Start the anime lore!</p>
                                         )}
                                     </div>
                                 </section>
 
-                                {/* More Like This */}
-                                {recommendations.length > 0 && (() => {
-                                    const directorRecs = recommendations.filter(r =>
-                                        r.match_reason?.toLowerCase().includes('director')
-                                    );
-                                    const themeRecs = recommendations.filter(r =>
-                                        !r.match_reason?.toLowerCase().includes('director')
-                                    );
-                                    const displayRecs = activeRecTab === 'director' ? directorRecs : themeRecs;
+                                {anime.recommendations?.nodes?.length > 0 && (
+                                    <section className="recommendations-section">
+                                        <div className="recs-header">
+                                            <h3 className="section-title-recs">More Like This</h3>
+                                        </div>
 
-                                    return (
-                                        <section className="recommendations-section">
-                                            <div className="recs-header">
-                                                <h3 className="section-title-recs">More Like This</h3>
-                                                <div className="rec-tabs">
-                                                    <button
-                                                        className={`rec-tab-btn ${activeRecTab === 'theme' ? 'active' : ''}`}
-                                                        onClick={() => setActiveRecTab('theme')}
-                                                    >
-                                                        Similar Theme
-                                                    </button>
-                                                    <button
-                                                        className={`rec-tab-btn ${activeRecTab === 'director' ? 'active' : ''}`}
-                                                        onClick={() => setActiveRecTab('director')}
-                                                        disabled={directorRecs.length === 0}
-                                                    >
-                                                        Same Director
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            {displayRecs.length > 0 ? (
-                                                <div className="recommendations-grid">
-                                                    {displayRecs.slice(0, 5).map(rec => (
-                                                        <div
-                                                            key={rec.id}
-                                                            className="rec-card"
-                                                            onClick={() => { window.location.href = `/movie/${rec.id}`; }}
-                                                        >
-                                                            <div className="rec-poster-wrap">
-                                                                {rec.poster_path ? (
-                                                                    <img
-                                                                        src={`https://image.tmdb.org/t/p/w300${rec.poster_path}`}
-                                                                        alt={rec.title}
-                                                                        className="rec-poster"
-                                                                    />
-                                                                ) : (
-                                                                    <div className="rec-poster-placeholder">
-                                                                        {rec.title?.[0]}
-                                                                    </div>
-                                                                )}
-                                                                <div className="rec-overlay">
-                                                                    <span className="rec-rating">★ {rec.vote_average?.toFixed(1)}</span>
-                                                                </div>
+                                        <div className="recommendations-grid">
+                                            {anime.recommendations.nodes.slice(0, 5).map(node => (
+                                                <div
+                                                    key={node.mediaRecommendation.id}
+                                                    className="rec-card"
+                                                    onClick={() => { window.location.href = `/anime/${node.mediaRecommendation.id}`; }}
+                                                >
+                                                    <div className="rec-poster-wrap">
+                                                        {node.mediaRecommendation.coverImage?.large ? (
+                                                            <img
+                                                                src={node.mediaRecommendation.coverImage.large}
+                                                                alt={node.mediaRecommendation.title.english || node.mediaRecommendation.title.romaji}
+                                                                className="rec-poster"
+                                                            />
+                                                        ) : (
+                                                            <div className="rec-poster-placeholder">
+                                                                {node.mediaRecommendation.title.romaji[0]}
                                                             </div>
-                                                            <div className="rec-info">
-                                                                <p className="rec-title">{rec.title}</p>
-                                                            </div>
+                                                        )}
+                                                        <div className="rec-overlay">
+                                                            <span className="rec-rating">★ {((node.mediaRecommendation.averageScore || 0) / 10).toFixed(1)}</span>
                                                         </div>
-                                                    ))}
+                                                    </div>
+                                                    <div className="rec-info">
+                                                        <p className="rec-title">{node.mediaRecommendation.title.english || node.mediaRecommendation.title.romaji}</p>
+                                                    </div>
                                                 </div>
-                                            ) : (
-                                                <p className="no-reviews" style={{ opacity: 0.5 }}>No matches found for this category.</p>
-                                            )}
-                                        </section>
-                                    );
-                                })()}
+                                            ))}
+                                        </div>
+                                    </section>
+                                )}
                             </div>
 
                             <aside className="details-sidebar">
@@ -665,7 +583,7 @@ const MovieDetails = () => {
                                         onClick={() => handleActivityToggle('logged')}
                                     >
                                         {isLogged ? <Check size={20} /> : <Eye size={20} />}
-                                        <span>{isLogged ? 'Logged' : 'Log Movie'}</span>
+                                        <span>{isLogged ? 'Logged' : 'Log Anime'}</span>
                                     </button>
                                     <button
                                         className={`action-btn-lore ${isWatchlist ? 'active-watchlist' : ''}`}
@@ -683,10 +601,7 @@ const MovieDetails = () => {
                                             <div className="speedometer-container">
                                                 <div className="speedometer">
                                                     <svg viewBox="0 0 100 55" className="gauge-svg">
-                                                        {/* Gauge Background Tracks */}
                                                         <path d="M10 50 A40 40 0 0 1 90 50" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" strokeLinecap="round" />
-
-                                                        {/* Segmented active colored paths */}
                                                         {(() => {
                                                             let cumulativeLength = 0;
                                                             return getRatingDistribution().map((item) => {
@@ -743,35 +658,31 @@ const MovieDetails = () => {
 
                                 <div className="detail-item">
                                     <span className="detail-label">Status</span>
-                                    <span className="detail-value">{movie.status}</span>
+                                    <span className="detail-value">{anime.status}</span>
                                 </div>
                                 <div className="detail-item">
-                                    <span className="detail-label">Budget</span>
-                                    <span className="detail-value">
-                                        {movie.budget > 0 ? `$${movie.budget.toLocaleString()}` : 'N/A'}
-                                    </span>
+                                    <span className="detail-label">Season</span>
+                                    <span className="detail-value">{anime.season} {anime.seasonYear}</span>
                                 </div>
                                 <div className="detail-item">
-                                    <span className="detail-label">Revenue</span>
-                                    <span className="detail-value">
-                                        {movie.revenue > 0 ? `$${movie.revenue.toLocaleString()}` : 'N/A'}
-                                    </span>
-                                </div>
-                                <div className="detail-item">
-                                    <span className="detail-label">Languages</span>
+                                    <span className="detail-label">Studio</span>
                                     <div className="languages-list">
-                                        {movie.spoken_languages?.map(lang => (
-                                            <span key={lang.iso_639_1} className="detail-value">{lang.english_name}</span>
+                                        {anime.studios?.nodes?.map(studio => (
+                                            <span key={studio.name} className="detail-value">{studio.name}</span>
                                         ))}
                                     </div>
                                 </div>
                                 <div className="detail-item">
                                     <span className="detail-label">Genres</span>
                                     <div className="genres-list">
-                                        {movie.genres?.map(genre => (
-                                            <span key={genre.id} className="genre-tag">{genre.name}</span>
+                                        {anime.genres?.map(genre => (
+                                            <span key={genre} className="genre-tag">{genre}</span>
                                         ))}
                                     </div>
+                                </div>
+                                <div className="detail-item">
+                                    <span className="detail-label">AniList Score</span>
+                                    <span className="detail-value">{anime.averageScore}%</span>
                                 </div>
                             </aside>
                         </div>
@@ -779,14 +690,13 @@ const MovieDetails = () => {
                 )}
             </main>
 
-            {/* Log Movie Modal */}
             {showLogModal && (
                 <div className="log-modal-overlay">
                     <div className="log-modal-content">
                         <div className="log-modal-header">
                             <div>
-                                <h2>Log Movie</h2>
-                                <p className="modal-subtitle">Add to your cinematic diary</p>
+                                <h2>Log Anime</h2>
+                                <p className="modal-subtitle">Add to your lore diary</p>
                             </div>
                             <button className="close-log-modal" onClick={() => setShowLogModal(false)}>
                                 <X size={24} />
@@ -796,13 +706,13 @@ const MovieDetails = () => {
                         <div className="log-modal-body">
                             <div className="log-movie-info">
                                 <img
-                                    src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`}
+                                    src={anime.coverImage.large}
                                     className="modal-movie-poster"
-                                    alt={movie.title}
+                                    alt={anime.title.english || anime.title.romaji}
                                 />
                                 <div className="modal-movie-details">
-                                    <h3>{movie.title}</h3>
-                                    <p>{new Date(movie.release_date).getFullYear()}</p>
+                                    <h3>{anime.title.english || anime.title.romaji}</h3>
+                                    <p>{anime.seasonYear}</p>
                                 </div>
                             </div>
 
@@ -828,10 +738,10 @@ const MovieDetails = () => {
                             </div>
 
                             <div className="modal-review-section">
-                                <h4>ANY THOUGHTS? (OPTIONAL)</h4>
+                                <h4>YOUR LORE</h4>
                                 <textarea
                                     className="modal-review-textarea"
-                                    placeholder="Tell the world about the lore..."
+                                    placeholder="Add notes about this anime..."
                                     value={userReview}
                                     onChange={(e) => setUserReview(e.target.value)}
                                     rows={4}
@@ -840,20 +750,12 @@ const MovieDetails = () => {
                         </div>
 
                         <div className="log-modal-footer">
-                            <button className="btn-secondary-lore" onClick={() => setShowLogModal(false)}>Cancel</button>
-                            <button
-                                className="btn-primary-lore"
-                                onClick={async () => {
-                                    if (!userRating) {
-                                        alert("Please select a rating to log!");
-                                        return;
-                                    }
-                                    await handleRate();
-                                    // Log status is already handled by handleRate on the server/frontend
-                                    setShowLogModal(false);
-                                }}
+                            <button 
+                                className="save-log-btn" 
+                                onClick={handleRate}
+                                disabled={isSaving || !userRating}
                             >
-                                Save Entry
+                                {isSaving ? "Saving..." : "Save Lore"}
                             </button>
                         </div>
                     </div>
@@ -863,5 +765,4 @@ const MovieDetails = () => {
     );
 };
 
-export default MovieDetails;
-
+export default AnimeDetails;
