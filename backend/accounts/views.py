@@ -83,7 +83,7 @@ class UserProfileView(APIView):
         )
         if serializer.is_valid():
             serializer.save()
-            return Response(UserSerializer(request.user).data)
+            return Response(UserSerializer(request.user, context={'request': request}).data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def patch(self, request):
@@ -94,7 +94,7 @@ class UserProfileView(APIView):
         )
         if serializer.is_valid():
             serializer.save()
-            return Response(UserSerializer(request.user).data)
+            return Response(UserSerializer(request.user, context={'request': request}).data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
