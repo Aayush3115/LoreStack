@@ -1,36 +1,78 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../Components/Sidebar/Sidebar';
-import { Loader2, Film, Bookmark } from 'lucide-react';
+import { Loader2, Film, Bookmark, Settings, Award, Users, Tv, Play, X, Camera, History, Star } from 'lucide-react';
 import '../Styles/Home.css';
+import '../Styles/Profile.css';
 
 const Profile = () => {
-  const navigate = useNavigate();
-  const [watchlistDetails, setWatchlistDetails] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [userData, setUserData] = useState(null);
+    const navigate = useNavigate();
+    const [watchlistDetails, setWatchlistDetails] = useState([]);
+    const [activityDetails, setActivityDetails] = useState([]);
+    const [stats, setStats] = useState(null);
+    const [joinedRooms, setJoinedRooms] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [userData, setUserData] = useState(null);
+    const [activeTab, setActiveTab] = useState('activity');
 
-  useEffect(() => {
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editUsername, setEditUsername] = useState("");
+    const [editBio, setEditBio] = useState("");
+    const [editProfilePic, setEditProfilePic] = useState(null);
+    const [previewPic, setPreviewPic] = useState("");
+    const [isUpdating, setIsUpdating] = useState(false);
+
     const fetchUserData = async () => {
-      try {
-        const token = localStorage.getItem('access_token');
-        if (!token) {
-          navigate('/login');
-          return;
-        }
+        try {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
 
-        const response = await fetch("http://localhost:8000/api/auth/profile/", {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const data = await response.json();
-        if (response.ok) {
-          setUserData(data);
+            const response = await fetch("http://localhost:8000/api/auth/profile/", {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (response.ok) {
+                setUserData(data);
+                setEditUsername(data.username);
+                setEditBio(data.bio || "");
+                setPreviewPic(data.profile_picture);
+            }
+        } catch (error) {
+            console.error("Failed to fetch user data:", error);
         }
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-      }
+    };
+
+    const fetchStats = async () => {
+        try {
+            const token = localStorage.getItem('access_token');
+            const response = await fetch("http://localhost:8000/api/movies/user-stats/", {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (response.ok) {
+                setStats(data.data.counts);
+            }
+        } catch (error) {
+            console.error("Failed to fetch stats:", error);
+        }
+    };
+
+    const fetchJoinedRooms = async () => {
+        try {
+            const token = localStorage.getItem('access_token');
+            const response = await fetch("http://localhost:8000/api/loreroom/joined/", {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (response.ok) {
+                setJoinedRooms(data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch rooms:", error);
+        }
     };
 
     const fetchWatchlist = async () => {
@@ -63,11 +105,6 @@ const Profile = () => {
           );
           setWatchlistDetails(details.filter(d => d !== null));
         }
-      } catch (error) {
-        console.error("Failed to fetch watchlist:", error);
-      } finally {
-        setIsLoading(false);
-      }
     };
 
     fetchUserData();
@@ -147,9 +184,7 @@ const Profile = () => {
             </div>
           )}
         </div>
-      </main>
-    </div>
-  );
+    );
 };
 
 export default Profile;
