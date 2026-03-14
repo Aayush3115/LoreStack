@@ -67,6 +67,8 @@
 .details-scroll-container {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
+    /* Prevent horizontal scroll */
     padding: 3rem 40px;
     scroll-behavior: smooth;
     max-width: 1600px;
@@ -148,20 +150,20 @@
 
 .movie-hero {
     position: relative;
-    width: 100%;
-    height: 550px;
-    border-radius: 32px;
+    width: auto;
+    /* Changed from calc to auto */
+    margin: -3rem -40px 2.5rem -40px;
+    /* Unified margins to pull to edges */
+    height: 700px;
     overflow: hidden;
-    margin-bottom: 3.5rem;
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
-    background: #111;
+    background: var(--bg-color);
 }
 
 .movie-backdrop {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: brightness(0.5) scale(1.05);
+    filter: brightness(1);
     transition: transform 10s ease;
 }
 
@@ -174,18 +176,19 @@
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 4rem;
-    background: linear-gradient(to top, var(--bg-color) 0%, var(--bg-color) 20%, transparent 100%);
+    padding: 3rem 80px;
+    background: transparent;
     display: flex;
     align-items: flex-end;
     gap: 3rem;
+    z-index: 2;
 }
 
 .movie-poster-large {
     width: 220px;
     border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     transform: translateY(20px);
 }
 
@@ -196,10 +199,16 @@
 .hero-text h1 {
     font-size: 4rem;
     margin: 0;
-    font-weight: 700;
+    font-weight: 800;
+    /* Increased weight */
     letter-spacing: -1px;
     line-height: 1.1;
-    color: var(--text-color);
+    color: #ffffff;
+    /* Explicit white */
+    text-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.8),
+        0 4px 12px rgba(0, 0, 0, 0.5),
+        0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
 .movie-meta {
@@ -207,9 +216,14 @@
     align-items: center;
     gap: 1.5rem;
     margin-top: 1.5rem;
-    font-size: 1.1rem;
-    color: var(--text-secondary);
-    font-weight: 500;
+    font-size: 1.15rem;
+    color: #e2e8f0;
+    /* Brighter than text-secondary for hero */
+    font-weight: 600;
+    /* Increased weight */
+    text-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.8),
+        0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .hero-ratings-group {
@@ -228,6 +242,8 @@
 
 .star-rating {
     color: #fbbf24;
+    font-weight: 800;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.6);
 }
 
 .lore-rating {
@@ -245,11 +261,14 @@
 }
 
 .certification-badge {
-    border: 1px solid var(--text-secondary);
-    padding: 2px 6px;
-    border-radius: 4px;
+    border: 1.5px solid #ffffff;
+    padding: 2px 8px;
+    border-radius: 6px;
     font-size: 0.9rem;
-    font-weight: 700;
+    font-weight: 800;
+    color: #ffffff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.25);
 }
 
 .error-message-container {
@@ -319,23 +338,27 @@
 .info-left-column {
     display: flex;
     flex-direction: column;
-    gap: 3rem;
+    gap: 1.5rem;
+    /* Reduced from 3rem */
+    min-width: 0;
+    /* Prevents flex/grid children from overflowing the parent container when horizontally scrolling */
 }
 
 .info-section {
-    background: var(--glass-bg);
-    padding: 2.5rem;
-    border-radius: 28px;
-    border: 1px solid var(--glass-border);
-    backdrop-filter: blur(16px);
+    background: transparent;
+    padding: 0 0 1rem 0;
+    /* Reduced from 2rem */
+    border-radius: 0;
+    border: none;
+    backdrop-filter: none;
 }
 
 .cast-section {
-    background: var(--glass-bg);
-    padding: 2.5rem;
-    border-radius: 28px;
-    border: 1px solid var(--glass-border);
-    backdrop-filter: blur(16px);
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    border: none;
+    backdrop-filter: none;
 }
 
 .section-tabs {
@@ -377,10 +400,30 @@
 }
 
 .cast-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    display: flex;
+    overflow-x: auto;
     gap: 1.5rem;
     margin-top: 1rem;
+    padding-bottom: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.cast-grid::-webkit-scrollbar {
+    height: 4px;
+}
+
+.cast-grid::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.cast-grid::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.cast-grid::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-color);
 }
 
 .cast-card {
@@ -390,10 +433,49 @@
     text-align: center;
     gap: 0.75rem;
     transition: transform 0.3s ease;
+    flex: 0 0 120px;
+    /* Fixed width for horizontal scroll */
 }
 
 .cast-card:hover {
     transform: translateY(-5px);
+}
+
+.see-more-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    flex: 0 0 120px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+}
+
+.see-more-card:hover {
+    color: var(--text-primary);
+    transform: translateY(-5px);
+}
+
+.see-more-icon {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 2px dashed var(--glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 300;
+    transition: all 0.3s ease;
+}
+
+.see-more-card:hover .see-more-icon {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
 }
 
 .cast-image-container {
@@ -900,20 +982,234 @@
 }
 
 .community-reviews-section {
-    margin-top: 4rem;
-    padding-top: 3rem;
-    border-top: 1px solid var(--glass-border);
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: none;
+}
+
+.community-reviews-section .post-card {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 0;
+    padding: 1rem 0;
+    margin-bottom: 0;
+}
+
+.community-reviews-section .post-card:last-child {
+    border-bottom: none;
+}
+
+.community-reviews-section .post-card:hover {
+    border-color: var(--border-color);
+    transform: none;
+    background: transparent;
+}
+
+.community-reviews-section .post-card-header {
+    margin-bottom: 0.75rem;
+    gap: 10px;
+}
+
+.community-reviews-section .post-avatar {
+    width: 32px;
+    height: 32px;
+}
+
+.community-reviews-section .post-body {
+    color: var(--text-color) !important;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    text-shadow: none;
+    margin-bottom: 0.5rem;
+}
+
+.community-reviews-section .post-username {
+    color: var(--text-color) !important;
+    font-size: 0.9rem;
+}
+
+.community-reviews-section .post-timestamp {
+    color: var(--secondary-text) !important;
+    font-size: 0.75rem;
 }
 
 .user-review-input-box {
-    margin-bottom: 3rem;
+    margin-bottom: 1.5rem;
     animation: slideDown 0.4s ease;
 }
 
 .user-review-input-box .lore-review-textarea {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    font-size: 0.95rem;
 }
 
+
+/* ────────── More Like This ────────── */
+.recommendations-section {
+    margin-top: 2rem;
+}
+
+.recs-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+}
+
+.section-title-recs {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.02em;
+    margin: 0;
+}
+
+.rec-tabs {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.rec-tab-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: all 0.2s ease;
+}
+
+.rec-tab-btn:hover:not(:disabled) {
+    border-color: var(--accent-color);
+    color: var(--text-primary);
+}
+
+.rec-tab-btn.active {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #fff;
+}
+
+.rec-tab-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.recommendations-grid {
+    display: flex;
+    gap: 1.25rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.recommendations-grid::-webkit-scrollbar {
+    height: 4px;
+}
+
+.recommendations-grid::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+}
+
+.recommendations-grid::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-color);
+}
+
+.rec-card {
+    flex: 0 0 140px;
+    cursor: pointer;
+    transition: transform 0.25s ease;
+}
+
+.rec-card:hover {
+    transform: translateY(-6px);
+}
+
+.rec-poster-wrap {
+    position: relative;
+    width: 140px;
+    height: 210px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.rec-poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+}
+
+.rec-card:hover .rec-poster {
+    transform: scale(1.05);
+}
+
+.rec-poster-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.rec-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem 0.5rem 0.5rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, transparent 100%);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.rec-rating {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #fbbf24;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+.rec-info {
+    margin-top: 0.6rem;
+    padding: 0 2px;
+    width: 140px;
+    /* Match the fixed card width */
+    overflow: hidden;
+    /* Prevent any bleed */
+}
+
+.rec-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 0.2rem;
+    max-width: 100%;
+}
+
+.rec-reason {
+    font-size: 0.7rem;
+    color: var(--accent-color);
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
 .quick-actions {
     display: grid;

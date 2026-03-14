@@ -11,6 +11,8 @@ import Community from './pages/Community';
 import Errors from './pages/Error.jsx';
 import CommunityDetail from "./pages/CommunityDetail";
 import MovieDetails from "./pages/MovieDetails";
+import WebSeriesDetails from "./pages/WebSeriesDetails";
+import AnimeDetails from "./pages/AnimeDetails";
 import { SidebarProvider } from './Context/SidebarContext';
 import { ThemeProvider } from './Context/ThemeContext';
 
@@ -48,6 +50,16 @@ const App = () => {
             <Route path="/movie/:id" element={
               <ProtectedRoute>
                 <MovieDetails />
+              </ProtectedRoute>
+            } />
+            <Route path="/tv/:id" element={
+              <ProtectedRoute>
+                <WebSeriesDetails />
+              </ProtectedRoute>
+            } />
+            <Route path="/anime/:id" element={
+              <ProtectedRoute>
+                <AnimeDetails />
               </ProtectedRoute>
             } />
             <Route path='*' element={<Errors />} />

@@ -4,8 +4,12 @@ from django.conf import settings
 from rest_framework.response import Response
 import requests
 from rest_framework import status
-from .models import MovieRating, MovieActivity
-from .serializers import MovieRatingSerializer, MovieActivitySerializer
+from .models import MovieRating, MovieActivity, TVRating, TVActivity, AnimeRating, AnimeActivity
+from .serializers import (
+    MovieRatingSerializer, MovieActivitySerializer, 
+    TVRatingSerializer, TVActivitySerializer,
+    AnimeRatingSerializer, AnimeActivitySerializer
+)
 
 
 
@@ -341,17 +345,542 @@ def universal_search(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def user_watchlist(request):
+def user_stats(request):
     try:
-        activities = MovieActivity.objects.filter(user=request.user, is_watchlist=True).order_by("-updated_at")
-        serializer = MovieActivitySerializer(activities, many=True)
+        movie_logs = MovieActivity.objects.filter(user=request.user, is_logged=True).count()
+        tv_logs = TVActivity.objects.filter(user=request.user, is_logged=True).count()
+        anime_logs = AnimeActivity.objects.filter(user=request.user, is_logged=True).count()
+        
+        movie_perfections = MovieRating.objects.filter(user=request.user, rating='perfection').count()
+        tv_perfections = TVRating.objects.filter(user=request.user, rating='perfection').count()
+        anime_perfections = AnimeRating.objects.filter(user=request.user, rating='perfection').count()
+        
+        joined_rooms = request.user.communities.count()
+        
         return Response({
             "status_code": 200,
-            "data": serializer.data
+            "data": {
+                "counts": {
+                    "movies": movie_logs,
+                    "tv": tv_logs,
+                    "anime": anime_logs,
+                    "total_logged": movie_logs + tv_logs + anime_logs,
+                    "perfections": movie_perfections + tv_perfections + anime_perfections,
+                    "rooms": joined_rooms
+                }
+            }
+        })
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def user_activity_list(request):
+    try:
+        movie_activities = MovieActivity.objects.filter(user=request.user, is_logged=True).order_by('-updated_at')[:10]
+        tv_activities = TVActivity.objects.filter(user=request.user, is_logged=True).order_by('-updated_at')[:10]
+        anime_activities = AnimeActivity.objects.filter(user=request.user, is_logged=True).order_by('-updated_at')[:10]
+
+        activities = []
+
+        for act in movie_activities:
+            rating_obj = MovieRating.objects.filter(user=request.user, movie_id=act.movie_id).first()
+            activities.append({
+                "id": act.movie_id,
+                "media_type": "movie",
+                "timestamp": act.updated_at,
+                "rating": rating_obj.rating if rating_obj else None
+            })
+
+        for act in tv_activities:
+            rating_obj = TVRating.objects.filter(user=request.user, tv_id=act.tv_id).first()
+            activities.append({
+                "id": act.tv_id,
+                "media_type": "tv",
+                "timestamp": act.updated_at,
+                "rating": rating_obj.rating if rating_obj else None
+            })
+
+        for act in anime_activities:
+            rating_obj = AnimeRating.objects.filter(user=request.user, anime_id=act.anime_id).first()
+            activities.append({
+                "id": act.anime_id,
+                "media_type": "anime",
+                "timestamp": act.updated_at,
+                "rating": rating_obj.rating if rating_obj else None
+            })
+
+        activities.sort(key=lambda x: x['timestamp'], reverse=True)
+        
+        return Response({
+            "status_code": 200,
+            "data": activities[:8]
+        })
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def user_watchlist(request):
+    try:
+        movie_activities = MovieActivity.objects.filter(user=request.user, is_watchlist=True).order_by("-updated_at")
+        tv_activities = TVActivity.objects.filter(user=request.user, is_watchlist=True).order_by("-updated_at")
+        anime_activities = AnimeActivity.objects.filter(user=request.user, is_watchlist=True).order_by("-updated_at")
+        
+        results = []
+        for activity in movie_activities:
+            results.append({
+                "id": activity.movie_id,
+                "media_type": "movie",
+                "updated_at": activity.updated_at
+            })
+        for activity in tv_activities:
+            results.append({
+                "id": activity.tv_id,
+                "media_type": "tv",
+                "updated_at": activity.updated_at
+            })
+        for activity in anime_activities:
+            results.append({
+                "id": activity.anime_id,
+                "media_type": "anime",
+                "updated_at": activity.updated_at
+            })
+            
+        results.sort(key=lambda x: x["updated_at"], reverse=True)
+        
+        return Response({
+            "status_code": 200,
+            "data": results
         })
     except Exception as e:
         return Response({
             "error": "Failed to fetch watchlist",
             "details": str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def movie_recommendations(request, movie_id):
+    """
+    Content-based filtering: recommend movies similar to a given movie using
+    genres, keywords, director, and top actors from TMDB.
+    """
+    api_key = settings.TMDB_API_KEY
+
+    try:
+        # 1. Fetch full movie details (includes credits)
+        detail_res = requests.get(
+            f"https://api.themoviedb.org/3/movie/{movie_id}",
+            params={"api_key": api_key, "append_to_response": "credits,keywords"},
+            timeout=8
+        )
+        detail_res.raise_for_status()
+        movie = detail_res.json()
+
+        # 2. Extract content-based signals
+        genre_ids = [g["id"] for g in movie.get("genres", [])]
+        keyword_ids = [k["id"] for k in movie.get("keywords", {}).get("keywords", [])][:5]
+
+        # Director
+        director = next(
+            (p for p in movie.get("credits", {}).get("crew", []) if p.get("job") == "Director"),
+            None
+        )
+        director_id = director["id"] if director else None
+
+        # Top 3 actors
+        top_cast_ids = [p["id"] for p in movie.get("credits", {}).get("cast", [])[:3]]
+
+        seen_ids = {movie_id}
+        recommendations = []
+
+        def discover(params, limit=6):
+            """Helper to call TMDB Discover and return results."""
+            base = {
+                "api_key": api_key,
+                "language": "en-US",
+                "sort_by": "vote_average.desc",
+                "vote_count.gte": 50,
+                "include_adult": False,
+                "page": 1,
+            }
+            base.update(params)
+            r = requests.get("https://api.themoviedb.org/3/discover/movie", params=base, timeout=8)
+            if r.ok:
+                return r.json().get("results", [])[:limit]
+            return []
+
+        # 3. Signal 1 — Director + Genre
+        if director_id and genre_ids:
+            results = discover({
+                "with_crew": str(director_id),
+                "with_genres": ",".join(str(g) for g in genre_ids[:2]),
+            })
+            for m in results:
+                if m["id"] not in seen_ids:
+                    m["match_reason"] = f"From director {director['name']}"
+                    recommendations.append(m)
+                    seen_ids.add(m["id"])
+
+        # 4. Signal 2 — Keywords + Genre
+        if keyword_ids and genre_ids:
+            results = discover({
+                "with_keywords": "|".join(str(k) for k in keyword_ids),
+                "with_genres": ",".join(str(g) for g in genre_ids[:2]),
+            })
+            for m in results:
+                if m["id"] not in seen_ids:
+                    m["match_reason"] = "Similar themes & genre"
+                    recommendations.append(m)
+                    seen_ids.add(m["id"])
+
+        # 5. Signal 3 — Top cast members
+        if top_cast_ids:
+            results = discover({
+                "with_cast": ",".join(str(a) for a in top_cast_ids[:2]),
+                "with_genres": ",".join(str(g) for g in genre_ids[:1]) if genre_ids else "",
+            }, limit=8)
+            for m in results:
+                if m["id"] not in seen_ids:
+                    m["match_reason"] = "Shared cast"
+                    recommendations.append(m)
+                    seen_ids.add(m["id"])
+
+        # 6. Signal 4 — Genre-only fallback to ensure we always return something
+        if len(recommendations) < 8 and genre_ids:
+            results = discover({
+                "with_genres": ",".join(str(g) for g in genre_ids[:2]),
+                "sort_by": "popularity.desc",
+            }, limit=12)
+            for m in results:
+                if m["id"] not in seen_ids and len(recommendations) < 18:
+                    m["match_reason"] = "Same genre"
+                    recommendations.append(m)
+                    seen_ids.add(m["id"])
+
+        # Sort by vote_average desc and cap at 18
+        recommendations.sort(key=lambda x: x.get("vote_average", 0), reverse=True)
+        final = recommendations[:18]
+
+        return Response({"status_code": 200, "data": final})
+
+    except requests.exceptions.RequestException as e:
+        return Response({"error": "Failed to fetch recommendations", "details": str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+    except Exception as e:
+        return Response({"error": "An unexpected error occurred", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def anime_details(request, anime_id):
+    query = '''
+    query ($id: Int) {
+      Media (id: $id, type: ANIME) {
+        id
+        title {
+          romaji
+          english
+          native
+        }
+        coverImage {
+          extraLarge
+          large
+        }
+        bannerImage
+        description
+        format
+        status
+        episodes
+        duration
+        genres
+        averageScore
+        popularity
+        season
+        seasonYear
+        studios(isMain: true) {
+          nodes {
+            name
+          }
+        }
+        characters(sort: ROLE, perPage: 12) {
+          edges {
+            role
+            node {
+              id
+              name {
+                full
+              }
+              image {
+                large
+              }
+            }
+            voiceActors(language: JAPANESE) {
+              name {
+                full
+              }
+              image {
+                large
+              }
+            }
+          }
+        }
+        relations {
+          edges {
+            relationType
+            node {
+              id
+              title {
+                romaji
+                english
+              }
+              type
+              coverImage {
+                large
+              }
+            }
+          }
+        }
+        recommendations(sort: RATING_DESC, perPage: 10) {
+          nodes {
+            mediaRecommendation {
+              id
+              title {
+                romaji
+                english
+              }
+              coverImage {
+                large
+              }
+              type
+              averageScore
+            }
+          }
+        }
+      }
+    }
+    '''
+    try:
+        url = 'https://graphql.anilist.co'
+        response = requests.post(url, json={'query': query, 'variables': {'id': anime_id}}, timeout=10)
+        response.raise_for_status()
         
+        return Response({
+            "status_code": 200,
+            "data": response.json().get('data', {}).get('Media', {})
+        })
+    except requests.exceptions.RequestException as e:
+        return Response({
+            "error": "Failed to fetch anime details",
+            "details": str(e)
+        }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+@api_view(["GET", "POST", "DELETE"])
+@permission_classes([IsAuthenticated])
+def anime_rating(request, anime_id):
+    if request.method == "GET":
+        all_reviews = request.query_params.get("all", "false").lower() == "true"
+        if all_reviews:
+            ratings = AnimeRating.objects.filter(anime_id=anime_id).order_by("-updated_at")
+            serializer = AnimeRatingSerializer(ratings, many=True, context={"request": request})
+            return Response(serializer.data)
+        
+        try:
+            rating = AnimeRating.objects.get(user=request.user, anime_id=anime_id)
+            serializer = AnimeRatingSerializer(rating, context={"request": request})
+            return Response(serializer.data)
+        except AnimeRating.DoesNotExist:
+            return Response({"rating": None, "review": ""})
+
+    elif request.method == "POST":
+        rating_val = request.data.get("rating")
+        review_val = request.data.get("review")
+        
+        rating_obj, created = AnimeRating.objects.update_or_create(
+            user=request.user,
+            anime_id=anime_id,
+            defaults={"rating": rating_val, "review": review_val}
+        )
+        
+        # Auto-log when rated
+        AnimeActivity.objects.update_or_create(
+            user=request.user,
+            anime_id=anime_id,
+            defaults={"is_logged": True}
+        )
+        
+        serializer = AnimeRatingSerializer(rating_obj, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+    elif request.method == "DELETE":
+        try:
+            rating = AnimeRating.objects.get(user=request.user, anime_id=anime_id)
+            rating.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except AnimeRating.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def anime_activity(request, anime_id):
+    if request.method == "GET":
+        try:
+            activity = AnimeActivity.objects.get(user=request.user, anime_id=anime_id)
+            serializer = AnimeActivitySerializer(activity)
+            return Response(serializer.data)
+        except AnimeActivity.DoesNotExist:
+            return Response({"is_watchlist": False, "is_logged": False}, status=status.HTTP_200_OK)
+
+    elif request.method == "POST":
+        is_watchlist = request.data.get("is_watchlist")
+        is_logged = request.data.get("is_logged")
+        
+        defaults = {}
+        if is_watchlist is not None:
+            defaults["is_watchlist"] = is_watchlist
+        if is_logged is not None:
+            defaults["is_logged"] = is_logged
+            
+        activity, created = AnimeActivity.objects.update_or_create(
+            user=request.user,
+            anime_id=anime_id,
+            defaults=defaults
+        )
+        serializer = AnimeActivitySerializer(activity)
+        return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+@api_view(["GET", "POST", "DELETE"])
+@permission_classes([IsAuthenticated])
+def tv_rating(request, tv_id):
+    if request.method == "GET":
+        all_reviews = request.query_params.get("all", "false").lower() == "true"
+        if all_reviews:
+            ratings = TVRating.objects.filter(tv_id=tv_id).select_related('user').order_by('-updated_at')
+            serializer = TVRatingSerializer(ratings, many=True)
+            return Response(serializer.data)
+        try:
+            rating = TVRating.objects.get(user=request.user, tv_id=tv_id)
+            serializer = TVRatingSerializer(rating)
+            return Response(serializer.data)
+        except TVRating.DoesNotExist:
+            return Response({"rating": None}, status=status.HTTP_200_OK)
+    elif request.method == "POST":
+        rating_val = request.data.get("rating")
+        review_val = request.data.get("review", "")
+        if not rating_val:
+            return Response({"error": "Rating is required"}, status=status.HTTP_400_BAD_REQUEST)
+        rating, created = TVRating.objects.update_or_create(
+            user=request.user,
+            tv_id=tv_id,
+            defaults={"rating": rating_val, "review": review_val}
+        )
+        TVActivity.objects.update_or_create(
+            user=request.user,
+            tv_id=tv_id,
+            defaults={"is_logged": True}
+        )
+        serializer = TVRatingSerializer(rating)
+        return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+    elif request.method == "DELETE":
+        try:
+            rating = TVRating.objects.get(user=request.user, tv_id=tv_id)
+            rating.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except TVRating.DoesNotExist:
+            return Response({"error": "Rating not found"}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def tv_activity(request, tv_id):
+    if request.method == "GET":
+        try:
+            activity = TVActivity.objects.get(user=request.user, tv_id=tv_id)
+            serializer = TVActivitySerializer(activity)
+            return Response(serializer.data)
+        except TVActivity.DoesNotExist:
+            return Response({"is_watchlist": False, "is_logged": False}, status=status.HTTP_200_OK)
+    elif request.method == "POST":
+        is_watchlist = request.data.get("is_watchlist")
+        is_logged = request.data.get("is_logged")
+        defaults = {}
+        if is_watchlist is not None:
+            defaults["is_watchlist"] = is_watchlist
+        if is_logged is not None:
+            defaults["is_logged"] = is_logged
+        activity, created = TVActivity.objects.update_or_create(
+            user=request.user,
+            tv_id=tv_id,
+            defaults=defaults
+        )
+        serializer = TVActivitySerializer(activity)
+        return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def tv_recommendations(request, tv_id):
+    api_key = settings.TMDB_API_KEY
+    try:
+        detail_res = requests.get(
+            f"https://api.themoviedb.org/3/tv/{tv_id}",
+            params={"api_key": api_key, "append_to_response": "credits,keywords"},
+            timeout=8
+        )
+        detail_res.raise_for_status()
+        tv_show = detail_res.json()
+        genre_ids = [g["id"] for g in tv_show.get("genres", [])]
+        keywords = tv_show.get("keywords", {}).get("results", [])
+        keyword_ids = [k["id"] for k in keywords][:5]
+        top_cast_ids = [p["id"] for p in tv_show.get("credits", {}).get("cast", [])[:3]]
+        seen_ids = {tv_id}
+        recommendations = []
+        def discover(params, limit=6):
+            base = {
+                "api_key": api_key,
+                "language": "en-US",
+                "sort_by": "vote_average.desc",
+                "vote_count.gte": 50,
+                "include_adult": False,
+                "page": 1,
+            }
+            base.update(params)
+            r = requests.get("https://api.themoviedb.org/3/discover/tv", params=base, timeout=8)
+            if r.ok:
+                results = r.json().get("results", [])
+                for res in results:
+                    res["title"] = res.get("name")
+                return results[:limit]
+            return []
+        if keyword_ids and genre_ids:
+            results = discover({
+                "with_keywords": "|".join(str(k) for k in keyword_ids),
+                "with_genres": ",".join(str(g) for g in genre_ids[:2]),
+            })
+            for m in results:
+                if m["id"] not in seen_ids:
+                    m["match_reason"] = "Similar themes & genre"
+                    recommendations.append(m)
+                    seen_ids.add(m["id"])
+        if top_cast_ids:
+            results = discover({
+                "with_cast": ",".join(str(a) for a in top_cast_ids[:2]),
+                "with_genres": ",".join(str(g) for g in genre_ids[:1]) if genre_ids else "",
+            }, limit=8)
+            for m in results:
+                if m["id"] not in seen_ids:
+                    m["match_reason"] = "Shared cast"
+                    recommendations.append(m)
+                    seen_ids.add(m["id"])
+        if len(recommendations) < 8 and genre_ids:
+            results = discover({
+                "with_genres": ",".join(str(g) for g in genre_ids[:2]),
+                "sort_by": "popularity.desc",
+            }, limit=12)
+            for m in results:
+                if m["id"] not in seen_ids and len(recommendations) < 18:
+                    m["match_reason"] = "Same genre"
+                    recommendations.append(m)
+                    seen_ids.add(m["id"])
+        recommendations.sort(key=lambda x: x.get("vote_average", 0), reverse=True)
+        return Response({"status_code": 200, "data": recommendations[:18]})
+    except Exception as e:
+        return Response({"error": "An unexpected error occurred", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
