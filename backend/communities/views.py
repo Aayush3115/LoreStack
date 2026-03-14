@@ -64,6 +64,12 @@ class CommunityViewSet(ModelViewSet):
         community.members.remove(request.user)
         return Response({'status': 'left'})
 
+    @action(detail=False, methods=['get'])
+    def joined(self, request):
+        communities = request.user.communities.all()
+        serializer = self.get_serializer(communities, many=True)
+        return Response(serializer.data)
+
 class CommunityRequestViewSet(ModelViewSet):
     queryset = CommunityRequest.objects.all()
     serializer_class = CommunityRequestSerializer

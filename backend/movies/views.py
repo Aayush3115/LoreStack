@@ -345,6 +345,82 @@ def universal_search(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
+def user_stats(request):
+    try:
+        movie_logs = MovieActivity.objects.filter(user=request.user, is_logged=True).count()
+        tv_logs = TVActivity.objects.filter(user=request.user, is_logged=True).count()
+        anime_logs = AnimeActivity.objects.filter(user=request.user, is_logged=True).count()
+        
+        movie_perfections = MovieRating.objects.filter(user=request.user, rating='perfection').count()
+        tv_perfections = TVRating.objects.filter(user=request.user, rating='perfection').count()
+        anime_perfections = AnimeRating.objects.filter(user=request.user, rating='perfection').count()
+        
+        joined_rooms = request.user.communities.count()
+        
+        return Response({
+            "status_code": 200,
+            "data": {
+                "counts": {
+                    "movies": movie_logs,
+                    "tv": tv_logs,
+                    "anime": anime_logs,
+                    "total_logged": movie_logs + tv_logs + anime_logs,
+                    "perfections": movie_perfections + tv_perfections + anime_perfections,
+                    "rooms": joined_rooms
+                }
+            }
+        })
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def user_activity_list(request):
+    try:
+        movie_activities = MovieActivity.objects.filter(user=request.user, is_logged=True).order_by('-updated_at')[:10]
+        tv_activities = TVActivity.objects.filter(user=request.user, is_logged=True).order_by('-updated_at')[:10]
+        anime_activities = AnimeActivity.objects.filter(user=request.user, is_logged=True).order_by('-updated_at')[:10]
+
+        activities = []
+
+        for act in movie_activities:
+            rating_obj = MovieRating.objects.filter(user=request.user, movie_id=act.movie_id).first()
+            activities.append({
+                "id": act.movie_id,
+                "media_type": "movie",
+                "timestamp": act.updated_at,
+                "rating": rating_obj.rating if rating_obj else None
+            })
+
+        for act in tv_activities:
+            rating_obj = TVRating.objects.filter(user=request.user, tv_id=act.tv_id).first()
+            activities.append({
+                "id": act.tv_id,
+                "media_type": "tv",
+                "timestamp": act.updated_at,
+                "rating": rating_obj.rating if rating_obj else None
+            })
+
+        for act in anime_activities:
+            rating_obj = AnimeRating.objects.filter(user=request.user, anime_id=act.anime_id).first()
+            activities.append({
+                "id": act.anime_id,
+                "media_type": "anime",
+                "timestamp": act.updated_at,
+                "rating": rating_obj.rating if rating_obj else None
+            })
+
+        activities.sort(key=lambda x: x['timestamp'], reverse=True)
+        
+        return Response({
+            "status_code": 200,
+            "data": activities[:8]
+        })
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def user_watchlist(request):
     try:
         movie_activities = MovieActivity.objects.filter(user=request.user, is_watchlist=True).order_by("-updated_at")
