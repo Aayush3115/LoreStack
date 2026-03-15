@@ -76,40 +76,48 @@ const Profile = () => {
     };
 
     const fetchWatchlist = async () => {
-      setIsLoading(true);
-      try {
-        const token = localStorage.getItem('access_token');
-        const response = await fetch("http://localhost:8000/api/movies/user-watchlist/", {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const data = await response.json();
-        if (data.status_code === 200) {
-          const details = await Promise.all(
-            data.data.map(async (item) => {
-              try {
-                let url = '';
-                if (item.media_type === 'movie') url = `http://localhost:8000/api/movies/${item.id}/`;
-                else if (item.media_type === 'tv') url = `http://localhost:8000/api/movies/tv/${item.id}/`;
-                else if (item.media_type === 'anime') url = `http://localhost:8000/api/movies/anime/${item.id}/`;
+        setIsLoading(true);
+        try {
+            const token = localStorage.getItem('access_token');
+            const response = await fetch("http://localhost:8000/api/movies/user-watchlist/", {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            const data = await response.json();
+            if (response.ok && data.status_code === 200) {
+                const details = await Promise.all(
+                    data.data.map(async (item) => {
+                        try {
+                            let url = '';
+                            if (item.media_type === 'movie') url = `http://localhost:8000/api/movies/${item.id}/`;
+                            else if (item.media_type === 'tv') url = `http://localhost:8000/api/movies/tv/${item.id}/`;
+                            else if (item.media_type === 'anime') url = `http://localhost:8000/api/movies/anime/${item.id}/`;
 
-                const res = await fetch(url);
-                const detailData = await res.json();
-                return { ...detailData.data, media_type: item.media_type };
-              } catch (err) {
-                console.error(`Failed to fetch details for ${item.media_type} ${item.id}`, err);
-                return null;
-              }
-            })
-          );
-          setWatchlistDetails(details.filter(d => d !== null));
+                            const res = await fetch(url);
+                            const detailData = await res.json();
+                            return { ...detailData.data, media_type: item.media_type };
+                        } catch (err) {
+                            console.error(`Failed to fetch details for ${item.media_type} ${item.id}`, err);
+                            return null;
+                        }
+                    })
+                );
+                setWatchlistDetails(details.filter(d => d !== null));
+            }
+        } catch (error) {
+            console.error("Failed to fetch watchlist:", error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    fetchUserData();
-    fetchWatchlist();
-  }, [navigate]);
+    useEffect(() => {
+        fetchUserData();
+        fetchWatchlist();
+        fetchStats();
+        fetchJoinedRooms();
+    }, [navigate]);
 
   const getPosterUrl = (item) => {
     if (item.media_type === 'anime') return item.coverImage.large;
@@ -184,7 +192,9 @@ const Profile = () => {
             </div>
           )}
         </div>
-    );
+      </main>
+    </div>
+  );
 };
 
 export default Profile;
