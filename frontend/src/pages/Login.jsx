@@ -104,8 +104,7 @@ export default function LorestackLogin() {
     <>
 
       <div className="login-container">
-        <div className="bg-orb-1"></div>
-        <div className="bg-orb-2"></div>
+      
         <div className="grain-overlay"></div>
 
         <div className="content-wrapper">
