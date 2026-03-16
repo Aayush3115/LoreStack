@@ -205,12 +205,12 @@ def movie_rating(request, movie_id):
         
         if all_reviews:
             ratings = MovieRating.objects.filter(movie_id=movie_id).select_related('user').order_by('-updated_at')
-            serializer = MovieRatingSerializer(ratings, many=True)
+            serializer = MovieRatingSerializer(ratings, many=True, context={'request': request})
             return Response(serializer.data)
             
         try:
             rating = MovieRating.objects.get(user=request.user, movie_id=movie_id)
-            serializer = MovieRatingSerializer(rating)
+            serializer = MovieRatingSerializer(rating, context={'request': request})
             return Response(serializer.data)
         except MovieRating.DoesNotExist:
             return Response({"rating": None}, status=status.HTTP_200_OK)
@@ -236,7 +236,7 @@ def movie_rating(request, movie_id):
             defaults={"is_logged": True}
         )
 
-        serializer = MovieRatingSerializer(rating)
+        serializer = MovieRatingSerializer(rating, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
     elif request.method == "DELETE":
         try:
@@ -756,11 +756,11 @@ def tv_rating(request, tv_id):
         all_reviews = request.query_params.get("all", "false").lower() == "true"
         if all_reviews:
             ratings = TVRating.objects.filter(tv_id=tv_id).select_related('user').order_by('-updated_at')
-            serializer = TVRatingSerializer(ratings, many=True)
+            serializer = TVRatingSerializer(ratings, many=True, context={'request': request})
             return Response(serializer.data)
         try:
             rating = TVRating.objects.get(user=request.user, tv_id=tv_id)
-            serializer = TVRatingSerializer(rating)
+            serializer = TVRatingSerializer(rating, context={'request': request})
             return Response(serializer.data)
         except TVRating.DoesNotExist:
             return Response({"rating": None}, status=status.HTTP_200_OK)
@@ -779,7 +779,7 @@ def tv_rating(request, tv_id):
             tv_id=tv_id,
             defaults={"is_logged": True}
         )
-        serializer = TVRatingSerializer(rating)
+        serializer = TVRatingSerializer(rating, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
     elif request.method == "DELETE":
         try:

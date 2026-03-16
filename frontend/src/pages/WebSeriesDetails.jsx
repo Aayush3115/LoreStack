@@ -360,17 +360,13 @@ const WebSeriesDetails = () => {
                                         <span>•</span>
                                         <div className="hero-ratings-group">
                                             <span className="rating-badge star-rating">★ {series.vote_average.toFixed(1)}</span>
-                                            {userRating ? (
+                                            {userRating && (
                                                 <span
                                                     className="rating-badge lore-rating user-verdict-badge"
                                                     style={{ backgroundColor: getColorByRating(userRating), color: 'white', border: 'none' }}
                                                 >
                                                     {userRating === 'goforit' ? 'Go For It' : userRating.charAt(0).toUpperCase() + userRating.slice(1)}
                                                 </span>
-                                            ) : (
-                                                !isEditingReview && getLoreScore() && (
-                                                    <span className="rating-badge lore-rating">🛡️ {getLoreScore()}</span>
-                                                )
                                             )}
                                         </div>
                                     </div>
@@ -647,67 +643,61 @@ const WebSeriesDetails = () => {
                                     </button>
                                 </section>
 
-                                {(isLogged || userRating) && (
-                                    <div className="rating-section-lore">
-                                        <span className="detail-label">Community Rating</span>
-                                        {allReviews.length > 0 ? (
-                                            <div className="speedometer-container">
-                                                <div className="speedometer">
-                                                    <svg viewBox="0 0 100 55" className="gauge-svg">
-                                                        <path d="M10 50 A40 40 0 0 1 90 50" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" strokeLinecap="round" />
-                                                        {(() => {
-                                                            let cumulativeLength = 0;
-                                                            return getRatingDistribution().map((item) => {
-                                                                const segmentLength = (item.percent / 100) * 125.6;
-                                                                const currentOffset = -cumulativeLength;
-                                                                cumulativeLength += segmentLength;
+                                <div className="rating-section-lore">
+                                    <span className="detail-label">Community Rating</span>
+                                    <div className="speedometer-container">
+                                        <div className="speedometer">
+                                            <svg viewBox="0 0 100 55" className="gauge-svg">
+                                                <path d="M10 50 A40 40 0 0 1 90 50" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" strokeLinecap="round" />
+                                                {(() => {
+                                                    let cumulativeLength = 0;
+                                                    return getRatingDistribution().map((item) => {
+                                                        const segmentLength = (item.percent / 100) * 125.6;
+                                                        const currentOffset = -cumulativeLength;
+                                                        cumulativeLength += segmentLength;
 
-                                                                return (
-                                                                    <path
-                                                                        key={item.label}
-                                                                        d="M10 50 A40 40 0 0 1 90 50"
-                                                                        fill="none"
-                                                                        stroke={getColorByRating(item.label)}
-                                                                        strokeWidth="8"
-                                                                        strokeLinecap="round"
-                                                                        strokeDasharray={`${segmentLength} 125.6`}
-                                                                        strokeDashoffset={currentOffset}
-                                                                        className={`gauge-segment ${hoveredRatingData?.label === item.label ? 'hovered' : ''}`}
-                                                                        onMouseEnter={() => setHoveredRatingData(item)}
-                                                                        onMouseLeave={() => setHoveredRatingData(null)}
-                                                                    />
-                                                                );
-                                                            });
-                                                        })()}
-                                                    </svg>
-                                                    <div className="gauge-score-container">
-                                                        <span className="gauge-value verdict-text" style={{ color: getColorByRating(hoveredRatingData?.label || getMajorityRating()?.label) }}>
-                                                            {formatRatingLabel(hoveredRatingData?.label || getMajorityRating()?.label)}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className="gauge-labels">
-                                                    <span>Skip</span>
-                                                    <span>Mix</span>
-                                                    <span>Lore</span>
-                                                </div>
+                                                        return (
+                                                            <path
+                                                                key={item.label}
+                                                                d="M10 50 A40 40 0 0 1 90 50"
+                                                                fill="none"
+                                                                stroke={getColorByRating(item.label)}
+                                                                strokeWidth="8"
+                                                                strokeLinecap="round"
+                                                                strokeDasharray={`${segmentLength} 125.6`}
+                                                                strokeDashoffset={currentOffset}
+                                                                className={`gauge-segment ${hoveredRatingData?.label === item.label ? 'hovered' : ''}`}
+                                                                onMouseEnter={() => setHoveredRatingData(item)}
+                                                                onMouseLeave={() => setHoveredRatingData(null)}
+                                                            />
+                                                        );
+                                                    });
+                                                })()}
+                                            </svg>
+                                            <div className="gauge-score-container">
+                                                <span className="gauge-value verdict-text" style={{ color: getColorByRating(hoveredRatingData?.label || getMajorityRating()?.label) }}>
+                                                    {formatRatingLabel(hoveredRatingData?.label || getMajorityRating()?.label) || (allReviews.length === 0 ? "No Ratings" : "")}
+                                                </span>
                                             </div>
-                                        ) : (
-                                            <p className="no-lore-text">No lore recorded yet.</p>
-                                        )}
-
-                                        {userRating && (
-                                            <button
-                                                className="edit-lore-btn-sidebar"
-                                                onClick={() => {
-                                                    setShowLogModal(true);
-                                                }}
-                                            >
-                                                Edit Your Lore
-                                            </button>
-                                        )}
+                                        </div>
+                                        <div className="gauge-labels">
+                                            <span>Skip</span>
+                                            <span>Mix</span>
+                                            <span>Lore</span>
+                                        </div>
                                     </div>
-                                )}
+
+                                    {userRating && (
+                                        <button
+                                            className="edit-lore-btn-sidebar"
+                                            onClick={() => {
+                                                setShowLogModal(true);
+                                            }}
+                                        >
+                                            Edit Your Lore
+                                        </button>
+                                    )}
+                                </div>
 
                                 <div className="detail-item">
                                     <span className="detail-label">Status</span>

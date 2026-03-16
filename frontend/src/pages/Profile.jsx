@@ -405,7 +405,9 @@ const Profile = () => {
                 </div>
             )}
         </div>
-    );
+      </main>
+    </div>
+  );
 };
 
 export default Profile;
