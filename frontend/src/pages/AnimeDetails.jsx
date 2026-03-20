@@ -740,12 +740,19 @@ const AnimeDetails = () => {
                         </div>
 
                         <div className="log-modal-footer">
-                            <button 
-                                className="save-log-btn" 
-                                onClick={handleRate}
-                                disabled={isSaving || !userRating}
+                            <button className="btn-secondary-lore" onClick={() => setShowLogModal(false)}>Cancel</button>
+                            <button
+                                className="btn-primary-lore"
+                                onClick={async () => {
+                                    if (!userRating) {
+                                        alert("Please select a rating to log!");
+                                        return;
+                                    }
+                                    await handleRate();
+                                    setShowLogModal(false);
+                                }}
                             >
-                                {isSaving ? "Saving..." : "Save Lore"}
+                                Save Entry
                             </button>
                         </div>
                     </div>
