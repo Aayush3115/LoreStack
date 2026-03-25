@@ -4,4 +4,4 @@ from .models import Mood
 class MoodSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mood
-        fields = ['id', 'name', 'description']
+        fields = ['id', 'name', 'description', 'color_vibe']
