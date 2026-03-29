@@ -59,7 +59,7 @@ export default function LorestackLogin() {
           setSuccess('Access Granted. Welcome to the Matrix.');
 
           setTimeout(() => {
-            window.location.href = '/Home';
+            window.location.href = '/home';
           }, 1500);
         } else {
           setError(data.detail || data.error || 'Identity verification failed.');
@@ -86,7 +86,7 @@ export default function LorestackLogin() {
           setSuccess('Account Created. Welcome to the Lore.');
 
           setTimeout(() => {
-            window.location.href = '/Home';
+            window.location.href = '/home';
           }, 1500);
         } else {
           const backendErrors = Object.entries(data)

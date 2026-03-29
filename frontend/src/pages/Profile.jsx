@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../Components/Sidebar/Sidebar';
 import { Loader2, Film, Bookmark, Settings, Award, Users, Tv, Play, X, Camera, History, Star } from 'lucide-react';
-import '../Styles/Home.css';
+import '../Styles/Explore.css';
 import '../Styles/Profile.css';
 
 const Profile = () => {
@@ -309,7 +309,7 @@ const Profile = () => {
                                         <History size={48} color="rgba(255,255,255,0.1)" />
                                         <h3>No Activity Yet</h3>
                                         <p>Log your first movie, series or anime to see them here.</p>
-                                        <button className="create-btn" onClick={() => navigate('/home')}>Start Logging</button>
+                                        <button className="create-btn" onClick={() => navigate('/explore')}>Start Logging</button>
                                     </div>
                                 )
                             )}
@@ -337,7 +337,7 @@ const Profile = () => {
                                         <Bookmark size={48} color="rgba(255,255,255,0.1)" />
                                         <h3>Empty Watchlist</h3>
                                         <p>Start adding movies and shows to keep track of what you want to watch next.</p>
-                                        <button className="create-btn" onClick={() => navigate('/home')}>Explore Content</button>
+                                        <button className="create-btn" onClick={() => navigate('/explore')}>Explore Content</button>
                                     </div>
                                 )
                             )}
