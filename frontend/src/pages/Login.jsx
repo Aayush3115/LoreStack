@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Lock, Eye, EyeOff, User, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, User, ArrowRight, Camera } from 'lucide-react';
 import '../Styles/Login.css';
 import logo from '../assets/logo_no_bg.png';
+import { BACKEND_URL } from '../api/api';
 
 export default function LorestackLogin() {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,13 +17,14 @@ export default function LorestackLogin() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [posters, setPosters] = useState([]);
+  const [profilePic, setProfilePic] = useState(null);
 
-  const API_BASE = 'http://localhost:8000/api/auth';
+  const API_BASE = `${BACKEND_URL}/api/auth`;
 
   useEffect(() => {
     const fetchPosters = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/movies/trending-movies/");
+        const response = await fetch(`${BACKEND_URL}/api/movies/trending-movies/`);
         const data = await response.json();
         if (data.status_code === 200) {
           setPosters(data.data.results.slice(0, 12).map(m => `https://image.tmdb.org/t/p/w500${m.poster_path}`));
@@ -65,17 +67,20 @@ export default function LorestackLogin() {
           setError(data.detail || data.error || 'Identity verification failed.');
         }
       } else {
+        const formData = new FormData();
+        formData.append('username', username);
+        formData.append('email', email);
+        formData.append('password', password);
+        formData.append('password2', password2);
+        formData.append('first_name', firstName);
+        formData.append('last_name', lastName);
+        if (profilePic) {
+          formData.append('profile_picture', profilePic);
+        }
+
         const response = await fetch(`${API_BASE}/register/`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            username,
-            email,
-            password,
-            password2,
-            first_name: firstName,
-            last_name: lastName,
-          }),
+          body: formData,
         });
 
         const data = await response.json();
@@ -130,13 +135,13 @@ export default function LorestackLogin() {
           </div>
 
           <div className="login-tabs">
-            <button 
+            <button
               className={`login-tab ${isLogin ? 'active' : ''}`}
               onClick={() => setIsLogin(true)}
             >
               Sign In
             </button>
-            <button 
+            <button
               className={`login-tab ${!isLogin ? 'active' : ''}`}
               onClick={() => setIsLogin(false)}
             >
@@ -229,20 +234,35 @@ export default function LorestackLogin() {
             </div>
 
             {!isLogin && (
-              <div className="input-group">
-                <label className="input-label">Confirm Password</label>
-                <div className="input-box">
-                  <Lock className="input-icon" size={20} />
-                  <input
-                    type="password"
-                    className="login-input"
-                    placeholder="••••••••"
-                    value={password2}
-                    onChange={(e) => setPassword2(e.target.value)}
-                    required
-                  />
+              <>
+                <div className="input-group">
+                  <label className="input-label">Confirm Password</label>
+                  <div className="input-box">
+                    <Lock className="input-icon" size={20} />
+                    <input
+                      type="password"
+                      className="login-input"
+                      placeholder="••••••••"
+                      value={password2}
+                      onChange={(e) => setPassword2(e.target.value)}
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
+                <div className="input-group">
+                  <label className="input-label">Profile Picture</label>
+                  <div className="input-box">
+                    <Camera className="input-icon" size={20} />
+                    <input
+                      type="file"
+                      className="login-input"
+                      style={{ paddingTop: '10px' }}
+                      accept="image/*"
+                      onChange={(e) => setProfilePic(e.target.files[0])}
+                    />
+                  </div>
+                </div>
+              </>
             )}
 
             <button type="submit" className="submit-btn" disabled={loading}>

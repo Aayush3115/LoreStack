@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../Styles/Explore.css'
 import Sidebar from '../Components/Sidebar/Sidebar';
 import { Search, Loader2 } from 'lucide-react';
+import { BACKEND_URL } from '../api/api';
 
 
 const Explore = () => {
@@ -37,7 +38,7 @@ const Explore = () => {
                 const token = localStorage.getItem('access_token');
                 if (!token) return;
 
-                const response = await fetch("http://localhost:8000/api/auth/profile/", {
+                const response = await fetch(`${BACKEND_URL}/api/auth/profile/`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -55,9 +56,9 @@ const Explore = () => {
             setIsLoading(true);
             try {
                 const [movieRes, tvRes, animeRes] = await Promise.all([
-                    fetch("http://localhost:8000/api/movies/trending-movies/"),
-                    fetch("http://localhost:8000/api/movies/trending-tv/"),
-                    fetch("http://localhost:8000/api/movies/trending-anime/")
+                    fetch(`${BACKEND_URL}/api/movies/trending-movies/`),
+                    fetch(`${BACKEND_URL}/api/movies/trending-tv/`),
+                    fetch(`${BACKEND_URL}/api/movies/trending-anime/`)
                 ]);
 
                 const movieData = await movieRes.json();
@@ -93,7 +94,7 @@ const Explore = () => {
                 setIsSearching(true);
                 setShowResults(true);
                 try {
-                    const response = await fetch(`http://localhost:8000/api/movies/search/?query=${encodeURIComponent(searchQuery)}`);
+                    const response = await fetch(`${BACKEND_URL}/api/movies/search/?query=${encodeURIComponent(searchQuery)}`);
                     const data = await response.json();
                     if (data.status_code === 200) {
                         setSearchResults(data.data.results || []);
