@@ -37,7 +37,7 @@
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid var(--card-bg);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .profile-info-main {
@@ -203,13 +203,15 @@
     overflow-x: auto;
     padding: 10px 0 20px 0;
     scroll-behavior: smooth;
-    scrollbar-width: none; /* Firefox */
+    scrollbar-width: none;
+    /* Firefox */
     justify-content: flex-start;
     align-items: flex-start;
 }
 
 .horizontal-scroll::-webkit-scrollbar {
-    display: none; /* Chrome/Safari */
+    display: none;
+    /* Chrome/Safari */
 }
 
 /* Activity Feed */
@@ -236,7 +238,7 @@
     border-radius: 12px;
     overflow: hidden;
     margin-bottom: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .activity-poster-wrapper img {
@@ -258,7 +260,7 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(4px);
 }
 
@@ -296,7 +298,7 @@
 }
 
 .joined-room-card:hover {
-    background: rgba(255,255,255,0.03);
+    background: rgba(255, 255, 255, 0.03);
     border-color: var(--accent-color);
 }
 
@@ -362,14 +364,21 @@
     border-radius: 24px;
     padding: 32px;
     border: 1px solid var(--border-color);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
     position: relative;
     animation: modalSlideUp 0.3s ease-out;
 }
 
 @keyframes modalSlideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 .modal-header {
@@ -409,9 +418,10 @@
     opacity: 0.7;
 }
 
-.edit-username-input, .edit-bio-textarea {
+.edit-username-input,
+.edit-bio-textarea {
     width: 100%;
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 12px 16px;
@@ -420,10 +430,11 @@
     transition: all 0.2s;
 }
 
-.edit-username-input:focus, .edit-bio-textarea:focus {
+.edit-username-input:focus,
+.edit-bio-textarea:focus {
     outline: none;
     border-color: var(--accent-color);
-    background: rgba(255,255,255,0.08);
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .edit-bio-textarea {
