@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Sparkles, LayoutDashboard, Brain } from 'lucide-react';
+import { BACKEND_URL } from '../api/api';
 import '../Styles/Landing.css';
 
 import logo from '../assets/logo_no_bg.png';
@@ -14,8 +15,8 @@ const Landing = () => {
         const fetchPosters = async () => {
             try {
                 const [movieRes, animeRes] = await Promise.all([
-                    fetch("http://localhost:8000/api/movies/trending-movies/"),
-                    fetch("http://localhost:8000/api/movies/trending-anime/")
+                    fetch(`${BACKEND_URL}/api/movies/trending-movies/`),
+                    fetch(`${BACKEND_URL}/api/movies/trending-anime/`)
                 ]);
 
                 const movieData = await movieRes.json();

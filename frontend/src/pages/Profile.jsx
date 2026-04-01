@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../Components/Sidebar/Sidebar';
 import { Loader2, Film, Bookmark, Settings, Award, Users, Tv, Play, X, Camera, History, Star } from 'lucide-react';
-import '../Styles/Home.css';
+import '../Styles/Explore.css';
 import '../Styles/Profile.css';
+import { BACKEND_URL } from '../api/api';
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -31,7 +32,7 @@ const Profile = () => {
                 return;
             }
 
-            const response = await fetch("http://localhost:8000/api/auth/profile/", {
+            const response = await fetch(`${BACKEND_URL}/api/auth/profile/`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -49,7 +50,7 @@ const Profile = () => {
     const fetchStats = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch("http://localhost:8000/api/movies/user-stats/", {
+            const response = await fetch(`${BACKEND_URL}/api/movies/user-stats/`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -64,7 +65,7 @@ const Profile = () => {
     const fetchJoinedRooms = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch("http://localhost:8000/api/loreroom/joined/", {
+            const response = await fetch(`${BACKEND_URL}/api/loreroom/joined/`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -79,7 +80,7 @@ const Profile = () => {
     const fetchWatchlist = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch("http://localhost:8000/api/movies/user-watchlist/", {
+            const response = await fetch(`${BACKEND_URL}/api/movies/user-watchlist/`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -88,9 +89,9 @@ const Profile = () => {
                     data.data.map(async (item) => {
                         try {
                             let url = '';
-                            if (item.media_type === 'movie') url = `http://localhost:8000/api/movies/${item.id}/`;
-                            else if (item.media_type === 'tv') url = `http://localhost:8000/api/movies/tv/${item.id}/`;
-                            else if (item.media_type === 'anime') url = `http://localhost:8000/api/movies/anime/${item.id}/`;
+                            if (item.media_type === 'movie') url = `${BACKEND_URL}/api/movies/${item.id}/`;
+                            else if (item.media_type === 'tv') url = `${BACKEND_URL}/api/movies/tv/${item.id}/`;
+                            else if (item.media_type === 'anime') url = `${BACKEND_URL}/api/movies/anime/${item.id}/`;
 
                             const res = await fetch(url);
                             const detailData = await res.json();
@@ -110,7 +111,7 @@ const Profile = () => {
     const fetchActivity = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch("http://localhost:8000/api/movies/user-activity/", {
+            const response = await fetch(`${BACKEND_URL}/api/movies/user-activity/`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -119,9 +120,9 @@ const Profile = () => {
                     data.data.map(async (item) => {
                         try {
                             let url = '';
-                            if (item.media_type === 'movie') url = `http://localhost:8000/api/movies/${item.id}/`;
-                            else if (item.media_type === 'tv') url = `http://localhost:8000/api/movies/tv/${item.id}/`;
-                            else if (item.media_type === 'anime') url = `http://localhost:8000/api/movies/anime/${item.id}/`;
+                            if (item.media_type === 'movie') url = `${BACKEND_URL}/api/movies/${item.id}/`;
+                            else if (item.media_type === 'tv') url = `${BACKEND_URL}/api/movies/tv/${item.id}/`;
+                            else if (item.media_type === 'anime') url = `${BACKEND_URL}/api/movies/anime/${item.id}/`;
 
                             const res = await fetch(url);
                             const detailData = await res.json();
@@ -177,7 +178,7 @@ const Profile = () => {
                 formData.append('profile_picture', editProfilePic);
             }
 
-            const response = await fetch("http://localhost:8000/api/auth/profile/", {
+            const response = await fetch(`${BACKEND_URL}/api/auth/profile/`, {
                 method: 'PATCH',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
@@ -309,7 +310,7 @@ const Profile = () => {
                                         <History size={48} color="rgba(255,255,255,0.1)" />
                                         <h3>No Activity Yet</h3>
                                         <p>Log your first movie, series or anime to see them here.</p>
-                                        <button className="create-btn" onClick={() => navigate('/home')}>Start Logging</button>
+                                        <button className="create-btn" onClick={() => navigate('/explore')}>Start Logging</button>
                                     </div>
                                 )
                             )}
@@ -337,7 +338,7 @@ const Profile = () => {
                                         <Bookmark size={48} color="rgba(255,255,255,0.1)" />
                                         <h3>Empty Watchlist</h3>
                                         <p>Start adding movies and shows to keep track of what you want to watch next.</p>
-                                        <button className="create-btn" onClick={() => navigate('/home')}>Explore Content</button>
+                                        <button className="create-btn" onClick={() => navigate('/explore')}>Explore Content</button>
                                     </div>
                                 )
                             )}

@@ -1,7 +1,11 @@
 import axios from "axios";
 
+// Use the environment variable or the machine's IP for access from other devices (e.g., http://192.168.x.x:8000/api/)
+export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+export const API_BASE_URL = `${BACKEND_URL}/api`;
+
 const API = axios.create({
-  baseURL: "http://localhost:8000/api/",
+  baseURL: `${API_BASE_URL}/`,
 });
 
 // Add a request interceptor

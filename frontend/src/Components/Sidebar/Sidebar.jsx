@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Settings, User, Bell, HeartHandshake, Popcorn, ChevronLeft, ChevronRight, Sun, Moon } from 'lucide-react';
+import { LogOut, Settings, User, Bell, HeartHandshake, Popcorn, ChevronLeft, ChevronRight, Sun, Moon, Home } from 'lucide-react';
 import './Sidebar.css';
 import { useSidebar } from '../../Context/SidebarContext';
 import { useTheme } from '../../Context/ThemeContext';
@@ -41,8 +41,14 @@ const Sidebar = () => {
             <nav className="sidebar-nav">
                 <Link to='/home' style={{ textDecoration: 'none' }}>
                     <button className={`nav-item ${isActive('/home') ? 'active' : ''}`}>
-                        <Popcorn size={20} />
+                        <Home size={20} />
                         <span>Home</span>
+                    </button>
+                </Link>
+                <Link to='/explore' style={{ textDecoration: 'none' }}>
+                    <button className={`nav-item ${isActive('/explore') ? 'active' : ''}`}>
+                        <Popcorn size={20} />
+                        <span>Explore</span>
                     </button>
                 </Link>
                 <Link to='/loreroom' style={{ textDecoration: 'none' }}>

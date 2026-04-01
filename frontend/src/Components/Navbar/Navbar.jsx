@@ -7,7 +7,7 @@ const Navbar = () => {
       <a href="#" className="logo">LoreStack</a>
 
       <div className='navlinks'>
-        <a href="#">Home</a>
+        <a href="/explore">Explore</a>
         <a href="#">Movies</a>
         <a href="#">Series</a>
         <a href="#">Anime</a>

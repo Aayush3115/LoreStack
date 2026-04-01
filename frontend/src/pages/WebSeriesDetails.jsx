@@ -4,6 +4,7 @@ import Sidebar from '../Components/Sidebar/Sidebar';
 import '../Styles/MovieDetails.css';
 import '../styles/communityDetail.css';
 import { MoreVertical, Edit2, Trash2, Loader2, Bookmark, Eye, Check, X } from 'lucide-react';
+import { BACKEND_URL } from '../api/api';
 
 const WebSeriesDetails = () => {
     const { id } = useParams();
@@ -29,7 +30,7 @@ const WebSeriesDetails = () => {
     const fetchAllReviews = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch(`http://localhost:8000/api/movies/tv/${id}/rating/?all=true`, {
+            const response = await fetch(`${BACKEND_URL}/api/movies/tv/${id}/rating/?all=true`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -49,7 +50,7 @@ const WebSeriesDetails = () => {
                 const token = localStorage.getItem('access_token');
                 if (!token) return;
 
-                const response = await fetch("http://localhost:8000/api/auth/profile/", {
+                const response = await fetch(`${BACKEND_URL}/api/auth/profile/`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -65,7 +66,7 @@ const WebSeriesDetails = () => {
 
         const fetchTVDetails = async () => {
             try {
-                const response = await fetch(`http://localhost:8000/api/movies/tv/${id}/`);
+                const response = await fetch(`${BACKEND_URL}/api/movies/tv/${id}/`);
                 const data = await response.json();
 
                 if (data.status_code === 200) {
@@ -86,7 +87,7 @@ const WebSeriesDetails = () => {
                 const token = localStorage.getItem('access_token');
                 if (!token) return;
 
-                const response = await fetch(`http://localhost:8000/api/movies/tv/${id}/rating/`, {
+                const response = await fetch(`${BACKEND_URL}/api/movies/tv/${id}/rating/`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -106,7 +107,7 @@ const WebSeriesDetails = () => {
             try {
                 const token = localStorage.getItem('access_token');
                 if (!token) return;
-                const response = await fetch(`http://localhost:8000/api/movies/tv/${id}/activity/`, {
+                const response = await fetch(`${BACKEND_URL}/api/movies/tv/${id}/activity/`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await response.json();
@@ -122,7 +123,7 @@ const WebSeriesDetails = () => {
         const fetchRecommendations = async () => {
             try {
                 const token = localStorage.getItem('access_token');
-                const response = await fetch(`http://localhost:8000/api/movies/tv/${id}/recommendations/`, {
+                const response = await fetch(`${BACKEND_URL}/api/movies/tv/${id}/recommendations/`, {
                     headers: token ? { 'Authorization': `Bearer ${token}` } : {}
                 });
                 const data = await response.json();
@@ -162,7 +163,7 @@ const WebSeriesDetails = () => {
                 return;
             }
 
-            const response = await fetch(`http://localhost:8000/api/movies/tv/${id}/rating/`, {
+            const response = await fetch(`${BACKEND_URL}/api/movies/tv/${id}/rating/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -209,7 +210,7 @@ const WebSeriesDetails = () => {
             const newValue = type === 'logged' ? !isLogged : !isWatchlist;
             const body = type === 'logged' ? { is_logged: newValue } : { is_watchlist: newValue };
 
-            const response = await fetch(`http://localhost:8000/api/movies/tv/${id}/activity/`, {
+            const response = await fetch(`${BACKEND_URL}/api/movies/tv/${id}/activity/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -230,7 +231,7 @@ const WebSeriesDetails = () => {
     const handleDeleteReview = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch(`http://localhost:8000/api/movies/tv/${id}/rating/`, {
+            const response = await fetch(`${BACKEND_URL}/api/movies/tv/${id}/rating/`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
