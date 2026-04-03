@@ -49,11 +49,18 @@ class PostSerializer(serializers.ModelSerializer):
         return default_path
 
     def get_vote_score(self, obj):
+        # Prefer annotated score if available
+        if hasattr(obj, 'score'):
+            return obj.score if obj.score is not None else 0
+            
         from django.db.models import Sum
         score = obj.votes.aggregate(Sum('vote_type'))['vote_type__sum']
         return score if score is not None else 0
 
     def get_comments_count(self, obj):
+        # Prefer annotated count if available
+        if hasattr(obj, 'comments_count_attr'):
+            return obj.comments_count_attr
         return obj.comments.count()
 
     def get_user_vote(self, obj):

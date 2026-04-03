@@ -15,6 +15,7 @@ const CommunityDetail = () => {
   const [loading, setLoading] = useState(false);
   const [posting, setPosting] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [sortBy, setSortBy] = useState("latest");
 
   // EDIT POST STATES
   const [editingPostId, setEditingPostId] = useState(null);
@@ -23,13 +24,16 @@ const CommunityDetail = () => {
 
   useEffect(() => {
     fetchCommunity();
-    fetchPosts();
     fetchCurrentUser();
 
     const handleClickOutside = () => setActivePostMenuId(null);
     window.addEventListener('click', handleClickOutside);
     return () => window.removeEventListener('click', handleClickOutside);
   }, [id]);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [id, sortBy]);
 
   const fetchCurrentUser = async () => {
     try {
@@ -52,7 +56,9 @@ const CommunityDetail = () => {
 
   const fetchPosts = async () => {
     try {
-      const res = await api.get(`/loreroom/${id}/posts/`);
+      const res = await api.get(`/loreroom/${id}/posts/`, {
+        params: { sort: sortBy }
+      });
       setPosts(res.data);
     } catch (error) {
       console.error("Error fetching posts:", error);
@@ -248,7 +254,23 @@ const CommunityDetail = () => {
 
         {/* Posts Feed */}
         <div className="posts-feed">
-          <h2 className="feed-title">Community Feed</h2>
+          <div className="feed-header">
+            <h2 className="feed-title">Community Feed</h2>
+            <div className="sort-options">
+              <button 
+                className={`sort-button ${sortBy === 'latest' ? 'active' : ''}`}
+                onClick={() => setSortBy('latest')}
+              >
+                Latest
+              </button>
+              <button 
+                className={`sort-button ${sortBy === 'popular' ? 'active' : ''}`}
+                onClick={() => setSortBy('popular')}
+              >
+                Popular
+              </button>
+            </div>
+          </div>
 
           {posts.length === 0 ? (
             <div className="empty-feed">

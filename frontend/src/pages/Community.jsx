@@ -21,6 +21,7 @@ const Community = () => {
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [joinedCommunities, setJoinedCommunities] = useState([]);
   const [selectedRoomId, setSelectedRoomId] = useState(null); // NULL = All Joined Posts
+  const [sortBy, setSortBy] = useState("latest");
 
   // QUICK POST STATES
   const [newPostContent, setNewPostContent] = useState("");
@@ -73,7 +74,7 @@ const Community = () => {
     if (activeTab === "feed") {
       fetchJoinedPosts();
     }
-  }, [activeTab]);
+  }, [activeTab, sortBy]);
 
   const checkUserRole = async () => {
     try {
@@ -114,7 +115,9 @@ const Community = () => {
   const fetchJoinedPosts = async () => {
     setLoadingPosts(true);
     try {
-      const response = await api.get("posts/joined_posts/");
+      const response = await api.get("posts/joined_posts/", {
+        params: { sort: sortBy }
+      });
       setJoinedPosts(response.data);
     } catch (err) {
       console.error("Error fetching joined posts:", err);
@@ -307,6 +310,13 @@ const Community = () => {
     }
   };
 
+  const groupedJoinedCommunities = joinedCommunities.reduce((acc, comm) => {
+    const category = comm.category || "General";
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(comm);
+    return acc;
+  }, {});
+
   const filteredCommunities = communities.filter(community => {
     return community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       community.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -391,13 +401,26 @@ const Community = () => {
                       </div>
                       <select
                         className="community-selector"
-                        style={{ flex: 1, border: '1px solid var(--border-color)', background: 'var(--hover-bg)' }}
+                        style={{ 
+                          flex: 1, 
+                          border: '1px solid var(--border-color)', 
+                          background: 'var(--hover-bg)',
+                          padding: '10px 16px',
+                          borderRadius: '8px',
+                          color: 'var(--text-color)',
+                          fontSize: '14px',
+                          fontWeight: '600'
+                        }}
                         value={selectedRoomId || selectedCommunityId}
                         onChange={(e) => setSelectedCommunityId(e.target.value)}
                         disabled={!!selectedRoomId}
                       >
-                        {joinedCommunities.map(c => (
-                          <option key={c.id} value={c.id}>{c.name}</option>
+                        {Object.entries(groupedJoinedCommunities).map(([category, comms]) => (
+                          <optgroup key={category} label={category}>
+                            {comms.map(c => (
+                              <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                          </optgroup>
                         ))}
                       </select>
                     </div>
@@ -420,6 +443,41 @@ const Community = () => {
                     </div>
                   </div>
                 )}
+
+                {/* SORTING UI */}
+                <div className="feed-sort-container" style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '16px',
+                  background: 'transparent',
+                  padding: '0',
+                  borderRadius: '0',
+                  border: 'none'
+                }}>
+                  <select
+                    className="feed-sort-select"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    style={{
+                      background: 'var(--hover-bg)',
+                      border: '1px solid var(--border-color)',
+                      color: 'var(--text-color)',
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      outline: 'none',
+                      transition: 'all 0.2s ease',
+                      width: 'auto',
+                      minWidth: '100px'
+                    }}
+                  >
+                    <option value="latest">Latest</option>
+                    <option value="popular">Popular</option>
+                  </select>
+                </div>
 
                 {loadingPosts ? (
                   <div className="loading-posts">

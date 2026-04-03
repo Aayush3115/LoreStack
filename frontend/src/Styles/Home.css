@@ -141,12 +141,34 @@
     gap: 8px;
 }
 
-.dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
+.sort-options-mini {
+    display: flex;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 3px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sort-btn-mini {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.sort-btn-mini:hover {
+    color: var(--text-primary);
+}
+
+.sort-btn-mini.active {
     background: rgba(255, 255, 255, 0.1);
-    transition: 0.3s;
+    color: var(--accent-color);
 }
 
 .dot.active {

@@ -1,4 +1,5 @@
-from django.db import models
+from django.db.models import Sum, Value, Count
+from django.db.models.functions import Coalesce
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.decorators import action
@@ -39,7 +40,17 @@ class CommunityViewSet(ModelViewSet):
         community = self.get_object()
         
         if request.method == 'GET':
-            posts = Post.objects.filter(community=community).order_by('-created_at')
+            queryset = Post.objects.filter(community=community).annotate(
+                score=Coalesce(Sum('votes__vote_type'), Value(0)),
+                comments_count_attr=Count('comments', distinct=True)
+            )
+            
+            sort = request.query_params.get('sort', 'latest')
+            if sort == 'popular':
+                posts = queryset.order_by('-score', '-created_at')
+            else:
+                posts = queryset.order_by('-created_at')
+                
             serializer = PostSerializer(posts, many=True, context={'request': request})
             return Response(serializer.data)
             

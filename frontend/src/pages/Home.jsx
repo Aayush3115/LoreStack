@@ -25,6 +25,7 @@ const Home = () => {
     const [isRoomsLoading, setIsRoomsLoading] = useState(true);
     const [userData, setUserData] = useState(null);
     const [activeTab, setActiveTab] = useState('home');
+    const [sortBy, setSortBy] = useState('latest');
 
     const railRef = useRef(null);
 
@@ -42,8 +43,11 @@ const Home = () => {
 
                 setMoods(moodsRes.data);
                 setUserData(profileRes.data);
-                setDiscussions(postsRes.data.slice(0, 3));
                 setMyLoreRooms(createdCommsRes.data);
+                
+                // Fetch initial discussions with current sortBy
+                const discussionsRes = await API.get('posts/posts/', { params: { sort: sortBy } });
+                setDiscussions(discussionsRes.data.slice(0, 5));
 
                 // Set default vibe if none selected
                 if (moodsRes.data.length > 0) {
@@ -59,6 +63,25 @@ const Home = () => {
         };
         fetchInitialData();
     }, []);
+
+    // Fetch Discussions when sort changes
+    useEffect(() => {
+        const fetchDiscussions = async () => {
+            try {
+                const response = await API.get('posts/posts/', {
+                    params: { sort: sortBy }
+                });
+                setDiscussions(response.data.slice(0, 5));
+            } catch (err) {
+                console.error("Failed to fetch discussions:", err);
+            }
+        };
+        
+        // Skip first mount if already fetched in fetchInitialData
+        if (moods.length > 0) {
+            fetchDiscussions();
+        }
+    }, [sortBy]);
 
     // Fetch Recommendations
     useEffect(() => {
@@ -258,10 +281,20 @@ const Home = () => {
                 <section className="content-section">
                     <div className="section-header">
                         <h2 className="section-title-main">Trending Discussions</h2>
-                        {/* <div className="pagination-dots">
-                            <div className="dot active"></div>
-                            <div className="dot"></div>
-                        </div> */}
+                        <div className="sort-options-mini">
+                            <button 
+                                className={`sort-btn-mini ${sortBy === 'latest' ? 'active' : ''}`}
+                                onClick={() => setSortBy('latest')}
+                            >
+                                Latest
+                            </button>
+                            <button 
+                                className={`sort-btn-mini ${sortBy === 'popular' ? 'active' : ''}`}
+                                onClick={() => setSortBy('popular')}
+                            >
+                                Popular
+                            </button>
+                        </div>
                     </div>
 
                     <div className="discussions-list">

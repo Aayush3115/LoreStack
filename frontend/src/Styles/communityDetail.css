@@ -333,11 +333,43 @@
   margin-top: 32px;
 }
 
-.feed-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 20px;
+.feed-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.sort-options {
+  display: flex;
+  gap: 12px;
+  background: var(--hover-bg);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.sort-button {
+  background: transparent;
+  border: none;
+  color: var(--secondary-text);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sort-button:hover {
   color: var(--text-color);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sort-button.active {
+  background: var(--card-bg);
+  color: #3b82f6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Empty Feed */
