@@ -19,13 +19,11 @@ const Home = () => {
     const [selectedVibe, setSelectedVibe] = useState(null);
     const [mediaType, setMediaType] = useState('movie');
     const [recommendations, setRecommendations] = useState([]);
-    const [discussions, setDiscussions] = useState([]);
     const [myLoreRooms, setMyLoreRooms] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isRoomsLoading, setIsRoomsLoading] = useState(true);
     const [userData, setUserData] = useState(null);
     const [activeTab, setActiveTab] = useState('home');
-    const [sortBy, setSortBy] = useState('latest');
 
     const railRef = useRef(null);
 
@@ -34,20 +32,15 @@ const Home = () => {
         const fetchInitialData = async () => {
             setIsRoomsLoading(true);
             try {
-                const [moodsRes, profileRes, postsRes, createdCommsRes] = await Promise.all([
+                const [moodsRes, profileRes, createdCommsRes] = await Promise.all([
                     API.get('moods/list/'),
                     API.get('auth/profile/'),
-                    API.get('posts/posts/').catch(() => ({ data: [] })),
-                    API.get('loreroom/created/').catch(() => ({ data: [] }))
+                    API.get('loreroom/').catch(() => ({ data: [] }))
                 ]);
 
                 setMoods(moodsRes.data);
                 setUserData(profileRes.data);
                 setMyLoreRooms(createdCommsRes.data);
-                
-                // Fetch initial discussions with current sortBy
-                const discussionsRes = await API.get('posts/posts/', { params: { sort: sortBy } });
-                setDiscussions(discussionsRes.data.slice(0, 5));
 
                 // Set default vibe if none selected
                 if (moodsRes.data.length > 0) {
@@ -63,25 +56,6 @@ const Home = () => {
         };
         fetchInitialData();
     }, []);
-
-    // Fetch Discussions when sort changes
-    useEffect(() => {
-        const fetchDiscussions = async () => {
-            try {
-                const response = await API.get('posts/posts/', {
-                    params: { sort: sortBy }
-                });
-                setDiscussions(response.data.slice(0, 5));
-            } catch (err) {
-                console.error("Failed to fetch discussions:", err);
-            }
-        };
-        
-        // Skip first mount if already fetched in fetchInitialData
-        if (moods.length > 0) {
-            fetchDiscussions();
-        }
-    }, [sortBy]);
 
     // Fetch Recommendations
     useEffect(() => {
@@ -108,35 +82,6 @@ const Home = () => {
 
         fetchRecommendations();
     }, [selectedVibe, mediaType]);
-    
-    const handleVote = async (postId, voteType) => {
-        if (!userData) return;
-
-        try {
-            await API.post(`/votes/`, {
-                post: postId,
-                vote_type: voteType
-            });
-            
-            setDiscussions(prevDiscussions => prevDiscussions.map(post => {
-                if (post.id === postId) {
-                    const currentVote = post.user_vote || 0;
-                    let newScore = post.vote_score || 0;
-                    
-                    if (currentVote === voteType) {
-                        newScore -= voteType;
-                        return { ...post, vote_score: newScore, user_vote: 0 };
-                    } else {
-                        newScore = newScore - currentVote + voteType;
-                        return { ...post, vote_score: newScore, user_vote: voteType };
-                    }
-                }
-                return post;
-            }));
-        } catch (error) {
-            console.error("Error voting on post:", error);
-        }
-    };
 
     const handleMediaClick = (item) => {
         const path = mediaType === 'movie' ? 'movie' : (mediaType === 'tv' ? 'tv' : 'anime');
@@ -152,34 +97,7 @@ const Home = () => {
         return '#8b5cf6';
     };
 
-    // Mock data for discussions if empty
-    const displayDiscussions = discussions.length > 0 ? discussions : [
-        {
-            id: 1,
-            user: { username: 'SciFiFan89', profile_picture: null },
-            vibe: 'Mind-Bending',
-            content: 'Interstellar blew my mind! The visuals and concepts were incredible! Need similar reco..',
-            vote_score: 128,
-            comments_count: 23,
-            user_vote: 0
-        },
-        {
-            id: 2,
-            user: { username: 'MovieLover22', profile_picture: null },
-            vibe: 'Emotional',
-            content: "Just finished The Green Mile. I'm in tears. What a powerful film. Anyone else seen it lately?",
-            vote_score: 94,
-            comments_count: 18,
-            user_vote: 0
-        }
-    ];
-
-    // Mock data for LoreRooms if empty
-    const displayLoreRooms = myLoreRooms.length > 0 ? myLoreRooms : [
-        { id: 1, name: 'Sci-Fi Universe', category: 'Movies' },
-        { id: 2, name: 'Anime Sanctuary', category: 'Anime' },
-        { id: 3, name: 'Drama Deep Dive', category: 'TV Series' }
-    ];
+    const displayLoreRooms = myLoreRooms;
 
     return (
         <div className="home-container sidebar-layout">
@@ -240,11 +158,6 @@ const Home = () => {
                         <div className="section-title-wrap">
                             <h2 className="section-title-main">Recommended For You</h2>
                         </div>
-                        {/* <div className="pagination-dots">
-                            <div className="dot active"></div>
-                            <div className="dot"></div>
-                            <div className="dot"></div>
-                        </div> */}
                     </div>
 
                     {isLoading ? (
@@ -277,78 +190,10 @@ const Home = () => {
                     )}
                 </section>
 
-                {/* --- TRENDING DISCUSSIONS --- */}
-                <section className="content-section">
-                    <div className="section-header">
-                        <h2 className="section-title-main">Trending Discussions</h2>
-                        <div className="sort-options-mini">
-                            <button 
-                                className={`sort-btn-mini ${sortBy === 'latest' ? 'active' : ''}`}
-                                onClick={() => setSortBy('latest')}
-                            >
-                                Latest
-                            </button>
-                            <button 
-                                className={`sort-btn-mini ${sortBy === 'popular' ? 'active' : ''}`}
-                                onClick={() => setSortBy('popular')}
-                            >
-                                Popular
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="discussions-list">
-                        {displayDiscussions.map((post) => (
-                            <div key={post.id} className="discussion-card">
-                                <div className="user-avatar-small" style={{ background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <User size={24} color="#94a3b8" />
-                                </div>
-                                <div className="discussion-content">
-                                    <div className="discussion-header">
-                                        <span className="user-name">{post.user?.username || 'User'}</span>
-                                        <span className="mood-tag" style={{ background: `${getMoodColor(post.vibe || 'Happy')}22`, color: getMoodColor(post.vibe || 'Happy') }}>
-                                            <Sparkles size={12} />
-                                            {post.vibe || 'Mind-Bending'}
-                                        </span>
-                                    </div>
-                                    <p className="comment-text">
-                                        {post.content || post.text}
-                                    </p>
-                                    <div className="discussion-footer">
-                                        <div className="vote-container-mini">
-                                            <button 
-                                                className={`vote-btn-mini ${post.user_vote === 1 ? 'active-up' : ''}`}
-                                                onClick={() => handleVote(post.id, 1)}
-                                            >
-                                                <ArrowBigUp size={16} fill={post.user_vote === 1 ? "currentColor" : "none"} />
-                                            </button>
-                                            <span className={`vote-count-mini ${post.user_vote === 1 ? 'up' : post.user_vote === -1 ? 'down' : ''}`}>
-                                                {post.vote_score || 0}
-                                            </span>
-                                            <button 
-                                                className={`vote-btn-mini ${post.user_vote === -1 ? 'active-down' : ''}`}
-                                                onClick={() => handleVote(post.id, -1)}
-                                            >
-                                                <ArrowBigDown size={16} fill={post.user_vote === -1 ? "currentColor" : "none"} />
-                                            </button>
-                                        </div>
-                                        <div className="footer-item"><MessageSquare size={16} /> {post.comments_count || 0}</div>
-                                        <div className="footer-item"><MoreHorizontal size={16} /></div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-
                 {/* --- YOUR LOREROOMS --- */}
                 <section className="content-section">
                     <div className="section-header">
                         <h2 className="section-title-main">Popular LoreRooms</h2>
-                        {/* <div className="pagination-dots">
-                            <div className="dot active"></div>
-                            <div className="dot"></div>
-                        </div> */}
                     </div>
 
                     <div className="horizontal-rail">
