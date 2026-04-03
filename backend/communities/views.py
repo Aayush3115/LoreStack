@@ -1,3 +1,4 @@
+from django.db import models
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.decorators import action
@@ -63,6 +64,21 @@ class CommunityViewSet(ModelViewSet):
         community = self.get_object()
         community.members.remove(request.user)
         return Response({'status': 'left'})
+
+    @action(detail=False, methods=['get'])
+    def joined(self, request):
+        communities = request.user.communities.all()
+        serializer = self.get_serializer(communities, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def created(self, request):
+        # Return communities created by the user OR any staff member (Official LoreRooms)
+        communities = Community.objects.filter(
+            models.Q(created_by=request.user) | models.Q(created_by__is_staff=True)
+        ).distinct()
+        serializer = self.get_serializer(communities, many=True)
+        return Response(serializer.data)
 
 class CommunityRequestViewSet(ModelViewSet):
     queryset = CommunityRequest.objects.all()

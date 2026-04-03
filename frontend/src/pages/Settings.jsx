@@ -1,5 +1,5 @@
 import Sidebar from '../Components/Sidebar/Sidebar';
-import '../Styles/Home.css';
+import '../Styles/Explore.css';
 
 const Settings = () => {
   return (

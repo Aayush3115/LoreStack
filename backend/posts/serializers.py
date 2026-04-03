@@ -31,12 +31,22 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_user_avatar(self, obj):
         request = self.context.get('request')
-        if hasattr(obj.author, 'profile_picture') and obj.author.profile_picture:
-            url = obj.author.profile_picture.url
-            if request:
-                return request.build_absolute_uri(url)
-            return url
-        return None
+        default_path = '/media/profile_pics/default.jpg'
+        
+        if obj.author.profile_picture:
+            try:
+                url = obj.author.profile_picture.url
+                if url and 'default.jpg' not in url:
+                    if request:
+                        return request.build_absolute_uri(url)
+                    return url
+            except Exception:
+                pass
+                
+        # Fallback to local default image
+        if request:
+            return request.build_absolute_uri(default_path)
+        return default_path
 
     def get_likes(self, obj):
         return obj.like_set.count()

@@ -4,7 +4,6 @@ from moods.models import Mood
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 
-
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
@@ -33,20 +32,24 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_profile_picture(self, obj):
         request = self.context.get('request')
+        default_path = '/media/profile_pics/default.jpg'
+        
+        # If the user has uploaded an image and it's not the default
         if obj.profile_picture:
             try:
                 url = obj.profile_picture.url
-            except ValueError:
-                url = '/media/profile_pics/default.jpg'
-            
-            if request:
-                return request.build_absolute_uri(url)
-            return url
+                # If it's a real Cloudinary URL (doesn't contain default.jpg)
+                if url and 'default.jpg' not in url:
+                    if request:
+                        return request.build_absolute_uri(url)
+                    return url
+            except Exception:
+                pass
         
-        default_url = '/media/profile_pics/default.jpg'
+        # Fallback to absolute URL of local default image
         if request:
-            return request.build_absolute_uri(default_url)
-        return default_url
+            return request.build_absolute_uri(default_path)
+        return default_path
 
 class RegisterSerializer(serializers.ModelSerializer):
     password=serializers.CharField(
@@ -92,6 +95,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
+            'username',
             'first_name', 
             'last_name',
             'email',

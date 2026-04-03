@@ -4,6 +4,7 @@ import Sidebar from '../Components/Sidebar/Sidebar';
 import '../Styles/MovieDetails.css';
 import '../styles/communityDetail.css';
 import { MoreVertical, Edit2, Trash2, Loader2, Bookmark, Eye, Check, X } from 'lucide-react';
+import { BACKEND_URL } from '../api/api';
 
 const AnimeDetails = () => {
     const { id } = useParams();
@@ -27,7 +28,7 @@ const AnimeDetails = () => {
     const fetchAllReviews = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch(`http://localhost:8000/api/movies/anime/${id}/rating/?all=true`, {
+            const response = await fetch(`${BACKEND_URL}/api/movies/anime/${id}/rating/?all=true`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -47,7 +48,7 @@ const AnimeDetails = () => {
                 const token = localStorage.getItem('access_token');
                 if (!token) return;
 
-                const response = await fetch("http://localhost:8000/api/auth/profile/", {
+                const response = await fetch(`${BACKEND_URL}/api/auth/profile/`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -63,7 +64,7 @@ const AnimeDetails = () => {
 
         const fetchAnimeDetails = async () => {
             try {
-                const response = await fetch(`http://localhost:8000/api/movies/anime/${id}/`);
+                const response = await fetch(`${BACKEND_URL}/api/movies/anime/${id}/`);
                 const data = await response.json();
 
                 if (data.status_code === 200) {
@@ -84,7 +85,7 @@ const AnimeDetails = () => {
                 const token = localStorage.getItem('access_token');
                 if (!token) return;
 
-                const response = await fetch(`http://localhost:8000/api/movies/anime/${id}/rating/`, {
+                const response = await fetch(`${BACKEND_URL}/api/movies/anime/${id}/rating/`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -104,7 +105,7 @@ const AnimeDetails = () => {
             try {
                 const token = localStorage.getItem('access_token');
                 if (!token) return;
-                const response = await fetch(`http://localhost:8000/api/movies/anime/${id}/activity/`, {
+                const response = await fetch(`${BACKEND_URL}/api/movies/anime/${id}/activity/`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await response.json();
@@ -144,7 +145,7 @@ const AnimeDetails = () => {
                 return;
             }
 
-            const response = await fetch(`http://localhost:8000/api/movies/anime/${id}/rating/`, {
+            const response = await fetch(`${BACKEND_URL}/api/movies/anime/${id}/rating/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -192,7 +193,7 @@ const AnimeDetails = () => {
             const newValue = type === 'logged' ? !isLogged : !isWatchlist;
             const body = type === 'logged' ? { is_logged: newValue } : { is_watchlist: newValue };
 
-            const response = await fetch(`http://localhost:8000/api/movies/anime/${id}/activity/`, {
+            const response = await fetch(`${BACKEND_URL}/api/movies/anime/${id}/activity/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -213,7 +214,7 @@ const AnimeDetails = () => {
     const handleDeleteReview = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch(`http://localhost:8000/api/movies/anime/${id}/rating/`, {
+            const response = await fetch(`${BACKEND_URL}/api/movies/anime/${id}/rating/`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -352,17 +353,13 @@ const AnimeDetails = () => {
                                         <span>•</span>
                                         <div className="hero-ratings-group">
                                             <span className="rating-badge star-rating">★ {((anime.averageScore || 0) / 10).toFixed(1)}</span>
-                                            {userRating ? (
+                                            {userRating && (
                                                 <span
                                                     className="rating-badge lore-rating user-verdict-badge"
                                                     style={{ backgroundColor: getColorByRating(userRating), color: 'white', border: 'none' }}
                                                 >
                                                     {userRating === 'goforit' ? 'Go For It' : userRating.charAt(0).toUpperCase() + userRating.slice(1)}
                                                 </span>
-                                            ) : (
-                                                !isEditingReview && getLoreScore() && (
-                                                    <span className="rating-badge lore-rating">🛡️ {getLoreScore()}</span>
-                                                )
                                             )}
                                         </div>
                                     </div>
@@ -594,67 +591,61 @@ const AnimeDetails = () => {
                                     </button>
                                 </section>
 
-                                {(isLogged || userRating) && (
-                                    <div className="rating-section-lore">
-                                        <span className="detail-label">Community Rating</span>
-                                        {allReviews.length > 0 ? (
-                                            <div className="speedometer-container">
-                                                <div className="speedometer">
-                                                    <svg viewBox="0 0 100 55" className="gauge-svg">
-                                                        <path d="M10 50 A40 40 0 0 1 90 50" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" strokeLinecap="round" />
-                                                        {(() => {
-                                                            let cumulativeLength = 0;
-                                                            return getRatingDistribution().map((item) => {
-                                                                const segmentLength = (item.percent / 100) * 125.6;
-                                                                const currentOffset = -cumulativeLength;
-                                                                cumulativeLength += segmentLength;
+                                <div className="rating-section-lore">
+                                    <span className="detail-label">Community Rating</span>
+                                    <div className="speedometer-container">
+                                        <div className="speedometer">
+                                            <svg viewBox="0 0 100 55" className="gauge-svg">
+                                                <path d="M10 50 A40 40 0 0 1 90 50" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" strokeLinecap="round" />
+                                                {(() => {
+                                                    let cumulativeLength = 0;
+                                                    return getRatingDistribution().map((item) => {
+                                                        const segmentLength = (item.percent / 100) * 125.6;
+                                                        const currentOffset = -cumulativeLength;
+                                                        cumulativeLength += segmentLength;
 
-                                                                return (
-                                                                    <path
-                                                                        key={item.label}
-                                                                        d="M10 50 A40 40 0 0 1 90 50"
-                                                                        fill="none"
-                                                                        stroke={getColorByRating(item.label)}
-                                                                        strokeWidth="8"
-                                                                        strokeLinecap="round"
-                                                                        strokeDasharray={`${segmentLength} 125.6`}
-                                                                        strokeDashoffset={currentOffset}
-                                                                        className={`gauge-segment ${hoveredRatingData?.label === item.label ? 'hovered' : ''}`}
-                                                                        onMouseEnter={() => setHoveredRatingData(item)}
-                                                                        onMouseLeave={() => setHoveredRatingData(null)}
-                                                                    />
-                                                                );
-                                                            });
-                                                        })()}
-                                                    </svg>
-                                                    <div className="gauge-score-container">
-                                                        <span className="gauge-value verdict-text" style={{ color: getColorByRating(hoveredRatingData?.label || getMajorityRating()?.label) }}>
-                                                            {formatRatingLabel(hoveredRatingData?.label || getMajorityRating()?.label)}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className="gauge-labels">
-                                                    <span>Skip</span>
-                                                    <span>Mix</span>
-                                                    <span>Lore</span>
-                                                </div>
+                                                        return (
+                                                            <path
+                                                                key={item.label}
+                                                                d="M10 50 A40 40 0 0 1 90 50"
+                                                                fill="none"
+                                                                stroke={getColorByRating(item.label)}
+                                                                strokeWidth="8"
+                                                                strokeLinecap="round"
+                                                                strokeDasharray={`${segmentLength} 125.6`}
+                                                                strokeDashoffset={currentOffset}
+                                                                className={`gauge-segment ${hoveredRatingData?.label === item.label ? 'hovered' : ''}`}
+                                                                onMouseEnter={() => setHoveredRatingData(item)}
+                                                                onMouseLeave={() => setHoveredRatingData(null)}
+                                                            />
+                                                        );
+                                                    });
+                                                })()}
+                                            </svg>
+                                            <div className="gauge-score-container">
+                                                <span className="gauge-value verdict-text" style={{ color: getColorByRating(hoveredRatingData?.label || getMajorityRating()?.label) }}>
+                                                    {formatRatingLabel(hoveredRatingData?.label || getMajorityRating()?.label) || (allReviews.length === 0 ? "No Ratings" : "")}
+                                                </span>
                                             </div>
-                                        ) : (
-                                            <p className="no-lore-text">No lore recorded yet.</p>
-                                        )}
-
-                                        {userRating && (
-                                            <button
-                                                className="edit-lore-btn-sidebar"
-                                                onClick={() => {
-                                                    setShowLogModal(true);
-                                                }}
-                                            >
-                                                Edit Your Lore
-                                            </button>
-                                        )}
+                                        </div>
+                                        <div className="gauge-labels">
+                                            <span>Skip</span>
+                                            <span>Mix</span>
+                                            <span>Lore</span>
+                                        </div>
                                     </div>
-                                )}
+
+                                    {userRating && (
+                                        <button
+                                            className="edit-lore-btn-sidebar"
+                                            onClick={() => {
+                                                setShowLogModal(true);
+                                            }}
+                                        >
+                                            Edit Your Lore
+                                        </button>
+                                    )}
+                                </div>
 
                                 <div className="detail-item">
                                     <span className="detail-label">Status</span>
@@ -750,12 +741,19 @@ const AnimeDetails = () => {
                         </div>
 
                         <div className="log-modal-footer">
-                            <button 
-                                className="save-log-btn" 
-                                onClick={handleRate}
-                                disabled={isSaving || !userRating}
+                            <button className="btn-secondary-lore" onClick={() => setShowLogModal(false)}>Cancel</button>
+                            <button
+                                className="btn-primary-lore"
+                                onClick={async () => {
+                                    if (!userRating) {
+                                        alert("Please select a rating to log!");
+                                        return;
+                                    }
+                                    await handleRate();
+                                    setShowLogModal(false);
+                                }}
                             >
-                                {isSaving ? "Saving..." : "Save Lore"}
+                                Save Entry
                             </button>
                         </div>
                     </div>

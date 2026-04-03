@@ -5,7 +5,7 @@ from .views import (
     movie_rating, tv_rating, anime_rating,
     universal_search, 
     movie_activity, tv_activity, anime_activity,
-    user_watchlist, 
+    user_watchlist, user_stats, user_activity_list,
     movie_recommendations, tv_recommendations,
     anime_details
 )
@@ -16,6 +16,8 @@ urlpatterns = [
     path("trending-anime/", trending_anime, name="trending_anime"),
     path("search/", universal_search, name="universal_search"),
     path("user-watchlist/", user_watchlist, name="user_watchlist"),
+    path("user-stats/", user_stats, name="user_stats"),
+    path("user-activity/", user_activity_list, name="user_activity"),
     path("<int:movie_id>/", movie_details, name="movie_details"),
     path("tv/<int:tv_id>/", tv_details, name="tv_details"),
     path("anime/<int:anime_id>/", anime_details, name="anime_details"),
