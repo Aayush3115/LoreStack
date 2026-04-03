@@ -1,4 +1,4 @@
-from django.db.models import Sum, Value, Count
+from django.db.models import Sum, Value, Count, Q
 from django.db.models.functions import Coalesce
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
@@ -15,6 +15,11 @@ class CommunityViewSet(ModelViewSet):
     queryset = Community.objects.all()
     serializer_class = CommunitySerializer
     authentication_classes = [JWTAuthentication]
+    
+    def get_queryset(self):
+        return Community.objects.annotate(
+            member_count_anno=Count('members')
+        ).order_by('-member_count_anno', '-created_at')
 
     def get_permissions(self):
         """
@@ -86,7 +91,7 @@ class CommunityViewSet(ModelViewSet):
     def created(self, request):
         # Return communities created by the user OR any staff member (Official LoreRooms)
         communities = Community.objects.filter(
-            models.Q(created_by=request.user) | models.Q(created_by__is_staff=True)
+            Q(created_by=request.user) | Q(created_by__is_staff=True)
         ).distinct()
         serializer = self.get_serializer(communities, many=True)
         return Response(serializer.data)
