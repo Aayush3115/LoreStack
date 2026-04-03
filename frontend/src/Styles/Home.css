@@ -279,8 +279,53 @@
     color: var(--text-secondary);
     font-size: 0.95rem;
     line-height: 1.5;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
 }
+
+.vote-container-mini {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 999px;
+    padding: 2px 4px;
+}
+
+.vote-btn-mini {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.vote-btn-mini:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.vote-btn-mini.active-up {
+    color: #ff4500;
+}
+
+.vote-btn-mini.active-down {
+    color: #7193ff;
+}
+
+.vote-count-mini {
+    font-size: 0.8rem;
+    font-weight: 700;
+    min-width: 16px;
+    text-align: center;
+}
+
+.vote-count-mini.up { color: #ff4500; }
+.vote-count-mini.down { color: #7193ff; }
 
 .discussion-footer {
     display: flex;
@@ -336,6 +381,7 @@
 .community-title-rail {
     font-size: 1.1rem;
     font-weight: 700;
+    color: #ffffff; /* Explicitly set to white for contrast */
 }
 
 /* ================ MOOD SELECTOR (Adapted) ================= */

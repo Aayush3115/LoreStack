@@ -4,9 +4,17 @@ from posts.models import Post
 # Create your models here.
 
 
-class Like(models.Model):
+class Vote(models.Model):
+    UPVOTE = 1
+    DOWNVOTE = -1
+    VOTE_CHOICES = (
+        (UPVOTE, 'Upvote'),
+        (DOWNVOTE, 'Downvote'),
+    )
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='votes')
+    vote_type = models.SmallIntegerField(choices=VOTE_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

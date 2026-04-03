@@ -6,9 +6,9 @@ class PostSerializer(serializers.ModelSerializer):
     user_id = serializers.ReadOnlyField(source='author.id')
     community_name = serializers.ReadOnlyField(source='community.name')
     user_avatar = serializers.SerializerMethodField()
-    likes = serializers.SerializerMethodField()
+    vote_score = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
-    user_liked = serializers.SerializerMethodField()
+    user_vote = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -22,12 +22,12 @@ class PostSerializer(serializers.ModelSerializer):
             'community_name',
             'title',
             'content',
-            'likes',
+            'vote_score',
             'comments_count',
-            'user_liked',
+            'user_vote',
             'created_at'
         ]
-        read_only_fields = ['author', 'user_liked']
+        read_only_fields = ['author', 'user_vote']
 
     def get_user_avatar(self, obj):
         request = self.context.get('request')
@@ -48,15 +48,18 @@ class PostSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(default_path)
         return default_path
 
-    def get_likes(self, obj):
-        return obj.like_set.count()
+    def get_vote_score(self, obj):
+        from django.db.models import Sum
+        score = obj.votes.aggregate(Sum('vote_type'))['vote_type__sum']
+        return score if score is not None else 0
 
     def get_comments_count(self, obj):
         return obj.comments.count()
 
-    def get_user_liked(self, obj):
+    def get_user_vote(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            from interactions.models import Like
-            return Like.objects.filter(user=request.user, post=obj).exists()
-        return False
+            from interactions.models import Vote
+            vote = Vote.objects.filter(user=request.user, post=obj).first()
+            return vote.vote_type if vote else 0
+        return 0

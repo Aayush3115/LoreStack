@@ -8,6 +8,7 @@ import {
     Sparkles, Film, Tv, Loader2, Search, Bell,
     MessageSquare, Heart, Share2, Compass,
     Play, Plus, MoreHorizontal, User,
+    ArrowBigDown, ArrowBigUp,
     Gamepad2, BookOpen, Music
 } from 'lucide-react';
 import vibeBanner from '../assets/vibe-banner.png';
@@ -84,6 +85,35 @@ const Home = () => {
 
         fetchRecommendations();
     }, [selectedVibe, mediaType]);
+    
+    const handleVote = async (postId, voteType) => {
+        if (!userData) return;
+
+        try {
+            await API.post(`/votes/`, {
+                post: postId,
+                vote_type: voteType
+            });
+            
+            setDiscussions(prevDiscussions => prevDiscussions.map(post => {
+                if (post.id === postId) {
+                    const currentVote = post.user_vote || 0;
+                    let newScore = post.vote_score || 0;
+                    
+                    if (currentVote === voteType) {
+                        newScore -= voteType;
+                        return { ...post, vote_score: newScore, user_vote: 0 };
+                    } else {
+                        newScore = newScore - currentVote + voteType;
+                        return { ...post, vote_score: newScore, user_vote: voteType };
+                    }
+                }
+                return post;
+            }));
+        } catch (error) {
+            console.error("Error voting on post:", error);
+        }
+    };
 
     const handleMediaClick = (item) => {
         const path = mediaType === 'movie' ? 'movie' : (mediaType === 'tv' ? 'tv' : 'anime');
@@ -106,24 +136,26 @@ const Home = () => {
             user: { username: 'SciFiFan89', profile_picture: null },
             vibe: 'Mind-Bending',
             content: 'Interstellar blew my mind! The visuals and concepts were incredible! Need similar reco..',
-            likes: 128,
-            comments: 23
+            vote_score: 128,
+            comments_count: 23,
+            user_vote: 0
         },
         {
             id: 2,
             user: { username: 'MovieLover22', profile_picture: null },
             vibe: 'Emotional',
-            content: 'Just finished The Green Mile. I\'m in tears. What a powerful film. Anyone else seen it lately?',
-            likes: 94,
-            comments: 18
+            content: "Just finished The Green Mile. I'm in tears. What a powerful film. Anyone else seen it lately?",
+            vote_score: 94,
+            comments_count: 18,
+            user_vote: 0
         }
     ];
 
     // Mock data for LoreRooms if empty
     const displayLoreRooms = myLoreRooms.length > 0 ? myLoreRooms : [
-        { id: 1, name: 'Sci-Fi Universe', avatar_icon: '🚀', category: 'Movies' },
-        { id: 2, name: 'Anime Sanctuary', avatar_icon: '🎎', category: 'Anime' },
-        { id: 3, name: 'Drama Deep Dive', avatar_icon: '🎭', category: 'TV Series' }
+        { id: 1, name: 'Sci-Fi Universe', category: 'Movies' },
+        { id: 2, name: 'Anime Sanctuary', category: 'Anime' },
+        { id: 3, name: 'Drama Deep Dive', category: 'TV Series' }
     ];
 
     return (
@@ -185,11 +217,11 @@ const Home = () => {
                         <div className="section-title-wrap">
                             <h2 className="section-title-main">Recommended For You</h2>
                         </div>
-                        <div className="pagination-dots">
+                        {/* <div className="pagination-dots">
                             <div className="dot active"></div>
                             <div className="dot"></div>
                             <div className="dot"></div>
-                        </div>
+                        </div> */}
                     </div>
 
                     {isLoading ? (
@@ -226,10 +258,10 @@ const Home = () => {
                 <section className="content-section">
                     <div className="section-header">
                         <h2 className="section-title-main">Trending Discussions</h2>
-                        <div className="pagination-dots">
+                        {/* <div className="pagination-dots">
                             <div className="dot active"></div>
                             <div className="dot"></div>
-                        </div>
+                        </div> */}
                     </div>
 
                     <div className="discussions-list">
@@ -250,8 +282,24 @@ const Home = () => {
                                         {post.content || post.text}
                                     </p>
                                     <div className="discussion-footer">
-                                        <div className="footer-item"><Heart size={16} /> {post.likes || 0}</div>
-                                        <div className="footer-item"><MessageSquare size={16} /> {post.comments || 0}</div>
+                                        <div className="vote-container-mini">
+                                            <button 
+                                                className={`vote-btn-mini ${post.user_vote === 1 ? 'active-up' : ''}`}
+                                                onClick={() => handleVote(post.id, 1)}
+                                            >
+                                                <ArrowBigUp size={16} fill={post.user_vote === 1 ? "currentColor" : "none"} />
+                                            </button>
+                                            <span className={`vote-count-mini ${post.user_vote === 1 ? 'up' : post.user_vote === -1 ? 'down' : ''}`}>
+                                                {post.vote_score || 0}
+                                            </span>
+                                            <button 
+                                                className={`vote-btn-mini ${post.user_vote === -1 ? 'active-down' : ''}`}
+                                                onClick={() => handleVote(post.id, -1)}
+                                            >
+                                                <ArrowBigDown size={16} fill={post.user_vote === -1 ? "currentColor" : "none"} />
+                                            </button>
+                                        </div>
+                                        <div className="footer-item"><MessageSquare size={16} /> {post.comments_count || 0}</div>
                                         <div className="footer-item"><MoreHorizontal size={16} /></div>
                                     </div>
                                 </div>
@@ -264,10 +312,10 @@ const Home = () => {
                 <section className="content-section">
                     <div className="section-header">
                         <h2 className="section-title-main">Popular LoreRooms</h2>
-                        <div className="pagination-dots">
+                        {/* <div className="pagination-dots">
                             <div className="dot active"></div>
                             <div className="dot"></div>
-                        </div>
+                        </div> */}
                     </div>
 
                     <div className="horizontal-rail">
@@ -275,10 +323,12 @@ const Home = () => {
                             displayLoreRooms.map((room) => (
                                 <div key={room.id} className="community-rail-card" onClick={() => navigate(`/community/${room.id}`)}>
                                     <div className="room-visual-bg" style={{
-                                        background: `linear-gradient(135deg, ${getMoodColor(room.category || 'Happy')}22 0%, ${getMoodColor(room.category || 'Happy')}44 100%)`,
+                                        background: room.profile_picture ? `url(${room.profile_picture}) center/cover no-repeat` : `linear-gradient(135deg, ${getMoodColor(room.category || 'Happy')}22 0%, ${getMoodColor(room.category || 'Happy')}44 100%)`,
                                         height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'
                                     }}>
-                                        <span style={{ fontSize: '3rem', filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.2))' }}>{room.avatar_icon || '🏠'}</span>
+                                        {!room.profile_picture && (
+                                            <div className="default-community-emoji">🏠</div>
+                                        )}
                                     </div>
                                     <div className="community-overlay">
                                         <span className="mood-tag" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', marginBottom: '8px', padding: '2px 8px' }}>{room.category}</span>
