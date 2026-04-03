@@ -141,12 +141,34 @@
     gap: 8px;
 }
 
-.dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
+.sort-options-mini {
+    display: flex;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 3px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sort-btn-mini {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.sort-btn-mini:hover {
+    color: var(--text-primary);
+}
+
+.sort-btn-mini.active {
     background: rgba(255, 255, 255, 0.1);
-    transition: 0.3s;
+    color: var(--accent-color);
 }
 
 .dot.active {
@@ -220,88 +242,6 @@
     text-overflow: ellipsis;
 }
 
-/* ================= DISCUSSIONS ================= */
-.discussions-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.discussion-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    padding: 1.25rem;
-    display: flex;
-    gap: 1.25rem;
-    transition: 0.3s;
-}
-
-.discussion-card:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.15);
-}
-
-.user-avatar-small {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    object-fit: cover;
-}
-
-.discussion-content {
-    flex: 1;
-}
-
-.discussion-header {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.5rem;
-}
-
-.user-name {
-    font-weight: 700;
-    font-size: 0.95rem;
-}
-
-.mood-tag {
-    font-size: 0.75rem;
-    padding: 4px 10px;
-    border-radius: 99px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-weight: 600;
-}
-
-.comment-text {
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-    line-height: 1.5;
-    margin-bottom: 1rem;
-}
-
-.discussion-footer {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-}
-
-.footer-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.footer-item:hover {
-    color: var(--text-primary);
-}
-
 /* ================= COMMUNITY RAIL ================= */
 .community-rail-card {
     flex: 0 0 280px;
@@ -336,6 +276,7 @@
 .community-title-rail {
     font-size: 1.1rem;
     font-weight: 700;
+    color: #ffffff; /* Explicitly set to white for contrast */
 }
 
 /* ================ MOOD SELECTOR (Adapted) ================= */

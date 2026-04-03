@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Comment,Like
+from .models import Comment, Vote
 
 class CommentSerializer(serializers.ModelSerializer):
     user_username = serializers.ReadOnlyField(source='user.username')
@@ -17,13 +17,14 @@ class CommentSerializer(serializers.ModelSerializer):
         read_only_fields = ['user']
 
 
-class LikeSerializer(serializers.ModelSerializer):
+class VoteSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Like
+        model = Vote
         fields = [
             'id',
             'user',
             'post',
+            'vote_type',
             'created_at'
         ]
         read_only_fields = ['user']

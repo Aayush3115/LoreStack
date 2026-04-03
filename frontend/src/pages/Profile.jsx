@@ -348,10 +348,14 @@ const Profile = () => {
                                     <div className="rooms-list-grid">
                                         {joinedRooms.map(room => (
                                             <div key={room.id} className="joined-room-card" onClick={() => navigate(`/community/${room.id}`)}>
-                                                <div className="room-icon-circle">{room.avatar_icon}</div>
+                                                {room.profile_picture ? (
+                                                    <img src={room.profile_picture} alt={room.name} className="room-icon-circle" style={{ objectFit: 'cover' }} />
+                                                ) : (
+                                                    <div className="room-icon-circle">🏠</div>
+                                                )}
                                                 <div className="room-card-info">
                                                     <h4>{room.name}</h4>
-                                                    <p>{room.members?.length || 0} members</p>
+                                                    <p>{room.memberCount || 0} members</p>
                                                 </div>
                                             </div>
                                         ))}

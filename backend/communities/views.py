@@ -1,4 +1,5 @@
-from django.db import models
+from django.db.models import Sum, Value, Count, Q
+from django.db.models.functions import Coalesce
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.decorators import action
@@ -14,6 +15,11 @@ class CommunityViewSet(ModelViewSet):
     queryset = Community.objects.all()
     serializer_class = CommunitySerializer
     authentication_classes = [JWTAuthentication]
+    
+    def get_queryset(self):
+        return Community.objects.annotate(
+            member_count_anno=Count('members')
+        ).order_by('-member_count_anno', '-created_at')
 
     def get_permissions(self):
         """
@@ -39,7 +45,17 @@ class CommunityViewSet(ModelViewSet):
         community = self.get_object()
         
         if request.method == 'GET':
-            posts = Post.objects.filter(community=community).order_by('-created_at')
+            queryset = Post.objects.filter(community=community).annotate(
+                score=Coalesce(Sum('votes__vote_type'), Value(0)),
+                comments_count_attr=Count('comments', distinct=True)
+            )
+            
+            sort = request.query_params.get('sort', 'latest')
+            if sort == 'popular':
+                posts = queryset.order_by('-score', '-created_at')
+            else:
+                posts = queryset.order_by('-created_at')
+                
             serializer = PostSerializer(posts, many=True, context={'request': request})
             return Response(serializer.data)
             
@@ -75,7 +91,7 @@ class CommunityViewSet(ModelViewSet):
     def created(self, request):
         # Return communities created by the user OR any staff member (Official LoreRooms)
         communities = Community.objects.filter(
-            models.Q(created_by=request.user) | models.Q(created_by__is_staff=True)
+            Q(created_by=request.user) | Q(created_by__is_staff=True)
         ).distinct()
         serializer = self.get_serializer(communities, many=True)
         return Response(serializer.data)

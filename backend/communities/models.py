@@ -6,8 +6,12 @@ from accounts.models import User
 class Community(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
-    avatar_icon = models.CharField(max_length=10, default='🌎')
     category = models.CharField(max_length=50, default='General')
+    profile_picture = models.ImageField(
+        upload_to='community_profiles/',
+        null=True,
+        blank=True
+    )
     created_by = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

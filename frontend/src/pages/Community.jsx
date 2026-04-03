@@ -21,11 +21,18 @@ const Community = () => {
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [joinedCommunities, setJoinedCommunities] = useState([]);
   const [selectedRoomId, setSelectedRoomId] = useState(null); // NULL = All Joined Posts
+  const [sortBy, setSortBy] = useState("latest");
 
   // QUICK POST STATES
   const [newPostContent, setNewPostContent] = useState("");
   const [selectedCommunityId, setSelectedCommunityId] = useState("");
   const [isPosting, setIsPosting] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // EDIT POST STATES
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [editContent, setEditContent] = useState("");
+  const [activePostMenuId, setActivePostMenuId] = useState(null);
 
   // CREATE COMMUNITY STATES
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -37,6 +44,12 @@ const Community = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [showAllDiscover, setShowAllDiscover] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = () => setActivePostMenuId(null);
+    window.addEventListener('click', handleClickOutside);
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const initialize = async () => {
@@ -61,12 +74,13 @@ const Community = () => {
     if (activeTab === "feed") {
       fetchJoinedPosts();
     }
-  }, [activeTab]);
+  }, [activeTab, sortBy]);
 
   const checkUserRole = async () => {
     try {
       const response = await api.get("profile/");
       setIsStaff(response.data.is_staff);
+      setCurrentUser(response.data);
       if (response.data.is_staff) {
         fetchPendingRequests();
       }
@@ -101,7 +115,9 @@ const Community = () => {
   const fetchJoinedPosts = async () => {
     setLoadingPosts(true);
     try {
-      const response = await api.get("posts/joined_posts/");
+      const response = await api.get("posts/joined_posts/", {
+        params: { sort: sortBy }
+      });
       setJoinedPosts(response.data);
     } catch (err) {
       console.error("Error fetching joined posts:", err);
@@ -111,11 +127,12 @@ const Community = () => {
   };
 
   const handleQuickPost = async () => {
-    if (!newPostContent.trim() || !selectedCommunityId || isPosting) return;
+    const targetCommunityId = selectedRoomId || selectedCommunityId;
+    if (!newPostContent.trim() || !targetCommunityId || isPosting) return;
 
     setIsPosting(true);
     try {
-      const response = await api.post(`loreroom/${selectedCommunityId}/posts/`, {
+      const response = await api.post(`loreroom/${targetCommunityId}/posts/`, {
         content: newPostContent
       });
       setJoinedPosts([response.data, ...joinedPosts]);
@@ -128,13 +145,99 @@ const Community = () => {
     }
   };
 
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
+    try {
+      await api.delete(`posts/${postId}/`);
+      setJoinedPosts(prev => prev.filter(p => p.id !== postId));
+    } catch (err) {
+      console.error("Error deleting post:", err);
+    }
+  };
+
+  const startEditing = (post) => {
+    setEditingPostId(post.id);
+    setEditContent(post.content);
+  };
+
+  const handleEditPost = async (postId) => {
+    if (!editContent.trim()) return;
+    try {
+      const response = await api.patch(`posts/${postId}/`, {
+        content: editContent
+      });
+      setJoinedPosts(prev => prev.map(p => p.id === postId ? response.data : p));
+      setEditingPostId(null);
+      setEditContent("");
+    } catch (err) {
+      console.error("Error editing post:", err);
+    }
+  };
+
+  const handleVote = async (postId, voteType) => {
+    if (!currentUser) return;
+
+    try {
+      await api.post(`/votes/`, {
+        post: postId,
+        vote_type: voteType
+      });
+      
+      setJoinedPosts(prevPosts => prevPosts.map(post => {
+        if (post.id === postId) {
+          const currentVote = post.user_vote || 0;
+          let newScore = post.vote_score || 0;
+          
+          if (currentVote === voteType) {
+            newScore -= voteType;
+            return { ...post, vote_score: newScore, user_vote: 0 };
+          } else {
+            newScore = newScore - currentVote + voteType;
+            return { ...post, vote_score: newScore, user_vote: voteType };
+          }
+        }
+        return post;
+      }));
+    } catch (error) {
+      console.error("Error voting on post:", error);
+    }
+  };
+
+  const [profilePicFile, setProfilePicFile] = useState(null);
+  const [profilePicPreview, setProfilePicPreview] = useState(null);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfilePicFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePicPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleCreateCommunity = async () => {
     if (!newCommunity.name.trim()) return;
 
     try {
       if (isStaff) {
         if (!newCommunity.description.trim()) return;
-        const response = await api.post("loreroom/", newCommunity);
+        
+        const formData = new FormData();
+        formData.append('name', newCommunity.name);
+        formData.append('description', newCommunity.description);
+        formData.append('category', newCommunity.category || 'General');
+        if (profilePicFile) {
+          formData.append('profile_picture', profilePicFile);
+        }
+
+        const response = await api.post("loreroom/", formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
         setCommunities(prev => [response.data, ...prev]);
         setShowCreateModal(false);
       } else {
@@ -152,7 +255,9 @@ const Community = () => {
           setRequestSuccess(false);
         }, 3000);
       }
-      setNewCommunity({ name: "", description: "", avatar_icon: "🌎" });
+      setNewCommunity({ name: "", description: "", category: "General" });
+      setProfilePicFile(null);
+      setProfilePicPreview(null);
       setRequestReason("");
     } catch (err) {
       console.error("Error processing community action:", err);
@@ -204,6 +309,13 @@ const Community = () => {
       console.error("Error deleting request:", err);
     }
   };
+
+  const groupedJoinedCommunities = joinedCommunities.reduce((acc, comm) => {
+    const category = comm.category || "General";
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(comm);
+    return acc;
+  }, {});
 
   const filteredCommunities = communities.filter(community => {
     return community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -274,28 +386,50 @@ const Community = () => {
                   <div className="quick-post-card" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                       <div className="quick-post-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <div className="avatar-placeholder" style={{
+                        <div className="quick-post-avatar-wrap" style={{
                           width: '38px',
                           height: '38px',
                           borderRadius: '50%',
+                          overflow: 'hidden',
                           background: 'var(--hover-bg)',
-                          color: 'var(--secondary-text)',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center'
+                          justifyContent: 'center',
+                          border: '1px solid var(--border-color)'
                         }}>
-                          <User size={20} />
+                          {currentUser?.profile_picture ? (
+                            <img 
+                              src={currentUser.profile_picture} 
+                              alt={currentUser.username} 
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                            />
+                          ) : (
+                            <User size={20} color="var(--secondary-text)" />
+                          )}
                         </div>
                       </div>
                       <select
                         className="community-selector"
-                        style={{ flex: 1, border: '1px solid var(--border-color)', background: 'var(--hover-bg)' }}
+                        style={{ 
+                          flex: 1, 
+                          border: '1px solid var(--border-color)', 
+                          background: 'var(--hover-bg)',
+                          padding: '10px 16px',
+                          borderRadius: '8px',
+                          color: 'var(--text-color)',
+                          fontSize: '14px',
+                          fontWeight: '600'
+                        }}
                         value={selectedRoomId || selectedCommunityId}
                         onChange={(e) => setSelectedCommunityId(e.target.value)}
                         disabled={!!selectedRoomId}
                       >
-                        {joinedCommunities.map(c => (
-                          <option key={c.id} value={c.id}>{c.name}</option>
+                        {Object.entries(groupedJoinedCommunities).map(([category, comms]) => (
+                          <optgroup key={category} label={category}>
+                            {comms.map(c => (
+                              <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                          </optgroup>
                         ))}
                       </select>
                     </div>
@@ -318,6 +452,41 @@ const Community = () => {
                     </div>
                   </div>
                 )}
+
+                {/* SORTING UI */}
+                <div className="feed-sort-container" style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '16px',
+                  background: 'transparent',
+                  padding: '0',
+                  borderRadius: '0',
+                  border: 'none'
+                }}>
+                  <select
+                    className="feed-sort-select"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    style={{
+                      background: 'var(--hover-bg)',
+                      border: '1px solid var(--border-color)',
+                      color: 'var(--text-color)',
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      outline: 'none',
+                      transition: 'all 0.2s ease',
+                      width: 'auto',
+                      minWidth: '100px'
+                    }}
+                  >
+                    <option value="latest">Latest</option>
+                    <option value="popular">Popular</option>
+                  </select>
+                </div>
 
                 {loadingPosts ? (
                   <div className="loading-posts">
@@ -360,15 +529,120 @@ const Community = () => {
                                   in <strong style={{ color: 'var(--text-color)', fontWeight: '700' }}>{post.community_name}</strong> • {new Date(post.created_at).toLocaleDateString()}
                                 </span>
                               </div>
+                              {currentUser && currentUser.id === post.user_id && (
+                                <div className="post-options-container" style={{ position: 'relative' }}>
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setActivePostMenuId(activePostMenuId === post.id ? null : post.id);
+                                    }}
+                                    style={{ background: 'transparent', border: 'none', color: 'var(--secondary-text)', cursor: 'pointer', padding: '4px' }}
+                                  >
+                                    <MoreHorizontal size={20} />
+                                  </button>
+                                  {activePostMenuId === post.id && (
+                                    <div className="post-options-dropdown" style={{
+                                      position: 'absolute',
+                                      top: '100%',
+                                      right: 0,
+                                      background: 'var(--card-bg)',
+                                      border: '1px solid var(--border-color)',
+                                      borderRadius: '8px',
+                                      padding: '4px',
+                                      zIndex: 10,
+                                      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                                      minWidth: '100px'
+                                    }}>
+                                      <button 
+                                        onClick={() => {
+                                          setActivePostMenuId(null);
+                                          startEditing(post);
+                                        }}
+                                        style={{ 
+                                          width: '100%', 
+                                          textAlign: 'left', 
+                                          padding: '8px 12px', 
+                                          background: 'transparent', 
+                                          border: 'none', 
+                                          color: 'var(--text-color)', 
+                                          fontSize: '13px', 
+                                          cursor: 'pointer',
+                                          borderRadius: '4px'
+                                        }}
+                                        className="dropdown-item"
+                                      >
+                                        Edit
+                                      </button>
+                                      <button 
+                                        onClick={() => {
+                                          setActivePostMenuId(null);
+                                          handleDeletePost(post.id);
+                                        }}
+                                        style={{ 
+                                          width: '100%', 
+                                          textAlign: 'left', 
+                                          padding: '8px 12px', 
+                                          background: 'transparent', 
+                                          border: 'none', 
+                                          color: '#ef4444', 
+                                          fontSize: '13px', 
+                                          cursor: 'pointer',
+                                          borderRadius: '4px'
+                                        }}
+                                        className="dropdown-item"
+                                      >
+                                        Delete
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
                             <div className="post-content">
-                              <p style={{ fontSize: '14px' }}>{post.content}</p>
+                              {editingPostId === post.id ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                  <textarea
+                                    className="quick-post-textarea"
+                                    style={{ minHeight: '60px', borderRadius: '4px', background: 'var(--hover-bg)', border: '1px solid var(--accent-color)', width: '100%' }}
+                                    value={editContent}
+                                    onChange={(e) => setEditContent(e.target.value)}
+                                  />
+                                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                    <button 
+                                      onClick={() => setEditingPostId(null)}
+                                      style={{ padding: '4px 12px', borderRadius: '4px', background: 'var(--hover-bg)', border: '1px solid var(--border-color)', color: 'var(--text-color)', cursor: 'pointer' }}
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button 
+                                      onClick={() => handleEditPost(post.id)}
+                                      style={{ padding: '4px 12px', borderRadius: '4px', background: 'var(--accent-color)', border: 'none', color: 'white', cursor: 'pointer' }}
+                                    >
+                                      Save
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p style={{ fontSize: '14px' }}>{post.content}</p>
+                              )}
                             </div>
                             <div className="post-footer">
                               <div className="vote-footer-container">
-                                <button className="vote-btn-footer"><ArrowBigUp size={16} /></button>
-                                <span className="vote-count-footer">{post.likes || 0}</span>
-                                <button className="vote-btn-footer"><ArrowBigDown size={16} /></button>
+                                <button 
+                                  className={`vote-btn-footer ${post.user_vote === 1 ? 'active-up' : ''}`}
+                                  onClick={() => handleVote(post.id, 1)}
+                                >
+                                  <ArrowBigUp size={16} fill={post.user_vote === 1 ? "currentColor" : "none"} />
+                                </button>
+                                <span className={`vote-count-footer ${post.user_vote === 1 ? 'up' : post.user_vote === -1 ? 'down' : ''}`}>
+                                  {post.vote_score || 0}
+                                </span>
+                                <button 
+                                  className={`vote-btn-footer ${post.user_vote === -1 ? 'active-down' : ''}`}
+                                  onClick={() => handleVote(post.id, -1)}
+                                >
+                                  <ArrowBigDown size={16} fill={post.user_vote === -1 ? "currentColor" : "none"} />
+                                </button>
                               </div>
                               <button className="post-action">
                                 <MessageSquare size={16} />
@@ -420,9 +694,18 @@ const Community = () => {
                           </button>
                         </div>
                         <div className="card-body">
-                          <h3 style={{ fontSize: '16px', margin: 0, cursor: 'pointer' }} onClick={() => navigate(`/community/${community.id}`)}>
-                            {community.name}
-                          </h3>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                            {community.profile_picture ? (
+                              <img src={community.profile_picture} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                            ) : (
+                              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--hover-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <span>🏠</span>
+                              </div>
+                            )}
+                            <h3 style={{ fontSize: '16px', margin: 0, cursor: 'pointer' }} onClick={() => navigate(`/community/${community.id}`)}>
+                              {community.name}
+                            </h3>
+                          </div>
                           <p style={{ fontSize: '13px', margin: '4px 0 0 0', height: 'auto', lineClamp: 'none' }}>
                             {community.description}
                           </p>
@@ -547,13 +830,31 @@ const Community = () => {
                   ) : (
                     <>
                       <div className="input-field">
-                        <label>Name</label>
-                        <input value={newCommunity.name} onChange={(e) => setNewCommunity({ ...newCommunity, name: e.target.value })} />
+                        <label>LoreRoom Name</label>
+                        <input placeholder="e.g. Marvel Universe" value={newCommunity.name} onChange={(e) => setNewCommunity({ ...newCommunity, name: e.target.value })} />
                       </div>
                       <div className="input-field">
-                        <label>{isStaff ? "Description" : "Reason"}</label>
-                        <textarea rows={4} value={isStaff ? newCommunity.description : requestReason} onChange={(e) => isStaff ? setNewCommunity({ ...newCommunity, description: e.target.value }) : setRequestReason(e.target.value)} />
+                        <label>{isStaff ? "Description" : "Reason for request"}</label>
+                        <textarea placeholder={isStaff ? "What is this LoreRoom about?" : "Why should we create this room?"} rows={4} value={isStaff ? newCommunity.description : requestReason} onChange={(e) => isStaff ? setNewCommunity({ ...newCommunity, description: e.target.value }) : setRequestReason(e.target.value)} />
                       </div>
+                      {isStaff && (
+                        <div className="input-field">
+                          <label>Profile Picture (Optional)</label>
+                          <div className="profile-pic-upload-container">
+                            <input type="file" accept="image/*" onChange={handleFileChange} id="profile-pic-input" style={{ display: 'none' }} />
+                            <label htmlFor="profile-pic-input" className="file-upload-trigger">
+                              {profilePicPreview ? (
+                                <img src={profilePicPreview} alt="Preview" className="preview-image-circle" />
+                              ) : (
+                                <div className="upload-placeholder-circle">
+                                  <span>+</span>
+                                </div>
+                              )}
+                            </label>
+                            <p className="upload-hint">Upload a 1:1 ratio image for best results</p>
+                          </div>
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
