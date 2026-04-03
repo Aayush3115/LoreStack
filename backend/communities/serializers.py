@@ -26,7 +26,7 @@ class CommunitySerializer(serializers.ModelSerializer):
             'id',
             'name',
             'description',
-            'avatar_icon',
+            'profile_picture',
             'created_by',
             'created_by_username',
             'members',
