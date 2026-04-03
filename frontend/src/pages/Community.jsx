@@ -386,17 +386,26 @@ const Community = () => {
                   <div className="quick-post-card" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                       <div className="quick-post-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <div className="avatar-placeholder" style={{
+                        <div className="quick-post-avatar-wrap" style={{
                           width: '38px',
                           height: '38px',
                           borderRadius: '50%',
+                          overflow: 'hidden',
                           background: 'var(--hover-bg)',
-                          color: 'var(--secondary-text)',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center'
+                          justifyContent: 'center',
+                          border: '1px solid var(--border-color)'
                         }}>
-                          <User size={20} />
+                          {currentUser?.profile_picture ? (
+                            <img 
+                              src={currentUser.profile_picture} 
+                              alt={currentUser.username} 
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                            />
+                          ) : (
+                            <User size={20} color="var(--secondary-text)" />
+                          )}
                         </div>
                       </div>
                       <select
