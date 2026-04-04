@@ -1064,8 +1064,13 @@
   text-align: center;
 }
 
-.vote-count-footer.up { color: #ff4500; }
-.vote-count-footer.down { color: #7193ff; }
+.vote-count-footer.up {
+  color: #ff4500;
+}
+
+.vote-count-footer.down {
+  color: #7193ff;
+}
 
 .post-main-content {
   flex: 1;
@@ -1176,6 +1181,12 @@
   color: var(--text-color);
 }
 
+.post-action.active {
+  padding: 6px 12px;
+  border-radius: 12px;
+}
+
+
 .post-action.share {
   margin-left: auto;
 }
@@ -1258,6 +1269,7 @@
   background: var(--hover-bg) !important;
   color: var(--text-color) !important;
 }
+
 /* Post Options Dropdown */
 .post-options-dropdown {
   backdrop-filter: blur(20px);

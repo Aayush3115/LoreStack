@@ -7,12 +7,22 @@ from .serializers import CommentSerializer, VoteSerializer
 
 
 class CommentViewSet(ModelViewSet):
-    queryset = Comment.objects.all().order_by('-created_at')
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
+    def get_queryset(self):
+        queryset = Comment.objects.all()
+        post_id = self.request.query_params.get('post_id')
+        if post_id:
+            queryset = queryset.filter(post_id=post_id)
+        
+        # We only want top-level comments for the main list,
+        # replies will be fetched through the 'replies' nested field.
+        return queryset.filter(parent=None).order_by('-created_at')
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
 
 class VoteViewSet(ModelViewSet):
     queryset = Vote.objects.all()
