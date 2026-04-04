@@ -372,6 +372,46 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
+/* Post Options Dropdown */
+.post-options-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 4px;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  min-width: 100px;
+}
+
+.dropdown-item {
+  width: 100%; 
+  text-align: left; 
+  padding: 8px 12px; 
+  background: transparent; 
+  border: none; 
+  color: var(--text-color); 
+  font-size: 13px; 
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+  background: var(--hover-bg);
+}
+
+.dropdown-item.delete {
+  color: #ef4444;
+}
+
+.dropdown-item.delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+
 /* Empty Feed */
 .empty-feed {
   background: var(--card-bg);
@@ -488,6 +528,53 @@
   color: #ef4444;
 }
 
+/* Edit Post Form */
+.edit-post-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.edit-post-form .post-input {
+  min-height: 80px;
+  background: var(--hover-bg);
+  border: 1px solid var(--accent-color);
+  border-radius: 8px;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.edit-actions button {
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.edit-actions button:first-child {
+  background: var(--hover-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.edit-actions button:last-child {
+  background: var(--accent-color);
+  border: none;
+  color: white;
+}
+
+.post-body-container {
+  padding: 0 0 12px 0;
+}
+
+
 .post-body {
   color: var(--text-color);
   font-size: 15px;
@@ -536,6 +623,12 @@
   background: var(--hover-bg);
   color: var(--text-color);
 }
+
+.action.comment-action.active {
+  color: var(--accent-color);
+  background: rgba(139, 92, 246, 0.1);
+}
+
 
 .action:disabled {
   opacity: 0.5;

@@ -4,6 +4,7 @@ import Sidebar from "../Components/Sidebar/Sidebar";
 import api from "../api/api";
 import "../styles/communityDetail.css";
 import { MoreHorizontal, ArrowBigUp, ArrowBigDown } from "lucide-react";
+import CommentSection from "../Components/Comments/CommentSection";
 
 const CommunityDetail = () => {
   const { id } = useParams();
@@ -16,11 +17,16 @@ const CommunityDetail = () => {
   const [posting, setPosting] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [sortBy, setSortBy] = useState("latest");
+  const [expandedComments, setExpandedComments] = useState(new Set());
+
+
 
   // EDIT POST STATES
   const [editingPostId, setEditingPostId] = useState(null);
   const [editContent, setEditContent] = useState("");
   const [activePostMenuId, setActivePostMenuId] = useState(null);
+  const [isDeletingPostId, setIsDeletingPostId] = useState(null);
+
 
   useEffect(() => {
     fetchCommunity();
@@ -104,7 +110,7 @@ const CommunityDetail = () => {
   };
 
   const handleDeletePost = async (postId) => {
-    if (!window.confirm("Are you sure you want to delete this post?")) return;
+
     try {
       await api.delete(`posts/${postId}/`);
       setPosts(prev => prev.filter(p => p.id !== postId));
@@ -167,7 +173,15 @@ const CommunityDetail = () => {
 
   const handleComment = async (postId) => {
     if (!isJoined) return;
-    // Navigate to comments page or open comment modal
+    setExpandedComments(prev => {
+      const next = new Set(prev);
+      if (next.has(postId)) {
+        next.delete(postId);
+      } else {
+        next.add(postId);
+      }
+      return next;
+    });
   };
 
   if (!community) return null;
@@ -299,12 +313,13 @@ const CommunityDetail = () => {
                   <div className="post-user-details">
                     <h4 className="post-username">{post.username}</h4>
                     <span className="post-timestamp">
-                      {new Date(post.created_at).toLocaleDateString('en-US', {
+                      {new Date(post.created_at).toLocaleString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         hour: '2-digit',
                         minute: '2-digit'
                       })}
+
                     </span>
                   </div>
                   {currentUser && currentUser.id === post.user_id && (
@@ -336,69 +351,58 @@ const CommunityDetail = () => {
                               setActivePostMenuId(null);
                               startEditing(post);
                             }}
-                            style={{ 
-                              width: '100%', 
-                              textAlign: 'left', 
-                              padding: '8px 12px', 
-                              background: 'transparent', 
-                              border: 'none', 
-                              color: 'var(--text-color)', 
-                              fontSize: '13px', 
-                              cursor: 'pointer',
-                              borderRadius: '4px'
-                            }}
                             className="dropdown-item"
                           >
                             Edit
                           </button>
-                          <button 
-                            onClick={() => {
-                              setActivePostMenuId(null);
-                              handleDeletePost(post.id);
-                            }}
-                            style={{ 
-                              width: '100%', 
-                              textAlign: 'left', 
-                              padding: '8px 12px', 
-                              background: 'transparent', 
-                              border: 'none', 
-                              color: '#ef4444', 
-                              fontSize: '13px', 
-                              cursor: 'pointer',
-                              borderRadius: '4px'
-                            }}
-                            className="dropdown-item"
-                          >
-                            Delete
-                          </button>
+                          {isDeletingPostId === post.id ? (
+                            <div className="delete-confirm-inline">
+                              <span className="confirm-text">Sure?</span>
+                              <button 
+                                onClick={() => {
+                                  handleDeletePost(post.id);
+                                  setIsDeletingPostId(null);
+                                }}
+                                className="confirm-btn yes"
+                              >
+                                Yes
+                              </button>
+                              <button 
+                                onClick={() => setIsDeletingPostId(null)}
+                                className="confirm-btn no"
+                              >
+                                No
+                              </button>
+                            </div>
+                          ) : (
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setIsDeletingPostId(post.id);
+                              }}
+                              className="dropdown-item delete"
+                            >
+                              Delete
+                            </button>
+                          )}
                         </div>
+
                       )}
                     </div>
                   )}
                 </div>
 
-                <div className="post-body-container" style={{ padding: '0px 0 12px 0' }}>
+                <div className="post-body-container">
                   {editingPostId === post.id ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div className="edit-post-form">
                       <textarea
                         className="post-input"
-                        style={{ minHeight: '60px', borderRadius: '4px', background: 'var(--hover-bg)', border: '1px solid var(--accent-color)', width: '100%', padding: '12px' }}
                         value={editContent}
                         onChange={(e) => setEditContent(e.target.value)}
                       />
-                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                        <button 
-                          onClick={() => setEditingPostId(null)}
-                          style={{ padding: '6px 16px', borderRadius: '4px', background: 'var(--hover-bg)', border: '1px solid var(--border-color)', color: 'var(--text-color)', cursor: 'pointer', fontSize: '12px' }}
-                        >
-                          Cancel
-                        </button>
-                        <button 
-                          onClick={() => handleEditPost(post.id)}
-                          style={{ padding: '6px 16px', borderRadius: '4px', background: 'var(--accent-color)', border: 'none', color: 'white', cursor: 'pointer', fontSize: '12px' }}
-                        >
-                          Save
-                        </button>
+                      <div className="edit-actions">
+                        <button onClick={() => setEditingPostId(null)}>Cancel</button>
+                        <button onClick={() => handleEditPost(post.id)}>Save</button>
                       </div>
                     </div>
                   ) : (
@@ -427,21 +431,37 @@ const CommunityDetail = () => {
                     </button>
                   </div>
                   <button
-                    className="action comment-action"
+                    className={`action comment-action ${expandedComments.has(post.id) ? 'active' : ''}`}
                     onClick={() => handleComment(post.id)}
                     disabled={!isJoined}
                   >
                     <span className="action-icon">💬</span>
-                    <span>{post.comments_count || 0}</span>
+                    <span>{post.comments_count || 0} Replies</span>
                   </button>
+
                 </div>
+
+                {/* Expanded Comments */}
+                {expandedComments.has(post.id) && (
+                  <CommentSection 
+                    postId={post.id} 
+                    currentUser={currentUser} 
+                    onReplyCountChange={(amount) => {
+                      setPosts(prev => prev.map(p => 
+                        p.id === post.id ? { ...p, comments_count: (p.comments_count || 0) + amount } : p
+                      ));
+                    }}
+                  />
+                )}
               </div>
             ))
           )}
+
         </div>
       </div>
     </div>
   );
 };
+
 
 export default CommunityDetail;
