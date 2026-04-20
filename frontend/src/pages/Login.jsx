@@ -3,6 +3,7 @@ import { Mail, Lock, Eye, EyeOff, User, ArrowRight, Camera } from 'lucide-react'
 import '../Styles/Login.css';
 import logo from '../assets/logo_no_bg.png';
 import { BACKEND_URL } from '../api/api';
+import { GoogleLogin } from '@react-oauth/google';
 
 export default function LorestackLogin() {
   const [showPassword, setShowPassword] = useState(false);
@@ -103,6 +104,40 @@ export default function LorestackLogin() {
       }
     } catch (err) {
       setError('System Error. Is the core server online?');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/auth/google-login/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token: credentialResponse.credential,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('access_token', data.access);
+        localStorage.setItem('refresh_token', data.refresh);
+        setSuccess('Access Granted via Google. Welcome to the Lore.');
+
+        setTimeout(() => {
+          window.location.href = '/home';
+        }, 1500);
+      } else {
+        setError(data.error || 'Google identification failed.');
+      }
+    } catch (err) {
+      setError('System Error. Google authentication link disrupted.');
     } finally {
       setLoading(false);
     }
@@ -269,6 +304,21 @@ export default function LorestackLogin() {
               {loading ? 'Processing...' : (isLogin ? 'Enter the Multiverse' : 'Begin Journey')}
               <ArrowRight size={20} style={{ marginLeft: '10px', verticalAlign: 'middle' }} />
             </button>
+
+            <div className="login-divider">
+              <span>OR</span>
+            </div>
+
+            <div className="google-login-container">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setError('Google Login Failed')}
+                useOneTap
+                theme="filled_black"
+                shape="pill"
+                width="100%"
+              />
+            </div>
           </form>
         </div>
       </div>

@@ -14,6 +14,8 @@ from pathlib import Path
 from decouple import config
 
 TMDB_API_KEY = config("TMDB_API_KEY")
+GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID", default="")
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

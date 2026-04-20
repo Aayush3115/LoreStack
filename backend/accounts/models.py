@@ -9,6 +9,8 @@ class User(AbstractUser):
             upload_to='profile_pics/',
             default='profile_pics/default.jpg'
         )
+        email_verified = models.BooleanField(default=False)
+
         preferred_moods = models.ManyToManyField(
         'moods.Mood',
         blank=True,
