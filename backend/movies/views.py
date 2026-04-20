@@ -344,18 +344,30 @@ def universal_search(request):
     })
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def user_stats(request):
+@permission_classes([AllowAny])
+def user_stats(request, username=None):
     try:
-        movie_logs = MovieActivity.objects.filter(user=request.user, is_logged=True).count()
-        tv_logs = TVActivity.objects.filter(user=request.user, is_logged=True).count()
-        anime_logs = AnimeActivity.objects.filter(user=request.user, is_logged=True).count()
+        if username:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            if not request.user.is_authenticated:
+                return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+            user = request.user
+
+        movie_logs = MovieActivity.objects.filter(user=user, is_logged=True).count()
+        tv_logs = TVActivity.objects.filter(user=user, is_logged=True).count()
+        anime_logs = AnimeActivity.objects.filter(user=user, is_logged=True).count()
         
-        movie_perfections = MovieRating.objects.filter(user=request.user, rating='perfection').count()
-        tv_perfections = TVRating.objects.filter(user=request.user, rating='perfection').count()
-        anime_perfections = AnimeRating.objects.filter(user=request.user, rating='perfection').count()
+        movie_perfections = MovieRating.objects.filter(user=user, rating='perfection').count()
+        tv_perfections = TVRating.objects.filter(user=user, rating='perfection').count()
+        anime_perfections = AnimeRating.objects.filter(user=user, rating='perfection').count()
         
-        joined_rooms = request.user.communities.count()
+        joined_rooms = user.communities.count()
         
         return Response({
             "status_code": 200,
@@ -374,17 +386,29 @@ def user_stats(request):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def user_activity_list(request):
+@permission_classes([AllowAny])
+def user_activity_list(request, username=None):
     try:
-        movie_activities = MovieActivity.objects.filter(user=request.user, is_logged=True).order_by('-updated_at')[:10]
-        tv_activities = TVActivity.objects.filter(user=request.user, is_logged=True).order_by('-updated_at')[:10]
-        anime_activities = AnimeActivity.objects.filter(user=request.user, is_logged=True).order_by('-updated_at')[:10]
+        if username:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            if not request.user.is_authenticated:
+                return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+            user = request.user
+
+        movie_activities = MovieActivity.objects.filter(user=user, is_logged=True).order_by('-updated_at')[:10]
+        tv_activities = TVActivity.objects.filter(user=user, is_logged=True).order_by('-updated_at')[:10]
+        anime_activities = AnimeActivity.objects.filter(user=user, is_logged=True).order_by('-updated_at')[:10]
 
         activities = []
 
         for act in movie_activities:
-            rating_obj = MovieRating.objects.filter(user=request.user, movie_id=act.movie_id).first()
+            rating_obj = MovieRating.objects.filter(user=user, movie_id=act.movie_id).first()
             activities.append({
                 "id": act.movie_id,
                 "media_type": "movie",
@@ -393,7 +417,7 @@ def user_activity_list(request):
             })
 
         for act in tv_activities:
-            rating_obj = TVRating.objects.filter(user=request.user, tv_id=act.tv_id).first()
+            rating_obj = TVRating.objects.filter(user=user, tv_id=act.tv_id).first()
             activities.append({
                 "id": act.tv_id,
                 "media_type": "tv",
@@ -402,7 +426,7 @@ def user_activity_list(request):
             })
 
         for act in anime_activities:
-            rating_obj = AnimeRating.objects.filter(user=request.user, anime_id=act.anime_id).first()
+            rating_obj = AnimeRating.objects.filter(user=user, anime_id=act.anime_id).first()
             activities.append({
                 "id": act.anime_id,
                 "media_type": "anime",
@@ -420,12 +444,24 @@ def user_activity_list(request):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def user_watchlist(request):
+@permission_classes([AllowAny])
+def user_watchlist(request, username=None):
     try:
-        movie_activities = MovieActivity.objects.filter(user=request.user, is_watchlist=True).order_by("-updated_at")
-        tv_activities = TVActivity.objects.filter(user=request.user, is_watchlist=True).order_by("-updated_at")
-        anime_activities = AnimeActivity.objects.filter(user=request.user, is_watchlist=True).order_by("-updated_at")
+        if username:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            if not request.user.is_authenticated:
+                return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+            user = request.user
+
+        movie_activities = MovieActivity.objects.filter(user=user, is_watchlist=True).order_by("-updated_at")
+        tv_activities = TVActivity.objects.filter(user=user, is_watchlist=True).order_by("-updated_at")
+        anime_activities = AnimeActivity.objects.filter(user=user, is_watchlist=True).order_by("-updated_at")
         
         results = []
         for activity in movie_activities:

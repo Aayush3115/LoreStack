@@ -111,7 +111,7 @@ const Home = () => {
 
                     <div className="header-actions">
                         <div className="space-badge">{userData ? `${userData.username}'s Space` : 'Personal Space'}</div>
-                        <div className="user-avatar-container">
+                        <Link to="/profile" className="user-avatar-container">
                             {userData?.profile_picture ? (
                                 <img src={userData.profile_picture} alt="Avatar" className="user-avatar-img" />
                             ) : (
@@ -119,7 +119,7 @@ const Home = () => {
                                     {userData?.username?.[0].toUpperCase() || 'U'}
                                 </div>
                             )}
-                        </div>
+                        </Link>
                     </div>
                 </header>
 

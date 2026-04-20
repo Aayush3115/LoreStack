@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import Sidebar from "../Components/Sidebar/Sidebar";
 import api from "../api/api";
 import "../styles/communityDetail.css";
@@ -305,13 +305,17 @@ const CommunityDetail = () => {
             posts.map(post => (
               <div className="post-card" key={post.id}>
                 <div className="post-card-header">
-                  <img
-                    src={post.user_avatar || `https://i.pravatar.cc/48?u=${post.user_id}`}
-                    alt={post.username}
-                    className="post-avatar"
-                  />
+                  <Link to={`/profile/${post.username}`} className="post-avatar-link">
+                    <img
+                      src={post.user_avatar || `https://i.pravatar.cc/48?u=${post.user_id}`}
+                      alt={post.username}
+                      className="post-avatar"
+                    />
+                  </Link>
                   <div className="post-user-details">
-                    <h4 className="post-username">{post.username}</h4>
+                    <Link to={`/profile/${post.username}`} style={{ textDecoration: 'none' }}>
+                      <h4 className="post-username">{post.username}</h4>
+                    </Link>
                     <span className="post-timestamp">
                       {new Date(post.created_at).toLocaleString('en-US', {
                         month: 'short',

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Sidebar from '../Components/Sidebar/Sidebar';
 import { Loader2, Film, Bookmark, Settings, Award, Users, Tv, Play, X, Camera, History, Star } from 'lucide-react';
 import '../Styles/Explore.css';
@@ -8,12 +8,14 @@ import { BACKEND_URL } from '../api/api';
 
 const Profile = () => {
     const navigate = useNavigate();
+    const { username } = useParams();
     const [watchlistDetails, setWatchlistDetails] = useState([]);
     const [activityDetails, setActivityDetails] = useState([]);
     const [stats, setStats] = useState(null);
     const [joinedRooms, setJoinedRooms] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [userData, setUserData] = useState(null);
+    const [currentUser, setCurrentUser] = useState(null);
     const [activeTab, setActiveTab] = useState('activity');
 
     // Edit Profile Modal States
@@ -23,24 +25,48 @@ const Profile = () => {
     const [editProfilePic, setEditProfilePic] = useState(null);
     const [previewPic, setPreviewPic] = useState("");
     const [isUpdating, setIsUpdating] = useState(false);
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [followLoading, setFollowLoading] = useState(false);
+
+    const isOwnProfile = !username || (currentUser && currentUser.username === username);
+
+    const fetchCurrentUser = async () => {
+        try {
+            const token = localStorage.getItem('access_token');
+            if (!token) return;
+            const response = await fetch(`${BACKEND_URL}/api/auth/profile/`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setCurrentUser(data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch current user:", error);
+        }
+    }
 
     const fetchUserData = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            if (!token) {
-                navigate('/login');
-                return;
-            }
-
-            const response = await fetch(`${BACKEND_URL}/api/auth/profile/`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
+            const url = username 
+                ? `${BACKEND_URL}/api/auth/profile/${username}/`
+                : `${BACKEND_URL}/api/auth/profile/`;
+            
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const response = await fetch(url, { headers });
+            
             if (response.ok) {
+                const data = await response.json();
                 setUserData(data);
-                setEditUsername(data.username);
-                setEditBio(data.bio || "");
-                setPreviewPic(data.profile_picture);
+                setIsFollowing(data.is_following);
+                if (isOwnProfile) {
+                    setEditUsername(data.username);
+                    setEditBio(data.bio || "");
+                    setPreviewPic(data.profile_picture);
+                }
+            } else if (response.status === 404) {
+                navigate('/404');
             }
         } catch (error) {
             console.error("Failed to fetch user data:", error);
@@ -50,11 +76,14 @@ const Profile = () => {
     const fetchStats = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch(`${BACKEND_URL}/api/movies/user-stats/`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
+            const url = username 
+                ? `${BACKEND_URL}/api/movies/user-stats/${username}/`
+                : `${BACKEND_URL}/api/movies/user-stats/`;
+            
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const response = await fetch(url, { headers });
             if (response.ok) {
+                const data = await response.json();
                 setStats(data.data.counts);
             }
         } catch (error) {
@@ -65,11 +94,14 @@ const Profile = () => {
     const fetchJoinedRooms = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch(`${BACKEND_URL}/api/loreroom/joined/`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
+            const url = username 
+                ? `${BACKEND_URL}/api/loreroom/joined/?username=${username}`
+                : `${BACKEND_URL}/api/loreroom/joined/`;
+            
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const response = await fetch(url, { headers });
             if (response.ok) {
+                const data = await response.json();
                 setJoinedRooms(data);
             }
         } catch (error) {
@@ -80,9 +112,12 @@ const Profile = () => {
     const fetchWatchlist = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch(`${BACKEND_URL}/api/movies/user-watchlist/`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const url = username 
+                ? `${BACKEND_URL}/api/movies/user-watchlist/${username}/`
+                : `${BACKEND_URL}/api/movies/user-watchlist/`;
+            
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const response = await fetch(url, { headers });
             const data = await response.json();
             if (data.status_code === 200) {
                 const details = await Promise.all(
@@ -111,9 +146,12 @@ const Profile = () => {
     const fetchActivity = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch(`${BACKEND_URL}/api/movies/user-activity/`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const url = username 
+                ? `${BACKEND_URL}/api/movies/user-activity/${username}/`
+                : `${BACKEND_URL}/api/movies/user-activity/`;
+            
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const response = await fetch(url, { headers });
             const data = await response.json();
             if (data.status_code === 200) {
                 const details = await Promise.all(
@@ -147,6 +185,10 @@ const Profile = () => {
     useEffect(() => {
         const loadAll = async () => {
             setIsLoading(true);
+            // Fetch current user first to determine ownership
+            if (username) {
+                await fetchCurrentUser();
+            }
             await Promise.all([
                 fetchUserData(),
                 fetchStats(),
@@ -157,7 +199,7 @@ const Profile = () => {
             setIsLoading(false);
         };
         loadAll();
-    }, [navigate]);
+    }, [username, navigate]);
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -196,6 +238,38 @@ const Profile = () => {
         }
     };
 
+    const handleFollowToggle = async () => {
+        if (!currentUser) {
+            navigate('/login');
+            return;
+        }
+        
+        setFollowLoading(true);
+        try {
+            const token = localStorage.getItem('access_token');
+            const response = await fetch(`${BACKEND_URL}/api/auth/profile/${username}/follow/`, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                setIsFollowing(data.is_following);
+                setUserData(prev => ({
+                    ...prev,
+                    followers_count: data.followers_count
+                }));
+            }
+        } catch (error) {
+            console.error("Error toggling follow:", error);
+        } finally {
+            setFollowLoading(false);
+        }
+    };
+
     const getPosterUrl = (item) => {
         if (item.media_type === 'anime') return item.coverImage.large;
         return `https://image.tmdb.org/t/p/w500${item.poster_path}`;
@@ -221,7 +295,7 @@ const Profile = () => {
             <main className="main-content" style={{ marginTop: "0px", paddingTop: "0px" }}>
                 <header className="top-header">
                     <div className="header-left">
-                        <h2 className="page-title">Profile</h2>
+                        <h2 className="page-title">{isOwnProfile ? "My Profile" : `${userData?.username}'s Profile`}</h2>
                     </div>
                 </header>
 
@@ -234,11 +308,35 @@ const Profile = () => {
                             <div className="profile-info-main">
                                 <div className="profile-name-row">
                                     <h1 className="profile-username-big">{userData.username}</h1>
-                                    <button className="edit-profile-btn" onClick={() => setIsEditModalOpen(true)}>
-                                        <Settings size={18} /> Edit Profile
-                                    </button>
+                                    {isOwnProfile ? (
+                                        <button className="edit-profile-btn" onClick={() => setIsEditModalOpen(true)}>
+                                            <Settings size={18} /> Edit Profile
+                                        </button>
+                                    ) : (
+                                        <div className="profile-actions-public">
+                                            <button 
+                                                className={`follow-btn ${isFollowing ? 'unfollow' : ''}`}
+                                                onClick={handleFollowToggle}
+                                                disabled={followLoading}
+                                            >
+                                                {followLoading ? <Loader2 size={16} className="animate-spin" /> : (
+                                                    isFollowing ? 'Unfollow' : 'Follow'
+                                                )}
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
-                                <p className="profile-bio">{userData.bio || "No bio yet. Tell the world about your cinematic taste!"}</p>
+                                <p className="profile-bio">{userData.bio || (isOwnProfile ? "No bio yet. Tell the world about your cinematic taste!" : "No bio yet.")}</p>
+                                <div className="profile-social-stats">
+                                    <div className="social-stat">
+                                        <span className="stat-num">{userData?.followers_count || 0}</span>
+                                        <span className="stat-label-tiny">Followers</span>
+                                    </div>
+                                    <div className="social-stat">
+                                        <span className="stat-num">{userData?.following_count || 0}</span>
+                                        <span className="stat-label-tiny">Following</span>
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="hero-stats-compact">
@@ -256,7 +354,7 @@ const Profile = () => {
                                 </div>
                                 <div className="compact-stat">
                                     <div className="compact-val">{joinedRooms.length || 0}</div>
-                                    <div className="compact-lab">LoreRooms</div>
+                                    <div className="compact-lab">Rooms</div>
                                 </div>
                             </div>
                         </div>

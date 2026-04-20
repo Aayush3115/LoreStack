@@ -102,6 +102,44 @@ class UserProfileView(APIView):
             serializer.save()
             return Response(UserSerializer(request.user, context={'request': request}).data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class PublicUserProfileView(APIView):
+    permission_classes = (AllowAny,)
+    
+    def get(self, request, username):
+        try:
+            user = User.objects.get(username=username)
+            serializer = UserSerializer(user, context={'request': request})
+            return Response(serializer.data)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class FollowToggleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, username):
+        try:
+            target_user = User.objects.get(username=username)
+            if target_user == request.user:
+                return Response({"error": "You cannot follow yourself"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if request.user.following.filter(id=target_user.id).exists():
+                request.user.following.remove(target_user)
+                return Response({
+                    "status": "unfollowed", 
+                    "is_following": False,
+                    "followers_count": target_user.followers.count()
+                })
+            else:
+                request.user.following.add(target_user)
+                return Response({
+                    "status": "followed", 
+                    "is_following": True,
+                    "followers_count": target_user.followers.count()
+                })
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
 class GoogleLoginView(APIView):
     permission_classes = (AllowAny,)
 
