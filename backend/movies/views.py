@@ -344,18 +344,30 @@ def universal_search(request):
     })
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def user_stats(request):
+@permission_classes([AllowAny])
+def user_stats(request, username=None):
     try:
-        movie_logs = MovieActivity.objects.filter(user=request.user, is_logged=True).count()
-        tv_logs = TVActivity.objects.filter(user=request.user, is_logged=True).count()
-        anime_logs = AnimeActivity.objects.filter(user=request.user, is_logged=True).count()
+        if username:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            if not request.user.is_authenticated:
+                return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+            user = request.user
+
+        movie_logs = MovieActivity.objects.filter(user=user, is_logged=True).count()
+        tv_logs = TVActivity.objects.filter(user=user, is_logged=True).count()
+        anime_logs = AnimeActivity.objects.filter(user=user, is_logged=True).count()
         
-        movie_perfections = MovieRating.objects.filter(user=request.user, rating='perfection').count()
-        tv_perfections = TVRating.objects.filter(user=request.user, rating='perfection').count()
-        anime_perfections = AnimeRating.objects.filter(user=request.user, rating='perfection').count()
+        movie_perfections = MovieRating.objects.filter(user=user, rating='perfection').count()
+        tv_perfections = TVRating.objects.filter(user=user, rating='perfection').count()
+        anime_perfections = AnimeRating.objects.filter(user=user, rating='perfection').count()
         
-        joined_rooms = request.user.communities.count()
+        joined_rooms = user.communities.count()
         
         return Response({
             "status_code": 200,
@@ -374,17 +386,29 @@ def user_stats(request):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def user_activity_list(request):
+@permission_classes([AllowAny])
+def user_activity_list(request, username=None):
     try:
-        movie_activities = MovieActivity.objects.filter(user=request.user, is_logged=True).order_by('-updated_at')[:10]
-        tv_activities = TVActivity.objects.filter(user=request.user, is_logged=True).order_by('-updated_at')[:10]
-        anime_activities = AnimeActivity.objects.filter(user=request.user, is_logged=True).order_by('-updated_at')[:10]
+        if username:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            if not request.user.is_authenticated:
+                return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+            user = request.user
+
+        movie_activities = MovieActivity.objects.filter(user=user, is_logged=True).order_by('-updated_at')[:10]
+        tv_activities = TVActivity.objects.filter(user=user, is_logged=True).order_by('-updated_at')[:10]
+        anime_activities = AnimeActivity.objects.filter(user=user, is_logged=True).order_by('-updated_at')[:10]
 
         activities = []
 
         for act in movie_activities:
-            rating_obj = MovieRating.objects.filter(user=request.user, movie_id=act.movie_id).first()
+            rating_obj = MovieRating.objects.filter(user=user, movie_id=act.movie_id).first()
             activities.append({
                 "id": act.movie_id,
                 "media_type": "movie",
@@ -393,7 +417,7 @@ def user_activity_list(request):
             })
 
         for act in tv_activities:
-            rating_obj = TVRating.objects.filter(user=request.user, tv_id=act.tv_id).first()
+            rating_obj = TVRating.objects.filter(user=user, tv_id=act.tv_id).first()
             activities.append({
                 "id": act.tv_id,
                 "media_type": "tv",
@@ -402,7 +426,7 @@ def user_activity_list(request):
             })
 
         for act in anime_activities:
-            rating_obj = AnimeRating.objects.filter(user=request.user, anime_id=act.anime_id).first()
+            rating_obj = AnimeRating.objects.filter(user=user, anime_id=act.anime_id).first()
             activities.append({
                 "id": act.anime_id,
                 "media_type": "anime",
@@ -420,12 +444,24 @@ def user_activity_list(request):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def user_watchlist(request):
+@permission_classes([AllowAny])
+def user_watchlist(request, username=None):
     try:
-        movie_activities = MovieActivity.objects.filter(user=request.user, is_watchlist=True).order_by("-updated_at")
-        tv_activities = TVActivity.objects.filter(user=request.user, is_watchlist=True).order_by("-updated_at")
-        anime_activities = AnimeActivity.objects.filter(user=request.user, is_watchlist=True).order_by("-updated_at")
+        if username:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            if not request.user.is_authenticated:
+                return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+            user = request.user
+
+        movie_activities = MovieActivity.objects.filter(user=user, is_watchlist=True).order_by("-updated_at")
+        tv_activities = TVActivity.objects.filter(user=user, is_watchlist=True).order_by("-updated_at")
+        anime_activities = AnimeActivity.objects.filter(user=user, is_watchlist=True).order_by("-updated_at")
         
         results = []
         for activity in movie_activities:
@@ -884,3 +920,112 @@ def tv_recommendations(request, tv_id):
         return Response({"status_code": 200, "data": recommendations[:18]})
     except Exception as e:
         return Response({"error": "An unexpected error occurred", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+import math
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def collaborative_recommendations(request):
+    """
+    User-User Collaborative Filtering using Cosine Similarity.
+    1. Maps string ratings to numerical values.
+    2. Calculates similarity between current user and all other users.
+    3. Identifies movies liked by similar users but not seen by the current user.
+    """
+    RATING_WEIGHTS = {
+        'perfection': 5.0,
+        'goforit': 4.0,
+        'timepass': 2.0,
+        'skip': 1.0,
+    }
+
+    current_user = request.user
+    
+    # 1. Fetch current user's ratings
+    my_ratings = MovieRating.objects.filter(user=current_user)
+    if not my_ratings.exists():
+        return Response({
+            "status_code": 200, 
+            "data": [], 
+            "message": "Rate some movies to get personalized recommendations!"
+        })
+
+    my_vector = {r.movie_id: RATING_WEIGHTS.get(r.rating, 0) for r in my_ratings}
+    my_movie_ids = set(my_vector.keys())
+
+    # 2. Fetch all other users' ratings
+    other_ratings_objs = MovieRating.objects.exclude(user=current_user)
+    
+    # Group ratings by user
+    user_vectors = {}
+    for r in other_ratings_objs:
+        if r.user_id not in user_vectors:
+            user_vectors[r.user_id] = {}
+        user_vectors[r.user_id][r.movie_id] = RATING_WEIGHTS.get(r.rating, 0)
+
+    # 3. Calculate Cosine Similarity for each user
+    similarities = []
+    
+    def get_cosine_sim(v1, v2):
+        common_movies = set(v1.keys()) & set(v2.keys())
+        if not common_movies:
+            return 0.0
+        
+        dot_product = sum(v1[m] * v2[m] for m in common_movies)
+        mag1 = math.sqrt(sum(val**2 for val in v1.values()))
+        mag2 = math.sqrt(sum(val**2 for val in v2.values()))
+        
+        if mag1 == 0 or mag2 == 0:
+            return 0.0
+        return dot_product / (mag1 * mag2)
+
+    for other_user_id, other_vector in user_vectors.items():
+        sim = get_cosine_sim(my_vector, other_vector)
+        if sim > 0.1: 
+            similarities.append((other_user_id, sim))
+
+    # Sort users by similarity (descending)
+    similarities.sort(key=lambda x: x[1], reverse=True)
+    top_neighbors = similarities[:10] 
+
+    if not top_neighbors:
+        return Response({"status_code": 200, "data": []})
+
+    # 4. Aggregate recommendations from neighbors
+    recommendation_scores = {} 
+    
+    for neighbor_id, sim in top_neighbors:
+        neighbor_vec = user_vectors[neighbor_id]
+        for movie_id, rating in neighbor_vec.items():
+            if movie_id not in my_movie_ids:
+                if rating >= 4:
+                    if movie_id not in recommendation_scores:
+                        recommendation_scores[movie_id] = 0
+                    recommendation_scores[movie_id] += sim * rating
+
+    # 5. Sort recommendations and fetch details from TMDB
+    sorted_recs = sorted(recommendation_scores.items(), key=lambda x: x[1], reverse=True)[:10]
+    
+    final_movies = []
+    api_key = settings.TMDB_API_KEY
+    
+    for movie_id, score in sorted_recs:
+        try:
+            res = requests.get(
+                f"https://api.themoviedb.org/3/movie/{movie_id}",
+                params={"api_key": api_key},
+                timeout=5
+            )
+            if res.ok:
+                m_data = res.json()
+                # Store the similarity weight
+                m_data["match_score"] = round(score, 1)
+                m_data["recommendation_type"] = "collaborative"
+                final_movies.append(m_data)
+        except:
+            continue
+
+    return Response({
+        "status_code": 200,
+        "data": final_movies
+    })

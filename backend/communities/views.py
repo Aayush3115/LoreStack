@@ -81,9 +81,21 @@ class CommunityViewSet(ModelViewSet):
         community.members.remove(request.user)
         return Response({'status': 'left'})
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def joined(self, request):
-        communities = request.user.communities.all()
+        username = request.query_params.get('username')
+        if username:
+            from accounts.models import User
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return Response({"error": "User not found"}, status=404)
+        else:
+            if not request.user.is_authenticated:
+                return Response({"error": "Authentication required"}, status=401)
+            user = request.user
+            
+        communities = user.communities.all()
         serializer = self.get_serializer(communities, many=True)
         return Response(serializer.data)
 

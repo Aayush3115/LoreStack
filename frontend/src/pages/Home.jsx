@@ -7,7 +7,7 @@ import '../Styles/Explore.css';
 import {
     Sparkles, Film, Tv, Loader2, Search, Bell,
     MessageSquare, Heart, Share2, Compass,
-    Play, Plus, MoreHorizontal, User,
+    Play, Plus, MoreHorizontal, User, Users,
     ArrowBigDown, ArrowBigUp,
     Gamepad2, BookOpen, Music
 } from 'lucide-react';
@@ -24,6 +24,8 @@ const Home = () => {
     const [isRoomsLoading, setIsRoomsLoading] = useState(true);
     const [userData, setUserData] = useState(null);
     const [activeTab, setActiveTab] = useState('home');
+    const [collaborativeRecs, setCollaborativeRecs] = useState([]);
+    const [isCollabLoading, setIsCollabLoading] = useState(false);
 
     const railRef = useRef(null);
 
@@ -41,11 +43,6 @@ const Home = () => {
                 setMoods(moodsRes.data);
                 setUserData(profileRes.data);
                 setMyLoreRooms(createdCommsRes.data);
-
-                // Set default vibe if none selected
-                if (moodsRes.data.length > 0) {
-                    setSelectedVibe(moodsRes.data[0]);
-                }
             } catch (err) {
                 console.error("Failed to fetch initial data:", err);
                 // Simple fallback to keep page from being empty
@@ -55,7 +52,22 @@ const Home = () => {
             }
         };
         fetchInitialData();
+        fetchCollaborativeRecs();
     }, []);
+
+    const fetchCollaborativeRecs = async () => {
+        setIsCollabLoading(true);
+        try {
+            const response = await API.get('movies/recommendations/collaborative/');
+            if (response.data.status_code === 200) {
+                setCollaborativeRecs(response.data.data);
+            }
+        } catch (err) {
+            console.error("Failed to fetch collaborative recs:", err);
+        } finally {
+            setIsCollabLoading(false);
+        }
+    };
 
     // Fetch Recommendations
     useEffect(() => {
@@ -111,7 +123,7 @@ const Home = () => {
 
                     <div className="header-actions">
                         <div className="space-badge">{userData ? `${userData.username}'s Space` : 'Personal Space'}</div>
-                        <div className="user-avatar-container">
+                        <Link to="/profile" className="user-avatar-container">
                             {userData?.profile_picture ? (
                                 <img src={userData.profile_picture} alt="Avatar" className="user-avatar-img" />
                             ) : (
@@ -119,7 +131,7 @@ const Home = () => {
                                     {userData?.username?.[0].toUpperCase() || 'U'}
                                 </div>
                             )}
-                        </div>
+                        </Link>
                     </div>
                 </header>
 
@@ -137,6 +149,7 @@ const Home = () => {
                 </section>
 
                 {/* --- MOOD SELECTION BAR --- */}
+                {/* COMMENTED OUT TEMPORARILY
                 <div className="vibe-selection-bar">
                     <div className="mood-pill-container">
                         {moods.map((mood) => (
@@ -151,44 +164,99 @@ const Home = () => {
                         ))}
                     </div>
                 </div>
+                */}
 
-                {/* --- RECOMMENDED SECTION --- */}
-                <section className="content-section">
-                    <div className="section-header">
-                        <div className="section-title-wrap">
-                            <h2 className="section-title-main">Recommended For You</h2>
-                        </div>
+                {/* --- COLLABORATIVE CIRCLE SECTION (always visible on load) --- */}
+                {isCollabLoading ? (
+                    <div className="loading-container">
+                        <Loader2 className="searching-spinner" size={40} />
                     </div>
+                ) : collaborativeRecs.length > 0 && (
+                    <section className="content-section">
+                        <div className="section-header">
+                            <div className="section-title-wrap">
+                                <h2 className="section-title-main">People With Your Taste Are Into...</h2>
+                                <span className="section-subtitle">Based on users who share your cinematic DNA</span>
+                            </div>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-color)', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: '700' }}>
+                                <Users size={12} /> TASTE CIRCLE
+                            </span>
+                        </div>
 
-                    {isLoading ? (
-                        <div className="loading-container">
-                            <Loader2 className="searching-spinner" size={40} />
+                        <div className="horizontal-rail">
+                            {collaborativeRecs.map((item) => (
+                                <div key={item.id} className="media-card" onClick={() => handleMediaClick(item)}>
+                                    <div className="match-tag" style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 2, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', color: '#4ade80', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', border: '1px solid rgba(74, 222, 128, 0.3)' }}>
+                                        {Math.round(item.match_score * 20)}% Match
+                                    </div>
+                                    <img
+                                        src={item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : 'https://via.placeholder.com/300x450'}
+                                        alt={item.title}
+                                        className="card-poster"
+                                    />
+                                    <div className="card-info">
+                                        <h4 className="card-title">{item.title}</h4>
+                                        <div style={{ fontSize: '0.7rem', opacity: 0.5, marginTop: '4px' }}>Recommended by your circle</div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    ) : (
-                        <div className="horizontal-rail" ref={railRef}>
-                            {recommendations.length > 0 ? (
-                                recommendations.slice(0, 7).map((item) => (
-                                    <div key={item.id} className="media-card" onClick={() => handleMediaClick(item)}>
-                                        <img
-                                            src={item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : 'https://via.placeholder.com/300x450'}
-                                            alt={item.title}
-                                            className="card-poster"
-                                        />
-                                        <div className="card-info">
-                                            <h4 className="card-title">{item.title || item.name}</h4>
+                    </section>
+                )}
+
+                {/* --- MOOD-BASED RECOMMENDED SECTION (requires mood selection) --- */}
+                {/* COMMENTED OUT TEMPORARILY
+                {!selectedVibe ? (
+                    <section className="mood-prompt-section">
+                        <div className="mood-prompt-content">
+                            <Sparkles className="mood-prompt-icon" size={48} />
+                            <h2 className="mood-prompt-title">How are you feeling today?</h2>
+                            <p className="mood-prompt-subtitle">Select a mood above to unlock personalized recommendations tailored to your vibe.</p>
+                            <div className="mood-hint-arrow">
+                                <ArrowBigUp size={32} />
+                            </div>
+                        </div>
+                    </section>
+                ) : (
+                    <section className="content-section">
+                        <div className="section-header">
+                            <div className="section-title-wrap">
+                                <h2 className="section-title-main">Recommended For You</h2>
+                                <span className="section-subtitle">Based on your {selectedVibe.name} mood</span>
+                            </div>
+                        </div>
+
+                        {isLoading ? (
+                            <div className="loading-container">
+                                <Loader2 className="searching-spinner" size={40} />
+                            </div>
+                        ) : (
+                            <div className="horizontal-rail" ref={railRef}>
+                                {recommendations.length > 0 ? (
+                                    recommendations.slice(0, 7).map((item) => (
+                                        <div key={item.id} className="media-card" onClick={() => handleMediaClick(item)}>
+                                            <img
+                                                src={item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : 'https://via.placeholder.com/300x450'}
+                                                alt={item.title}
+                                                className="card-poster"
+                                            />
+                                            <div className="card-info">
+                                                <h4 className="card-title">{item.title || item.name}</h4>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))
-                            ) : (
-                                [1, 2, 3, 4, 5, 6].map(i => (
-                                    <div key={i} className="media-card" style={{ opacity: 0.2 }}>
-                                        <div style={{ height: '280px', background: 'var(--card-bg)' }}></div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    )}
-                </section>
+                                    ))
+                                ) : (
+                                    [1, 2, 3, 4, 5, 6].map(i => (
+                                        <div key={i} className="media-card" style={{ opacity: 0.2 }}>
+                                            <div style={{ height: '280px', background: 'var(--card-bg)' }}></div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        )}
+                    </section>
+                )}
+                */}
 
                 {/* --- YOUR LOREROOMS --- */}
                 <section className="content-section">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../../api/api';
 import './CommentSection.css';
 import { Send, Reply, Trash2, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
@@ -36,14 +37,18 @@ const CommentItem = ({ comment, postId, onCommentAdded, onDelete, currentUser, i
         <div className={`comment-item ${isReply ? 'reply-item' : ''}`}>
             <div className="comment-main">
                 <div className="comment-avatar">
+                   <Link to={`/profile/${comment.user_username}`}>
                     <img 
                         src={comment.user_profile_picture || `https://i.pravatar.cc/40?u=${comment.user}`} 
                         alt={comment.user_username} 
                     />
+                   </Link>
                 </div>
                 <div className="comment-content-wrapper">
                     <div className="comment-header">
-                        <span className="comment-author">{comment.user_username}</span>
+                        <Link to={`/profile/${comment.user_username}`} style={{ textDecoration: 'none' }}>
+                            <span className="comment-author">{comment.user_username}</span>
+                        </Link>
                         <span className="comment-date">
                             {new Date(comment.created_at).toLocaleString('en-US', {
                                 month: 'short',

@@ -10,7 +10,13 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from .serializers import RegisterSerializer,UserSerializer,UserUpdateSerializer
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from django.conf import settings
+import requests
+from django.core.files.base import ContentFile
 # Create your views here.
+
 
 User=get_user_model()
 
@@ -97,5 +103,99 @@ class UserProfileView(APIView):
             return Response(UserSerializer(request.user, context={'request': request}).data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+class PublicUserProfileView(APIView):
+    permission_classes = (AllowAny,)
     
+    def get(self, request, username):
+        try:
+            user = User.objects.get(username=username)
+            serializer = UserSerializer(user, context={'request': request})
+            return Response(serializer.data)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class FollowToggleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, username):
+        try:
+            target_user = User.objects.get(username=username)
+            if target_user == request.user:
+                return Response({"error": "You cannot follow yourself"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if request.user.following.filter(id=target_user.id).exists():
+                request.user.following.remove(target_user)
+                return Response({
+                    "status": "unfollowed", 
+                    "is_following": False,
+                    "followers_count": target_user.followers.count()
+                })
+            else:
+                request.user.following.add(target_user)
+                return Response({
+                    "status": "followed", 
+                    "is_following": True,
+                    "followers_count": target_user.followers.count()
+                })
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class GoogleLoginView(APIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        token = request.data.get('token')
+        if not token:
+            return Response({'error': 'Token is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            client_id = getattr(settings, 'GOOGLE_CLIENT_ID', None)
+            if not client_id:
+                return Response({'error': 'GOOGLE_CLIENT_ID not configured in backend'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            # Verify the token
+            idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), client_id)
+
+            # ID token is valid. Get the user's Google Account ID from the decoded token.
+            email = idinfo['email']
+            
+            # Get or create user
+            user, created = User.objects.get_or_create(email=email, defaults={
+                'username': (idinfo.get('given_name', email.split('@')[0]) + '_' + User.objects.make_random_password(length=4)).lower(),
+                'first_name': idinfo.get('given_name', ''),
+                'last_name': idinfo.get('family_name', ''),
+                'bio': 'Signed in via Google',
+                'email_verified': True
+            })
+
+
+            # If user has a Google profile picture and doesn't have one set or is new
+            google_pic_url = idinfo.get('picture')
+            if google_pic_url:
+                try:
+                    # Only download if it's a new user or they still have the default picture
+                    if created or 'default.jpg' in user.profile_picture.url:
+                        response = requests.get(google_pic_url)
+                        if response.status_code == 200:
+                            # Use email as filename prefix
+                            file_name = f"{user.username}_google_pic.jpg"
+                            user.profile_picture.save(file_name, ContentFile(response.content), save=True)
+                except Exception as e:
+                    print(f"Failed to download Google profile pic: {e}")
+
+
+            # Generate tokens
+            refresh = RefreshToken.for_user(user)
+
+            return Response({
+                'user': UserSerializer(user, context={'request': request}).data,
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+                'message': 'Login successful',
+                'is_new_user': created
+            })
+
+        except ValueError:
+            return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

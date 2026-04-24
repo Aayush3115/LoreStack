@@ -9,10 +9,19 @@ class User(AbstractUser):
             upload_to='profile_pics/',
             default='profile_pics/default.jpg'
         )
+        email_verified = models.BooleanField(default=False)
+
         preferred_moods = models.ManyToManyField(
         'moods.Mood',
         blank=True,
         related_name='preferred_by_users'
+        )
+
+        following = models.ManyToManyField(
+            'self',
+            symmetrical=False,
+            related_name='followers',
+            blank=True
         )
 
         def __str__(self):
