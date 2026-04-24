@@ -7,10 +7,12 @@ from .views import (
     movie_activity, tv_activity, anime_activity,
     user_watchlist, user_stats, user_activity_list,
     movie_recommendations, tv_recommendations,
+    collaborative_recommendations,
     anime_details
 )
 
 urlpatterns = [
+    path("recommendations/collaborative/", collaborative_recommendations, name="collaborative_recommendations"),
     path("trending-movies/", trending_movies, name="trending_movies"),
     path("trending-tv/", trending_tv, name="trending_tv"),
     path("trending-anime/", trending_anime, name="trending_anime"),
