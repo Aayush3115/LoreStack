@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../styles/community.css";
 import Sidebar from "../Components/Sidebar/Sidebar";
 import api from "../api/api";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { MessageSquare, Compass, Loader2, Heart, Plus, ArrowBigUp, ArrowBigDown, User, MoreHorizontal } from "lucide-react";
 import CommentSection from "../Components/Comments/CommentSection";
 
@@ -188,12 +188,12 @@ const Community = () => {
         post: postId,
         vote_type: voteType
       });
-      
+
       setJoinedPosts(prevPosts => prevPosts.map(post => {
         if (post.id === postId) {
           const currentVote = post.user_vote || 0;
           let newScore = post.vote_score || 0;
-          
+
           if (currentVote === voteType) {
             newScore -= voteType;
             return { ...post, vote_score: newScore, user_vote: 0 };
@@ -243,7 +243,7 @@ const Community = () => {
     try {
       if (isStaff) {
         if (!newCommunity.description.trim()) return;
-        
+
         const formData = new FormData();
         formData.append('name', newCommunity.name);
         formData.append('description', newCommunity.description);
@@ -417,10 +417,10 @@ const Community = () => {
                           border: '1px solid var(--border-color)'
                         }}>
                           {currentUser?.profile_picture ? (
-                            <img 
-                              src={currentUser.profile_picture} 
-                              alt={currentUser.username} 
-                              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                            <img
+                              src={currentUser.profile_picture}
+                              alt={currentUser.username}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             />
                           ) : (
                             <User size={20} color="var(--secondary-text)" />
@@ -429,9 +429,9 @@ const Community = () => {
                       </div>
                       <select
                         className="community-selector"
-                        style={{ 
-                          flex: 1, 
-                          border: '1px solid var(--border-color)', 
+                        style={{
+                          flex: 1,
+                          border: '1px solid var(--border-color)',
                           background: 'var(--hover-bg)',
                           padding: '10px 16px',
                           borderRadius: '8px',
@@ -524,39 +524,43 @@ const Community = () => {
                           <div className="post-main-content">
                             <div className="post-header" style={{ marginBottom: '8px' }}>
                               <div className="post-author-info" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <div className="author-avatar-small" style={{
-                                  width: '32px',
-                                  height: '32px',
-                                  borderRadius: '50%',
-                                  overflow: 'hidden',
-                                  background: 'var(--hover-bg)',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  border: 'none'
-                                }}>
-                                  {post.user_avatar ? (
-                                    <img src={post.user_avatar} alt={post.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                  ) : (
-                                    <User size={18} style={{ color: 'var(--secondary-text)' }} />
-                                  )}
-                                </div>
-                                <span className="author-highlight" style={{ fontSize: '16px', fontWeight: '800' }}>
-                                  {post.username}
-                                </span>
+                                <Link to={`/profile/${post.username}`} className="author-avatar-link">
+                                  <div className="author-avatar-small" style={{
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '50%',
+                                    overflow: 'hidden',
+                                    background: 'var(--hover-bg)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    border: 'none'
+                                  }}>
+                                    {post.user_avatar ? (
+                                      <img src={post.user_avatar} alt={post.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    ) : (
+                                      <User size={18} style={{ color: 'var(--secondary-text)' }} />
+                                    )}
+                                  </div>
+                                </Link>
+                                <Link to={`/profile/${post.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                  <span className="author-highlight" style={{ fontSize: '16px', fontWeight: '800' }}>
+                                    {post.username}
+                                  </span>
+                                </Link>
                                 <span className="post-time" style={{ fontSize: '13px', color: 'var(--secondary-text)', marginLeft: '0px' }}>
                                   in <strong style={{ color: 'var(--text-color)', fontWeight: '700' }}>{post.community_name}</strong> • {new Date(post.created_at).toLocaleString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
 
                                 </span>
                               </div>
                               {currentUser && currentUser.id === post.user_id && (
                                 <div className="post-options-container" style={{ position: 'relative' }}>
-                                  <button 
+                                  <button
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setActivePostMenuId(activePostMenuId === post.id ? null : post.id);
@@ -578,19 +582,19 @@ const Community = () => {
                                       boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
                                       minWidth: '100px'
                                     }}>
-                                      <button 
+                                      <button
                                         onClick={() => {
                                           setActivePostMenuId(null);
                                           startEditing(post);
                                         }}
-                                        style={{ 
-                                          width: '100%', 
-                                          textAlign: 'left', 
-                                          padding: '8px 12px', 
-                                          background: 'transparent', 
-                                          border: 'none', 
-                                          color: 'var(--text-color)', 
-                                          fontSize: '13px', 
+                                        style={{
+                                          width: '100%',
+                                          textAlign: 'left',
+                                          padding: '8px 12px',
+                                          background: 'transparent',
+                                          border: 'none',
+                                          color: 'var(--text-color)',
+                                          fontSize: '13px',
                                           cursor: 'pointer',
                                           borderRadius: '4px'
                                         }}
@@ -598,47 +602,47 @@ const Community = () => {
                                       >
                                         Edit
                                       </button>
-                                        {isDeletingPostId === post.id ? (
-                                          <div className="delete-confirm-inline" style={{ padding: '8px 12px' }}>
-                                            <span style={{ fontSize: '11px', color: 'var(--secondary-text)', marginRight: '8px' }}>Sure?</span>
-                                            <button 
-                                              onClick={() => {
-                                                handleDeletePost(post.id);
-                                                setIsDeletingPostId(null);
-                                              }}
-                                              style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: '11px', fontWeight: '700', cursor: 'pointer', marginRight: '4px' }}
-                                            >
-                                              Yes
-                                            </button>
-                                            <button 
-                                              onClick={() => setIsDeletingPostId(null)}
-                                              style={{ background: 'transparent', border: 'none', color: 'var(--secondary-text)', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
-                                            >
-                                              No
-                                            </button>
-                                          </div>
-                                        ) : (
-                                          <button 
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              setIsDeletingPostId(post.id);
+                                      {isDeletingPostId === post.id ? (
+                                        <div className="delete-confirm-inline" style={{ padding: '8px 12px' }}>
+                                          <span style={{ fontSize: '11px', color: 'var(--secondary-text)', marginRight: '8px' }}>Sure?</span>
+                                          <button
+                                            onClick={() => {
+                                              handleDeletePost(post.id);
+                                              setIsDeletingPostId(null);
                                             }}
-                                            className="dropdown-item delete"
-                                            style={{ 
-                                              width: '100%', 
-                                              textAlign: 'left', 
-                                              padding: '8px 12px', 
-                                              background: 'transparent', 
-                                              border: 'none', 
-                                              color: '#ef4444', 
-                                              fontSize: '13px', 
-                                              cursor: 'pointer',
-                                              borderRadius: '4px'
-                                            }}
+                                            style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: '11px', fontWeight: '700', cursor: 'pointer', marginRight: '4px' }}
                                           >
-                                            Delete
+                                            Yes
                                           </button>
-                                        )}
+                                          <button
+                                            onClick={() => setIsDeletingPostId(null)}
+                                            style={{ background: 'transparent', border: 'none', color: 'var(--secondary-text)', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
+                                          >
+                                            No
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setIsDeletingPostId(post.id);
+                                          }}
+                                          className="dropdown-item delete"
+                                          style={{
+                                            width: '100%',
+                                            textAlign: 'left',
+                                            padding: '8px 12px',
+                                            background: 'transparent',
+                                            border: 'none',
+                                            color: '#ef4444',
+                                            fontSize: '13px',
+                                            cursor: 'pointer',
+                                            borderRadius: '4px'
+                                          }}
+                                        >
+                                          Delete
+                                        </button>
+                                      )}
                                     </div>
                                   )}
                                 </div>
@@ -654,13 +658,13 @@ const Community = () => {
                                     onChange={(e) => setEditContent(e.target.value)}
                                   />
                                   <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                                    <button 
+                                    <button
                                       onClick={() => setEditingPostId(null)}
                                       style={{ padding: '4px 12px', borderRadius: '4px', background: 'var(--hover-bg)', border: '1px solid var(--border-color)', color: 'var(--text-color)', cursor: 'pointer' }}
                                     >
                                       Cancel
                                     </button>
-                                    <button 
+                                    <button
                                       onClick={() => handleEditPost(post.id)}
                                       style={{ padding: '4px 12px', borderRadius: '4px', background: 'var(--accent-color)', border: 'none', color: 'white', cursor: 'pointer' }}
                                     >
@@ -674,7 +678,7 @@ const Community = () => {
                             </div>
                             <div className="post-footer">
                               <div className="vote-footer-container">
-                                <button 
+                                <button
                                   className={`vote-btn-footer ${post.user_vote === 1 ? 'active-up' : ''}`}
                                   onClick={() => handleVote(post.id, 1)}
                                 >
@@ -683,14 +687,14 @@ const Community = () => {
                                 <span className={`vote-count-footer ${post.user_vote === 1 ? 'up' : post.user_vote === -1 ? 'down' : ''}`}>
                                   {post.vote_score || 0}
                                 </span>
-                                <button 
+                                <button
                                   className={`vote-btn-footer ${post.user_vote === -1 ? 'active-down' : ''}`}
                                   onClick={() => handleVote(post.id, -1)}
                                 >
                                   <ArrowBigDown size={16} fill={post.user_vote === -1 ? "currentColor" : "none"} />
                                 </button>
                               </div>
-                              <button 
+                              <button
                                 className={`post-action ${expandedComments.has(post.id) ? 'active' : ''}`}
                                 onClick={() => handleComment(post.id)}
                               >
@@ -700,11 +704,11 @@ const Community = () => {
 
                             </div>
                             {expandedComments.has(post.id) && (
-                              <CommentSection 
-                                postId={post.id} 
-                                currentUser={currentUser} 
+                              <CommentSection
+                                postId={post.id}
+                                currentUser={currentUser}
                                 onReplyCountChange={(amount) => {
-                                  setJoinedPosts(prev => prev.map(p => 
+                                  setJoinedPosts(prev => prev.map(p =>
                                     p.id === post.id ? { ...p, comments_count: (p.comments_count || 0) + amount } : p
                                   ));
                                 }}
@@ -791,25 +795,6 @@ const Community = () => {
           {/* RIGHT COLUMN: SIDEBAR */}
           <div className="sidebar-column">
             <div className="reddit-sidebar-card">
-              <div className="sidebar-banner"></div>
-              <div className="sidebar-card-header">
-                <div className="sidebar-title">About Community</div>
-              </div>
-              <div className="sidebar-card-content">
-                <p style={{ fontSize: '13px', color: 'var(--text-color)', lineHeight: '1.5' }}>
-                  Welcome to LoreStack Communities! A place to share and discover deep lore about your favorite universes. Connect with other Lorekeepers and expand your horizons.
-                </p>
-                <button
-                  className="premium-create-btn"
-                  style={{ width: '100%', justifyContent: 'center', marginTop: '16px', borderRadius: '20px' }}
-                  onClick={() => setShowCreateModal(true)}
-                >
-                  {isStaff ? "Create Community" : "Request Community"}
-                </button>
-              </div>
-            </div>
-
-            <div className="reddit-sidebar-card">
               <div className="sidebar-card-header">
                 <div className="sidebar-title">Discover LoreRooms</div>
               </div>
@@ -820,9 +805,16 @@ const Community = () => {
                     className="trending-item"
                     onClick={() => navigate(`/community/${room.id}`)}
                   >
+                    <div className="trending-room-icon">
+                      {room.profile_picture ? (
+                        <img src={room.profile_picture} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                      ) : (
+                        <span>🏠</span>
+                      )}
+                    </div>
                     <div className="room-info-small">
                       <div className="room-name-small">{room.name}</div>
-                      <div className="room-members-small">{room.memberCount || 0} keepers</div>
+                      <div className="room-members-small">{room.memberCount || 0} Nerds</div>
                     </div>
                     <button
                       className="join-btn-tiny"
@@ -832,41 +824,63 @@ const Community = () => {
                       }}
                       style={{
                         marginLeft: 'auto',
-                        background: room.joined ? 'var(--hover-bg)' : 'var(--accent-color)',
-                        color: room.joined ? 'var(--text-color)' : 'white',
+                        background: room.joined ? 'var(--hover-bg)' : 'black',
+                        color: room.joined ? 'black' : 'white',
                         border: room.joined ? '1px solid var(--border-color)' : 'none',
                         borderRadius: '12px',
                         padding: '2px 8px',
                         fontSize: '11px',
-                        fontWeight: 700,
+                        fontWeight: '700',
                         cursor: 'pointer'
                       }}
                     >
-                      {room.joined ? 'Joined' : 'Join'}
+                      {room.joined ? 'Leave' : 'Join'}
                     </button>
                   </div>
                 ))}
+                {communities.length > 5 && (
+                  <button
+                    className="view-all-discover"
+                    onClick={() => setShowAllDiscover(!showAllDiscover)}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      background: 'transparent',
+                      border: 'none',
+                      // color: 'var(--accent-color)',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      borderTop: '1px solid var(--border-color)'
+                    }}
+                  >
+                    {showAllDiscover ? 'Show Less' : 'View All'}
+                  </button>
+                )}
               </div>
-              {!showAllDiscover && communities.length > 5 && (
-                <button
-                  className="discover-more-dots"
-                  style={{
-                    width: '100%',
-                    padding: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'transparent',
-                    border: 'none',
-                    borderTop: '1px solid var(--border-color)',
-                    color: 'var(--secondary-text)',
-                    cursor: 'pointer'
-                  }}
-                  onClick={() => setShowAllDiscover(true)}
-                >
-                  <MoreHorizontal size={20} />
-                </button>
-              )}
+            </div>
+
+            <div className="reddit-sidebar-card">
+              {/* <div className="sidebar-banner"></div> */}
+              <div className="sidebar-card-header">
+                <div className="sidebar-title">About Community</div>
+              </div>
+              <div className="sidebar-card-content">
+                <p style={{ fontSize: '13px', color: 'var(--text-color)', lineHeight: '1.5' }}>
+                  Welcome to LoreStack Communities! A place to share and discover deep lore about your favorite universes. Connect with other Lorekeepers and expand your horizons.
+                </p>
+                <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
+                  {/* <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--secondary-text)' }}>Members</span>
+                    <span style={{ fontSize: '12px', fontWeight: '700' }}>{communities.reduce((acc, c) => acc + (c.memberCount || 0), 0).toLocaleString()}</span>
+                  </div> */}
+                  {/* <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--secondary-text)' }}>Total LoreRooms</span>
+                    <span style={{ fontSize: '12px', fontWeight: '700' }}>{communities.length}</span>
+                  </div> */}
+                </div>
+              </div>
             </div>
 
             <div className="sidebar-footer-text">
