@@ -148,24 +148,6 @@ const Home = () => {
                     </div>
                 </section>
 
-                {/* --- MOOD SELECTION BAR --- */}
-                {/* COMMENTED OUT TEMPORARILY
-                <div className="vibe-selection-bar">
-                    <div className="mood-pill-container">
-                        {moods.map((mood) => (
-                            <div
-                                key={mood.id}
-                                className={`mood-pill ${selectedVibe?.id === mood.id ? 'active' : ''}`}
-                                onClick={() => setSelectedVibe(mood)}
-                            >
-                                <span>{getMoodEmoji(mood.name)}</span>
-                                {mood.name}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-                */}
-
                 {/* --- COLLABORATIVE CIRCLE SECTION (always visible on load) --- */}
                 {isCollabLoading ? (
                     <div className="loading-container">
@@ -204,34 +186,38 @@ const Home = () => {
                     </section>
                 )}
 
-                {/* --- MOOD-BASED RECOMMENDED SECTION (requires mood selection) --- */}
-                {/* COMMENTED OUT TEMPORARILY
-                {!selectedVibe ? (
-                    <section className="mood-prompt-section">
-                        <div className="mood-prompt-content">
-                            <Sparkles className="mood-prompt-icon" size={48} />
-                            <h2 className="mood-prompt-title">How are you feeling today?</h2>
-                            <p className="mood-prompt-subtitle">Select a mood above to unlock personalized recommendations tailored to your vibe.</p>
-                            <div className="mood-hint-arrow">
-                                <ArrowBigUp size={32} />
-                            </div>
-                        </div>
-                    </section>
-                ) : (
-                    <section className="content-section">
-                        <div className="section-header">
-                            <div className="section-title-wrap">
-                                <h2 className="section-title-main">Recommended For You</h2>
-                                <span className="section-subtitle">Based on your {selectedVibe.name} mood</span>
-                            </div>
-                        </div>
 
-                        {isLoading ? (
+                {/* --- MOOD EXPLORATION SECTION --- */}
+                <section className="content-section mood-exploration-section">
+                    <div className="section-header">
+                        <div className="section-title-wrap">
+                            <h2 className="section-title-main">How are you feeling today?</h2>
+                            <span className="section-subtitle">Select a vibe to find movies that match your mood</span>
+                        </div>
+                    </div>
+
+                    <div className="vibe-selection-bar" style={{ padding: '0', marginTop: '0', marginBottom: '2rem' }}>
+                        <div className="mood-pill-container">
+                            {moods.map((mood) => (
+                                <div
+                                    key={mood.id}
+                                    className={`mood-pill ${selectedVibe?.id === mood.id ? 'active' : ''}`}
+                                    onClick={() => setSelectedVibe(mood)}
+                                >
+                                    <span>{getMoodEmoji(mood.name)}</span>
+                                    {mood.name}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {selectedVibe ? (
+                        isLoading ? (
                             <div className="loading-container">
                                 <Loader2 className="searching-spinner" size={40} />
                             </div>
                         ) : (
-                            <div className="horizontal-rail" ref={railRef}>
+                            <div className="horizontal-rail" ref={railRef} style={{ paddingTop: '0' }}>
                                 {recommendations.length > 0 ? (
                                     recommendations.slice(0, 7).map((item) => (
                                         <div key={item.id} className="media-card" onClick={() => handleMediaClick(item)}>
@@ -253,10 +239,9 @@ const Home = () => {
                                     ))
                                 )}
                             </div>
-                        )}
-                    </section>
-                )}
-                */}
+                        )
+                    ) : null}
+                </section>
 
                 {/* --- YOUR LOREROOMS --- */}
                 <section className="content-section">
