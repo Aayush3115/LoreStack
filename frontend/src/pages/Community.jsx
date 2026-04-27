@@ -824,6 +824,13 @@ const Community = () => {
                     className="trending-item"
                     onClick={() => navigate(`/community/${room.id}`)}
                   >
+                    <div className="trending-room-icon">
+                      {room.profile_picture ? (
+                        <img src={room.profile_picture} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                      ) : (
+                        <span>🏠</span>
+                      )}
+                    </div>
                     <div className="room-info-small">
                       <div className="room-name-small">{room.name}</div>
                       <div className="room-members-small">{room.memberCount || 0} Nerds</div>
