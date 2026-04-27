@@ -838,6 +838,8 @@
 }
 
 .sidebar-card-header {
+  color: white;
+  background: black;
   padding: 12px;
   display: flex;
   align-items: center;

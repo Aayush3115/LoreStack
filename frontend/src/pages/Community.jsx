@@ -795,25 +795,6 @@ const Community = () => {
           {/* RIGHT COLUMN: SIDEBAR */}
           <div className="sidebar-column">
             <div className="reddit-sidebar-card">
-              <div className="sidebar-banner"></div>
-              <div className="sidebar-card-header">
-                <div className="sidebar-title">About Community</div>
-              </div>
-              <div className="sidebar-card-content">
-                <p style={{ fontSize: '13px', color: 'var(--text-color)', lineHeight: '1.5' }}>
-                  Welcome to LoreStack Communities! A place to share and discover deep lore about your favorite universes. Connect with other Lorekeepers and expand your horizons.
-                </p>
-                <button
-                  className="premium-create-btn"
-                  style={{ width: '100%', justifyContent: 'center', marginTop: '16px', borderRadius: '20px' }}
-                  onClick={() => setShowCreateModal(true)}
-                >
-                  {isStaff ? "Create Community" : "Request Community"}
-                </button>
-              </div>
-            </div>
-
-            <div className="reddit-sidebar-card">
               <div className="sidebar-card-header">
                 <div className="sidebar-title">Discover LoreRooms</div>
               </div>
@@ -849,35 +830,57 @@ const Community = () => {
                         borderRadius: '12px',
                         padding: '2px 8px',
                         fontSize: '11px',
-                        fontWeight: 700,
+                        fontWeight: '700',
                         cursor: 'pointer'
                       }}
                     >
-                      {room.joined ? 'Joined' : 'Join'}
+                      {room.joined ? 'Leave' : 'Join'}
                     </button>
                   </div>
                 ))}
+                {communities.length > 5 && (
+                  <button
+                    className="view-all-discover"
+                    onClick={() => setShowAllDiscover(!showAllDiscover)}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      background: 'transparent',
+                      border: 'none',
+                      // color: 'var(--accent-color)',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      borderTop: '1px solid var(--border-color)'
+                    }}
+                  >
+                    {showAllDiscover ? 'Show Less' : 'View All'}
+                  </button>
+                )}
               </div>
-              {!showAllDiscover && communities.length > 5 && (
-                <button
-                  className="discover-more-dots"
-                  style={{
-                    width: '100%',
-                    padding: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'transparent',
-                    border: 'none',
-                    borderTop: '1px solid var(--border-color)',
-                    color: 'var(--secondary-text)',
-                    cursor: 'pointer'
-                  }}
-                  onClick={() => setShowAllDiscover(true)}
-                >
-                  <MoreHorizontal size={20} />
-                </button>
-              )}
+            </div>
+
+            <div className="reddit-sidebar-card">
+              {/* <div className="sidebar-banner"></div> */}
+              <div className="sidebar-card-header">
+                <div className="sidebar-title">About Community</div>
+              </div>
+              <div className="sidebar-card-content">
+                <p style={{ fontSize: '13px', color: 'var(--text-color)', lineHeight: '1.5' }}>
+                  Welcome to LoreStack Communities! A place to share and discover deep lore about your favorite universes. Connect with other Lorekeepers and expand your horizons.
+                </p>
+                <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
+                  {/* <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--secondary-text)' }}>Members</span>
+                    <span style={{ fontSize: '12px', fontWeight: '700' }}>{communities.reduce((acc, c) => acc + (c.memberCount || 0), 0).toLocaleString()}</span>
+                  </div> */}
+                  {/* <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--secondary-text)' }}>Total LoreRooms</span>
+                    <span style={{ fontSize: '12px', fontWeight: '700' }}>{communities.length}</span>
+                  </div> */}
+                </div>
+              </div>
             </div>
 
             <div className="sidebar-footer-text">
