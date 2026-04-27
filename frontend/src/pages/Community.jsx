@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../styles/community.css";
 import Sidebar from "../Components/Sidebar/Sidebar";
 import api from "../api/api";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { MessageSquare, Compass, Loader2, Heart, Plus, ArrowBigUp, ArrowBigDown, User, MoreHorizontal } from "lucide-react";
 import CommentSection from "../Components/Comments/CommentSection";
 
@@ -524,26 +524,30 @@ const Community = () => {
                           <div className="post-main-content">
                             <div className="post-header" style={{ marginBottom: '8px' }}>
                               <div className="post-author-info" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <div className="author-avatar-small" style={{
-                                  width: '32px',
-                                  height: '32px',
-                                  borderRadius: '50%',
-                                  overflow: 'hidden',
-                                  background: 'var(--hover-bg)',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  border: 'none'
-                                }}>
-                                  {post.user_avatar ? (
-                                    <img src={post.user_avatar} alt={post.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                  ) : (
-                                    <User size={18} style={{ color: 'var(--secondary-text)' }} />
-                                  )}
-                                </div>
-                                <span className="author-highlight" style={{ fontSize: '16px', fontWeight: '800' }}>
-                                  {post.username}
-                                </span>
+                                <Link to={`/profile/${post.username}`} className="author-avatar-link">
+                                  <div className="author-avatar-small" style={{
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '50%',
+                                    overflow: 'hidden',
+                                    background: 'var(--hover-bg)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    border: 'none'
+                                  }}>
+                                    {post.user_avatar ? (
+                                      <img src={post.user_avatar} alt={post.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    ) : (
+                                      <User size={18} style={{ color: 'var(--secondary-text)' }} />
+                                    )}
+                                  </div>
+                                </Link>
+                                <Link to={`/profile/${post.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                  <span className="author-highlight" style={{ fontSize: '16px', fontWeight: '800' }}>
+                                    {post.username}
+                                  </span>
+                                </Link>
                                 <span className="post-time" style={{ fontSize: '13px', color: 'var(--secondary-text)', marginLeft: '0px' }}>
                                   in <strong style={{ color: 'var(--text-color)', fontWeight: '700' }}>{post.community_name}</strong> • {new Date(post.created_at).toLocaleString('en-US', {
                                   month: 'short',

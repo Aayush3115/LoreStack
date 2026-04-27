@@ -313,7 +313,7 @@ const CommunityDetail = () => {
                     />
                   </Link>
                   <div className="post-user-details">
-                    <Link to={`/profile/${post.username}`} style={{ textDecoration: 'none' }}>
+                    <Link to={`/profile/${post.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                       <h4 className="post-username">{post.username}</h4>
                     </Link>
                     <span className="post-timestamp">

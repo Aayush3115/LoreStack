@@ -46,7 +46,7 @@ const CommentItem = ({ comment, postId, onCommentAdded, onDelete, currentUser, i
                 </div>
                 <div className="comment-content-wrapper">
                     <div className="comment-header">
-                        <Link to={`/profile/${comment.user_username}`} style={{ textDecoration: 'none' }}>
+                        <Link to={`/profile/${comment.user_username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                             <span className="comment-author">{comment.user_username}</span>
                         </Link>
                         <span className="comment-date">
