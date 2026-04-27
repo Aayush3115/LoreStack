@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from .serializers import RegisterSerializer,UserSerializer,UserUpdateSerializer
+from django.db.models import Q
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from django.conf import settings
@@ -199,3 +200,20 @@ class GoogleLoginView(APIView):
             return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class UserSearchView(APIView):
+    permission_classes = (IsAuthenticated,)
+    
+    def get(self, request):
+        query = request.query_params.get('query', '')
+        if not query:
+            return Response([])
+        
+        users = User.objects.filter(
+            Q(username__icontains=query) | 
+            Q(first_name__icontains=query) | 
+            Q(last_name__icontains=query)
+        ).exclude(id=request.user.id)[:10]
+        
+        serializer = UserSerializer(users, many=True, context={'request': request})
+        return Response(serializer.data)
