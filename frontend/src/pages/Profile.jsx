@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Sidebar from '../Components/Sidebar/Sidebar';
-import { Loader2, Film, Bookmark, Settings, Award, Users, Tv, Play, X, Camera, History, Star } from 'lucide-react';
+import { Loader2, Film, Bookmark, Settings, Award, Users, Tv, Play, X, Camera, History, Star, Search } from 'lucide-react';
 import '../Styles/Explore.css';
 import '../Styles/Profile.css';
 import { BACKEND_URL } from '../api/api';
@@ -27,6 +27,9 @@ const Profile = () => {
     const [isUpdating, setIsUpdating] = useState(false);
     const [isFollowing, setIsFollowing] = useState(false);
     const [followLoading, setFollowLoading] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
 
     const isOwnProfile = !username || (currentUser && currentUser.username === username);
 
@@ -270,6 +273,30 @@ const Profile = () => {
         }
     };
 
+    const handleUserSearch = async (query) => {
+        setSearchQuery(query);
+        if (query.trim().length < 2) {
+            setSearchResults([]);
+            return;
+        }
+        
+        setIsSearching(true);
+        try {
+            const token = localStorage.getItem('access_token');
+            const response = await fetch(`${BACKEND_URL}/api/auth/profile/search/?query=${query}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setSearchResults(data);
+            }
+        } catch (error) {
+            console.error("Search failed:", error);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
     const getPosterUrl = (item) => {
         if (item.media_type === 'anime') return item.coverImage.large;
         return `https://image.tmdb.org/t/p/w500${item.poster_path}`;
@@ -296,6 +323,48 @@ const Profile = () => {
                 <header className="top-header">
                     <div className="header-left">
                         <h2 className="page-title">{isOwnProfile ? "My Profile" : `${userData?.username}'s Profile`}</h2>
+                    </div>
+                    <div className="header-right">
+                        <div className="user-search-wrapper">
+                            <div className="user-search-bar">
+                                <Search size={18} className="search-icon-dim" />
+                                <input 
+                                    type="text" 
+                                    placeholder="Search users..." 
+                                    value={searchQuery}
+                                    onChange={(e) => handleUserSearch(e.target.value)}
+                                />
+                                {isSearching && <Loader2 size={16} className="animate-spin search-loader" />}
+                            </div>
+                            
+                            {searchQuery && searchResults.length > 0 && (
+                                <div className="user-search-results">
+                                    {searchResults.map(user => (
+                                        <div 
+                                            key={user.id} 
+                                            className="search-result-item"
+                                            onClick={() => {
+                                                navigate(`/profile/${user.username}`);
+                                                setSearchQuery("");
+                                                setSearchResults([]);
+                                            }}
+                                        >
+                                            <img src={user.profile_picture || '/default-avatar.png'} alt={user.username} />
+                                            <div className="result-info">
+                                                <span className="result-username">{user.username}</span>
+                                                <span className="result-name">{user.first_name} {user.last_name}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            
+                            {searchQuery && !isSearching && searchResults.length === 0 && searchQuery.length >= 2 && (
+                                <div className="user-search-results">
+                                    <div className="no-results-msg">No users found</div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </header>
 
