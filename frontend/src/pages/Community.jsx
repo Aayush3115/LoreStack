@@ -188,12 +188,12 @@ const Community = () => {
         post: postId,
         vote_type: voteType
       });
-      
+
       setJoinedPosts(prevPosts => prevPosts.map(post => {
         if (post.id === postId) {
           const currentVote = post.user_vote || 0;
           let newScore = post.vote_score || 0;
-          
+
           if (currentVote === voteType) {
             newScore -= voteType;
             return { ...post, vote_score: newScore, user_vote: 0 };
@@ -243,7 +243,7 @@ const Community = () => {
     try {
       if (isStaff) {
         if (!newCommunity.description.trim()) return;
-        
+
         const formData = new FormData();
         formData.append('name', newCommunity.name);
         formData.append('description', newCommunity.description);
@@ -417,10 +417,10 @@ const Community = () => {
                           border: '1px solid var(--border-color)'
                         }}>
                           {currentUser?.profile_picture ? (
-                            <img 
-                              src={currentUser.profile_picture} 
-                              alt={currentUser.username} 
-                              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                            <img
+                              src={currentUser.profile_picture}
+                              alt={currentUser.username}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             />
                           ) : (
                             <User size={20} color="var(--secondary-text)" />
@@ -429,9 +429,9 @@ const Community = () => {
                       </div>
                       <select
                         className="community-selector"
-                        style={{ 
-                          flex: 1, 
-                          border: '1px solid var(--border-color)', 
+                        style={{
+                          flex: 1,
+                          border: '1px solid var(--border-color)',
                           background: 'var(--hover-bg)',
                           padding: '10px 16px',
                           borderRadius: '8px',
@@ -550,17 +550,17 @@ const Community = () => {
                                 </Link>
                                 <span className="post-time" style={{ fontSize: '13px', color: 'var(--secondary-text)', marginLeft: '0px' }}>
                                   in <strong style={{ color: 'var(--text-color)', fontWeight: '700' }}>{post.community_name}</strong> • {new Date(post.created_at).toLocaleString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
 
                                 </span>
                               </div>
                               {currentUser && currentUser.id === post.user_id && (
                                 <div className="post-options-container" style={{ position: 'relative' }}>
-                                  <button 
+                                  <button
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setActivePostMenuId(activePostMenuId === post.id ? null : post.id);
@@ -582,19 +582,19 @@ const Community = () => {
                                       boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
                                       minWidth: '100px'
                                     }}>
-                                      <button 
+                                      <button
                                         onClick={() => {
                                           setActivePostMenuId(null);
                                           startEditing(post);
                                         }}
-                                        style={{ 
-                                          width: '100%', 
-                                          textAlign: 'left', 
-                                          padding: '8px 12px', 
-                                          background: 'transparent', 
-                                          border: 'none', 
-                                          color: 'var(--text-color)', 
-                                          fontSize: '13px', 
+                                        style={{
+                                          width: '100%',
+                                          textAlign: 'left',
+                                          padding: '8px 12px',
+                                          background: 'transparent',
+                                          border: 'none',
+                                          color: 'var(--text-color)',
+                                          fontSize: '13px',
                                           cursor: 'pointer',
                                           borderRadius: '4px'
                                         }}
@@ -602,47 +602,47 @@ const Community = () => {
                                       >
                                         Edit
                                       </button>
-                                        {isDeletingPostId === post.id ? (
-                                          <div className="delete-confirm-inline" style={{ padding: '8px 12px' }}>
-                                            <span style={{ fontSize: '11px', color: 'var(--secondary-text)', marginRight: '8px' }}>Sure?</span>
-                                            <button 
-                                              onClick={() => {
-                                                handleDeletePost(post.id);
-                                                setIsDeletingPostId(null);
-                                              }}
-                                              style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: '11px', fontWeight: '700', cursor: 'pointer', marginRight: '4px' }}
-                                            >
-                                              Yes
-                                            </button>
-                                            <button 
-                                              onClick={() => setIsDeletingPostId(null)}
-                                              style={{ background: 'transparent', border: 'none', color: 'var(--secondary-text)', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
-                                            >
-                                              No
-                                            </button>
-                                          </div>
-                                        ) : (
-                                          <button 
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              setIsDeletingPostId(post.id);
+                                      {isDeletingPostId === post.id ? (
+                                        <div className="delete-confirm-inline" style={{ padding: '8px 12px' }}>
+                                          <span style={{ fontSize: '11px', color: 'var(--secondary-text)', marginRight: '8px' }}>Sure?</span>
+                                          <button
+                                            onClick={() => {
+                                              handleDeletePost(post.id);
+                                              setIsDeletingPostId(null);
                                             }}
-                                            className="dropdown-item delete"
-                                            style={{ 
-                                              width: '100%', 
-                                              textAlign: 'left', 
-                                              padding: '8px 12px', 
-                                              background: 'transparent', 
-                                              border: 'none', 
-                                              color: '#ef4444', 
-                                              fontSize: '13px', 
-                                              cursor: 'pointer',
-                                              borderRadius: '4px'
-                                            }}
+                                            style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: '11px', fontWeight: '700', cursor: 'pointer', marginRight: '4px' }}
                                           >
-                                            Delete
+                                            Yes
                                           </button>
-                                        )}
+                                          <button
+                                            onClick={() => setIsDeletingPostId(null)}
+                                            style={{ background: 'transparent', border: 'none', color: 'var(--secondary-text)', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
+                                          >
+                                            No
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setIsDeletingPostId(post.id);
+                                          }}
+                                          className="dropdown-item delete"
+                                          style={{
+                                            width: '100%',
+                                            textAlign: 'left',
+                                            padding: '8px 12px',
+                                            background: 'transparent',
+                                            border: 'none',
+                                            color: '#ef4444',
+                                            fontSize: '13px',
+                                            cursor: 'pointer',
+                                            borderRadius: '4px'
+                                          }}
+                                        >
+                                          Delete
+                                        </button>
+                                      )}
                                     </div>
                                   )}
                                 </div>
@@ -658,13 +658,13 @@ const Community = () => {
                                     onChange={(e) => setEditContent(e.target.value)}
                                   />
                                   <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                                    <button 
+                                    <button
                                       onClick={() => setEditingPostId(null)}
                                       style={{ padding: '4px 12px', borderRadius: '4px', background: 'var(--hover-bg)', border: '1px solid var(--border-color)', color: 'var(--text-color)', cursor: 'pointer' }}
                                     >
                                       Cancel
                                     </button>
-                                    <button 
+                                    <button
                                       onClick={() => handleEditPost(post.id)}
                                       style={{ padding: '4px 12px', borderRadius: '4px', background: 'var(--accent-color)', border: 'none', color: 'white', cursor: 'pointer' }}
                                     >
@@ -678,7 +678,7 @@ const Community = () => {
                             </div>
                             <div className="post-footer">
                               <div className="vote-footer-container">
-                                <button 
+                                <button
                                   className={`vote-btn-footer ${post.user_vote === 1 ? 'active-up' : ''}`}
                                   onClick={() => handleVote(post.id, 1)}
                                 >
@@ -687,14 +687,14 @@ const Community = () => {
                                 <span className={`vote-count-footer ${post.user_vote === 1 ? 'up' : post.user_vote === -1 ? 'down' : ''}`}>
                                   {post.vote_score || 0}
                                 </span>
-                                <button 
+                                <button
                                   className={`vote-btn-footer ${post.user_vote === -1 ? 'active-down' : ''}`}
                                   onClick={() => handleVote(post.id, -1)}
                                 >
                                   <ArrowBigDown size={16} fill={post.user_vote === -1 ? "currentColor" : "none"} />
                                 </button>
                               </div>
-                              <button 
+                              <button
                                 className={`post-action ${expandedComments.has(post.id) ? 'active' : ''}`}
                                 onClick={() => handleComment(post.id)}
                               >
@@ -704,11 +704,11 @@ const Community = () => {
 
                             </div>
                             {expandedComments.has(post.id) && (
-                              <CommentSection 
-                                postId={post.id} 
-                                currentUser={currentUser} 
+                              <CommentSection
+                                postId={post.id}
+                                currentUser={currentUser}
                                 onReplyCountChange={(amount) => {
-                                  setJoinedPosts(prev => prev.map(p => 
+                                  setJoinedPosts(prev => prev.map(p =>
                                     p.id === post.id ? { ...p, comments_count: (p.comments_count || 0) + amount } : p
                                   ));
                                 }}
@@ -826,7 +826,7 @@ const Community = () => {
                   >
                     <div className="room-info-small">
                       <div className="room-name-small">{room.name}</div>
-                      <div className="room-members-small">{room.memberCount || 0} keepers</div>
+                      <div className="room-members-small">{room.memberCount || 0} Nerds</div>
                     </div>
                     <button
                       className="join-btn-tiny"
@@ -836,8 +836,8 @@ const Community = () => {
                       }}
                       style={{
                         marginLeft: 'auto',
-                        background: room.joined ? 'var(--hover-bg)' : 'var(--accent-color)',
-                        color: room.joined ? 'var(--text-color)' : 'white',
+                        background: room.joined ? 'var(--hover-bg)' : 'black',
+                        color: room.joined ? 'black' : 'white',
                         border: room.joined ? '1px solid var(--border-color)' : 'none',
                         borderRadius: '12px',
                         padding: '2px 8px',

@@ -31,7 +31,7 @@
     border: 1px solid var(--border-color);
     border-radius: 8px;
     color: var(--text-color);
-    resize: vertical;
+    resize: none;
     font-size: 14px;
 }
 
@@ -225,7 +225,7 @@
 }
 
 .send-btn {
-    background: var(--accent-color);
+    background: black;
     color: white;
     border: none;
 }

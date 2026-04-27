@@ -948,7 +948,7 @@
 }
 
 .tab-item.active {
-  background: var(--accent-color);
+  background: black;
   color: #ffffff;
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
 }
