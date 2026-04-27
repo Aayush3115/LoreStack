@@ -713,11 +713,11 @@ const MovieDetails = () => {
                                                 </span>
                                             </div>
                                         </div>
-                                        <div className="gauge-labels">
+                                        {/* <div className="gauge-labels">
                                             <span>Skip</span>
                                             <span>Mix</span>
                                             <span>Lore</span>
-                                        </div>
+                                        </div> */}
                                     </div>
 
                                     {userRating && (
