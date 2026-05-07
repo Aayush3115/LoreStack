@@ -18,7 +18,6 @@ import requests
 from django.core.files.base import ContentFile
 from .utils import generate_otp, send_otp_email
 from .models import EmailVerification
-
 # Create your views here.
 
 
@@ -255,7 +254,6 @@ class VerifyOTPView(APIView):
         
         try:
             verification = EmailVerification.objects.get(user=request.user, otp=otp)
-            # Check if expired (e.g., 10 minutes)
             from django.utils import timezone
             if (timezone.now() - verification.created_at).total_seconds() > 600:
                 return Response({'error': 'OTP expired'}, status=status.HTTP_400_BAD_REQUEST)
