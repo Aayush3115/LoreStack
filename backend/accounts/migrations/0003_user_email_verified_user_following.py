@@ -14,6 +14,11 @@ class Migration(migrations.Migration):
 
         migrations.AddField(
             model_name='user',
+            name='email_verified',
+            field=models.BooleanField(default=False),
+        ),
+        migrations.AddField(
+            model_name='user',
             name='following',
             field=models.ManyToManyField(blank=True, related_name='followers', to=settings.AUTH_USER_MODEL),
         ),

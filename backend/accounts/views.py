@@ -16,6 +16,8 @@ from google.auth.transport import requests as google_requests
 from django.conf import settings
 import requests
 from django.core.files.base import ContentFile
+from .utils import generate_otp, send_otp_email
+from .models import EmailVerification
 # Create your views here.
 
 
@@ -40,6 +42,14 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         
+        # Generate and send OTP
+        otp = generate_otp()
+        EmailVerification.objects.update_or_create(
+            user=user,
+            defaults={'otp': otp, 'is_verified': False}
+        )
+        send_otp_email(user.email, otp)
+        
         # Generate tokens for the new user
         refresh = RefreshToken.for_user(user)
         
@@ -47,7 +57,7 @@ class RegisterView(generics.CreateAPIView):
             'user': UserSerializer(user, context={'request': request}).data,
             'refresh': str(refresh),
             'access': str(refresh.access_token),
-            'message': 'User registered successfully'
+            'message': 'User registered successfully. Please verify your email with the OTP sent.'
         }, status=status.HTTP_201_CREATED)
 
 class LogoutView(APIView):
@@ -217,3 +227,42 @@ class UserSearchView(APIView):
         
         serializer = UserSerializer(users, many=True, context={'request': request})
         return Response(serializer.data)
+
+class SendOTPView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        user = request.user
+        if user.email_verified:
+            return Response({'message': 'Email already verified'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        otp = generate_otp()
+        EmailVerification.objects.update_or_create(
+            user=user,
+            defaults={'otp': otp, 'is_verified': False}
+        )
+        send_otp_email(user.email, otp)
+        return Response({'message': 'OTP sent to your email'})
+
+class VerifyOTPView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        otp = request.data.get('otp')
+        if not otp:
+            return Response({'error': 'OTP is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            verification = EmailVerification.objects.get(user=request.user, otp=otp)
+            from django.utils import timezone
+            if (timezone.now() - verification.created_at).total_seconds() > 600:
+                return Response({'error': 'OTP expired'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            request.user.email_verified = True
+            request.user.save()
+            verification.is_verified = True
+            verification.save()
+            
+            return Response({'message': 'Email verified successfully'})
+        except EmailVerification.DoesNotExist:
+            return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)

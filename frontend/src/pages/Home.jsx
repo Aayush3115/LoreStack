@@ -43,6 +43,11 @@ const Home = () => {
                 setMoods(moodsRes.data);
                 setUserData(profileRes.data);
                 setMyLoreRooms(createdCommsRes.data);
+
+                // Restore default vibe selection
+                if (moodsRes.data.length > 0 && !selectedVibe) {
+                    setSelectedVibe(moodsRes.data[0]);
+                }
             } catch (err) {
                 console.error("Failed to fetch initial data:", err);
                 // Simple fallback to keep page from being empty
@@ -59,6 +64,7 @@ const Home = () => {
         setIsCollabLoading(true);
         try {
             const response = await API.get('movies/recommendations/collaborative/');
+            console.log("Taste Circle API Response:", response.data);
             if (response.data.status_code === 200) {
                 setCollaborativeRecs(response.data.data);
             }
@@ -148,12 +154,14 @@ const Home = () => {
                     </div>
                 </section>
 
+
+
                 {/* --- COLLABORATIVE CIRCLE SECTION (always visible on load) --- */}
                 {isCollabLoading ? (
                     <div className="loading-container">
                         <Loader2 className="searching-spinner" size={40} />
                     </div>
-                ) : collaborativeRecs.length > 0 && (
+                ) : collaborativeRecs.length > 0 ? (
                     <section className="content-section">
                         <div className="section-header">
                             <div className="section-title-wrap">
@@ -178,46 +186,96 @@ const Home = () => {
                                     />
                                     <div className="card-info">
                                         <h4 className="card-title">{item.title}</h4>
-                                        <div style={{ fontSize: '0.7rem', opacity: 0.5, marginTop: '4px' }}>Recommended by your circle</div>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </section>
+                ) : (
+                    /* FALLBACK SECTION WHEN NO COLLAB DATA */
+                    <section className="content-section" style={{ opacity: 0.8 }}>
+                        <div className="section-header">
+                            <div className="section-title-wrap">
+                                <h2 className="section-title-main">Unlock Your Taste Circle</h2>
+                                <span className="section-subtitle">Personalized picks from people who share your vibe</span>
+                            </div>
+                        </div>
+                        <div style={{ background: 'var(--card-bg)', padding: '30px', borderRadius: '16px', textAlign: 'center', border: '1px dashed var(--border-color)' }}>
+                            <Users size={32} style={{ marginBottom: '12px', opacity: 0.5 }} />
+                            <p style={{ fontSize: '0.9rem', marginBottom: '15px' }}>Rate more movies to find your "Taste Twins" and unlock personalized recommendations.</p>
+                            <button
+                                onClick={() => navigate('/explore')}
+                                style={{ background: 'var(--accent-color)', color: 'white', border: 'none', padding: '8px 20px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}
+                            >
+                                Start Rating
+                            </button>
+                        </div>
+                    </section>
                 )}
 
 
-                {/* --- MOOD EXPLORATION SECTION --- */}
-                <section className="content-section mood-exploration-section">
-                    <div className="section-header">
-                        <div className="section-title-wrap">
-                            <h2 className="section-title-main">How are you feeling today?</h2>
-                            <span className="section-subtitle">Select a vibe to find movies that match your mood</span>
-                        </div>
+                {/* --- MOOD-BASED RECOMMENDED SECTION (requires mood selection) --- */}
+                {isRoomsLoading ? (
+                    <div className="loading-container">
+                        <Loader2 className="searching-spinner" size={40} />
                     </div>
+                ) : !selectedVibe ? (
+                    <section className="mood-prompt-section">
+                        <div className="mood-prompt-content">
+                            <Sparkles className="mood-prompt-icon" size={48} />
+                            <h2 className="mood-prompt-title">How are you feeling today?</h2>
+                            <p className="mood-prompt-subtitle">Select a mood below to unlock personalized recommendations tailored to your vibe.</p>
 
-                    <div className="vibe-selection-bar" style={{ padding: '0', marginTop: '0', marginBottom: '2rem' }}>
-                        <div className="mood-pill-container">
-                            {moods.map((mood) => (
-                                <div
-                                    key={mood.id}
-                                    className={`mood-pill ${selectedVibe?.id === mood.id ? 'active' : ''}`}
-                                    onClick={() => setSelectedVibe(mood)}
-                                >
-                                    <span>{getMoodEmoji(mood.name)}</span>
-                                    {mood.name}
+                            <div className="vibe-selection-bar" style={{ margin: '20px 0', justifyContent: 'center' }}>
+                                <div className="mood-pill-container" style={{ justifyContent: 'center' }}>
+                                    {moods.map((mood) => (
+                                        <div
+                                            key={mood.id}
+                                            className={`mood-pill ${selectedVibe?.id === mood.id ? 'active' : ''}`}
+                                            onClick={() => setSelectedVibe(mood)}
+                                        >
+                                            <span>{getMoodEmoji(mood.name)}</span>
+                                            {mood.name}
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
-                    </div>
+                            </div>
 
-                    {selectedVibe ? (
-                        isLoading ? (
+                            <div className="mood-hint-arrow">
+                                <ArrowBigDown size={32} />
+                            </div>
+                        </div>
+                    </section>
+                ) : (
+                    <section className="content-section">
+                        <div className="section-header">
+                            <div className="section-title-wrap">
+                                <h2 className="section-title-main">Recommended For You</h2>
+                                <span className="section-subtitle">Based on your {selectedVibe.name} mood</span>
+                            </div>
+                        </div>
+
+                        <div className="vibe-selection-bar" style={{ marginBottom: '25px', padding: '0' }}>
+                            <div className="mood-pill-container">
+                                {moods.map((mood) => (
+                                    <div
+                                        key={mood.id}
+                                        className={`mood-pill ${selectedVibe?.id === mood.id ? 'active' : ''}`}
+                                        onClick={() => setSelectedVibe(mood)}
+                                    >
+                                        <span>{getMoodEmoji(mood.name)}</span>
+                                        {mood.name}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {isLoading ? (
                             <div className="loading-container">
                                 <Loader2 className="searching-spinner" size={40} />
                             </div>
                         ) : (
-                            <div className="horizontal-rail" ref={railRef} style={{ paddingTop: '0' }}>
+                            <div className="horizontal-rail" ref={railRef}>
                                 {recommendations.length > 0 ? (
                                     recommendations.slice(0, 7).map((item) => (
                                         <div key={item.id} className="media-card" onClick={() => handleMediaClick(item)}>
@@ -239,9 +297,12 @@ const Home = () => {
                                     ))
                                 )}
                             </div>
-                        )
-                    ) : null}
-                </section>
+                        )}
+                    </section>
+                )}
+
+
+
 
                 {/* --- YOUR LOREROOMS --- */}
                 <section className="content-section">
