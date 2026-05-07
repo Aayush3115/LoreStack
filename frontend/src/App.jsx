@@ -14,6 +14,7 @@ import CommunityDetail from "./pages/CommunityDetail";
 import MovieDetails from "./pages/MovieDetails";
 import WebSeriesDetails from "./pages/WebSeriesDetails";
 import AnimeDetails from "./pages/AnimeDetails";
+
 import { SidebarProvider } from './Context/SidebarContext';
 import { ThemeProvider } from './Context/ThemeContext';
 

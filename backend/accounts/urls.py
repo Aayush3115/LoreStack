@@ -2,7 +2,7 @@ from rest_framework.routers import DefaultRouter
 from .views import UserViewSet
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
-from .views import RegisterView,LogoutView,UserProfileView,GoogleLoginView,PublicUserProfileView,FollowToggleView,UserSearchView
+from .views import RegisterView,LogoutView,UserProfileView,GoogleLoginView,PublicUserProfileView,FollowToggleView,UserSearchView,SendOTPView,VerifyOTPView
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='users')
@@ -19,4 +19,7 @@ urlpatterns = router.urls + [
     path('profile/search/', UserSearchView.as_view(), name='user_search'),
     path('profile/<str:username>/', PublicUserProfileView.as_view(), name='public_profile'),
     path('profile/<str:username>/follow/', FollowToggleView.as_view(), name='follow_user'),
+    path('send-otp/', SendOTPView.as_view(), name='send_otp'),
+    path('verify-otp/', VerifyOTPView.as_view(), name='verify_otp'),
+
 ]
