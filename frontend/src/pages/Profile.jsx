@@ -14,6 +14,7 @@ const Profile = () => {
     const [stats, setStats] = useState(null);
     const [joinedRooms, setJoinedRooms] = useState([]);
     const [reviewDetails, setReviewDetails] = useState([]);
+    const [diaryDetails, setDiaryDetails] = useState([]);
     const [visibleReviewsCount, setVisibleReviewsCount] = useState(4);
     const [isLoading, setIsLoading] = useState(true);
     const [userData, setUserData] = useState(null);
@@ -190,10 +191,10 @@ const Profile = () => {
     const fetchReviews = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const url = username 
+            const url = username
                 ? `${BACKEND_URL}/api/movies/user-reviews/${username}/`
                 : `${BACKEND_URL}/api/movies/user-reviews/`;
-            
+
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
             const response = await fetch(url, { headers });
             const data = await response.json();
@@ -208,9 +209,9 @@ const Profile = () => {
 
                             const res = await fetch(url);
                             const detailData = await res.json();
-                            return { 
-                                ...detailData.data, 
-                                media_type: item.media_type, 
+                            return {
+                                ...detailData.data,
+                                media_type: item.media_type,
                                 user_rating: item.rating,
                                 user_review: item.review,
                                 timestamp: item.timestamp
@@ -227,6 +228,45 @@ const Profile = () => {
         }
     };
 
+    const fetchDiary = async () => {
+        try {
+            const token = localStorage.getItem('access_token');
+            const url = username
+                ? `${BACKEND_URL}/api/movies/user-diary/${username}/`
+                : `${BACKEND_URL}/api/movies/user-diary/`;
+
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const response = await fetch(url, { headers });
+            const data = await response.json();
+            if (data.status_code === 200) {
+                const details = await Promise.all(
+                    data.data.map(async (item) => {
+                        try {
+                            let url = '';
+                            if (item.media_type === 'movie') url = `${BACKEND_URL}/api/movies/${item.id}/`;
+                            else if (item.media_type === 'tv') url = `${BACKEND_URL}/api/movies/tv/${item.id}/`;
+                            else if (item.media_type === 'anime') url = `${BACKEND_URL}/api/movies/anime/${item.id}/`;
+
+                            const res = await fetch(url);
+                            const detailData = await res.json();
+                            return {
+                                ...detailData.data,
+                                media_type: item.media_type,
+                                user_rating: item.rating,
+                                timestamp: item.timestamp
+                            };
+                        } catch (err) {
+                            return null;
+                        }
+                    })
+                );
+                setDiaryDetails(details.filter(d => d !== null));
+            }
+        } catch (error) {
+            console.error("Failed to fetch diary:", error);
+        }
+    };
+
     useEffect(() => {
         const loadAll = async () => {
             setIsLoading(true);
@@ -240,7 +280,8 @@ const Profile = () => {
                 fetchJoinedRooms(),
                 fetchWatchlist(),
                 fetchActivity(),
-                fetchReviews()
+                fetchReviews(),
+                fetchDiary()
             ]);
             setIsLoading(false);
         };
@@ -489,6 +530,9 @@ const Profile = () => {
                         <div className={`profile-tab ${activeTab === 'reviews' ? 'active' : ''}`} onClick={() => setActiveTab('reviews')}>
                             Reviews
                         </div>
+                        <div className={`profile-tab ${activeTab === 'diary' ? 'active' : ''}`} onClick={() => setActiveTab('diary')}>
+                            Diary
+                        </div>
                     </div>
 
                     {isLoading ? (
@@ -592,8 +636,8 @@ const Profile = () => {
                                     <>
                                         <div className="reviews-list-vertical">
                                             {reviewDetails.slice(0, visibleReviewsCount).map((item) => (
-                                                <div 
-                                                    key={`rev-${item.media_type}-${item.id}`} 
+                                                <div
+                                                    key={`rev-${item.media_type}-${item.id}`}
                                                     className="review-item-row"
                                                     onClick={() => navigate(`/${item.media_type === 'movie' ? 'movie' : item.media_type}/${item.id}`)}
                                                 >
@@ -625,6 +669,58 @@ const Profile = () => {
                                         <h3>No Reviews Yet</h3>
                                         <p>Share your thoughts on the movies and shows you've watched.</p>
                                         <button className="create-btn" onClick={() => navigate('/explore')}>Start Reviewing</button>
+                                    </div>
+                                )
+                            )}
+
+                            {activeTab === 'diary' && (
+                                diaryDetails.length > 0 ? (
+                                    <div className="diary-timeline-container">
+                                        <div className="timeline-line"></div>
+                                        {Object.entries(
+                                            diaryDetails.reduce((acc, item) => {
+                                                const year = new Date(item.timestamp).getFullYear();
+                                                if (!acc[year]) acc[year] = [];
+                                                acc[year].push(item);
+                                                return acc;
+                                            }, {})
+                                        ).sort((a, b) => b[0] - a[0]).map(([year, items]) => (
+                                            <div key={year} className="timeline-year-group">
+                                                <div className="timeline-year-header">{year}</div>
+                                                {items.map((item, index) => (
+                                                    <div
+                                                        key={`diary-${item.media_type}-${item.id}`}
+                                                        className={`timeline-item ${index % 2 === 0 ? 'left' : 'right'}`}
+                                                        onClick={() => navigate(`/${item.media_type === 'movie' ? 'movie' : item.media_type}/${item.id}`)}
+                                                    >
+                                                        <div className="timeline-content-card">
+                                                            <div className="timeline-date-label">
+                                                                {new Date(item.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                                            </div>
+                                                            <div className="timeline-card-inner">
+                                                                <img src={getPosterUrl(item)} alt={getTitle(item)} className="timeline-poster" />
+                                                                <div className="timeline-info">
+                                                                    <h4>{getTitle(item)}</h4>
+                                                                    {item.user_rating && (
+                                                                        <div className="timeline-rating" style={{ color: getRatingColor(item.user_rating) }}>
+                                                                            {item.user_rating.toUpperCase()}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                            <div className="timeline-connector"></div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="empty-state">
+                                        <History size={48} color="rgba(255,255,255,0.1)" />
+                                        <h3>Your Diary is Empty</h3>
+                                        <p>Log movies and shows to start your cinematic journey.</p>
+                                        <button className="create-btn" onClick={() => navigate('/explore')}>Explore Now</button>
                                     </div>
                                 )
                             )}
