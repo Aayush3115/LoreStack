@@ -9,10 +9,13 @@ from .views import (
     user_reviews, user_diary,
     movie_recommendations, tv_recommendations,
     collaborative_recommendations,
-    anime_details
+    anime_details, user_favorites, UserFavoriteViewSet
 )
 
 urlpatterns = [
+    path("favorites/", UserFavoriteViewSet.as_view({'get': 'list', 'post': 'create'}), name="favorites_list"),
+    path("favorites/<int:pk>/", UserFavoriteViewSet.as_view({'delete': 'destroy'}), name="favorites_detail"),
+    path("user-favorites/<str:username>/", user_favorites, name="user_favorites"),
     path("recommendations/collaborative/", collaborative_recommendations, name="collaborative_recommendations"),
     path("trending-movies/", trending_movies, name="trending_movies"),
     path("trending-tv/", trending_tv, name="trending_tv"),

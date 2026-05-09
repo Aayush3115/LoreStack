@@ -105,3 +105,24 @@ class AnimeActivity(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.anime_id} Activity"
+
+class UserFavorite(models.Model):
+    MEDIA_TYPE_CHOICES = [
+        ('movie', 'Movie'),
+        ('tv', 'TV Series'),
+        ('anime', 'Anime'),
+    ]
+    
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favorites')
+    media_id = models.IntegerField()
+    media_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES)
+    title = models.CharField(max_length=255)
+    poster_path = models.CharField(max_length=255, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'media_id', 'media_type')
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.user.username}'s favorite: {self.title} ({self.media_type})"

@@ -1,5 +1,11 @@
 from rest_framework import serializers
-from .models import MovieRating, MovieActivity, TVRating, TVActivity, AnimeRating, AnimeActivity
+from .models import MovieRating, MovieActivity, TVRating, TVActivity, AnimeRating, AnimeActivity, UserFavorite
+
+class UserFavoriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserFavorite
+        fields = ['id', 'user', 'media_id', 'media_type', 'title', 'poster_path', 'created_at']
+        read_only_fields = ['user']
 
 class MovieRatingSerializer(serializers.ModelSerializer):
     username = serializers.ReadOnlyField(source='user.username')

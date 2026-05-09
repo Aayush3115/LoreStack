@@ -4,11 +4,12 @@ from django.conf import settings
 from rest_framework.response import Response
 import requests
 from rest_framework import status
-from .models import MovieRating, MovieActivity, TVRating, TVActivity, AnimeRating, AnimeActivity
+from .models import MovieRating, MovieActivity, TVRating, TVActivity, AnimeRating, AnimeActivity, UserFavorite
 from .serializers import (
     MovieRatingSerializer, MovieActivitySerializer, 
     TVRatingSerializer, TVActivitySerializer,
-    AnimeRatingSerializer, AnimeActivitySerializer
+    AnimeRatingSerializer, AnimeActivitySerializer,
+    UserFavoriteSerializer
 )
 
 
@@ -1152,3 +1153,33 @@ def collaborative_recommendations(request):
         "status_code": 200,
         "data": final_movies
     })
+from rest_framework import viewsets
+from rest_framework import serializers as drf_serializers
+
+class UserFavoriteViewSet(viewsets.ModelViewSet):
+    serializer_class = UserFavoriteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return UserFavorite.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        if UserFavorite.objects.filter(user=self.request.user).count() >= 4:
+            raise drf_serializers.ValidationError("You can only have up to 4 favorites.")
+        serializer.save(user=self.request.user)
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def user_favorites(request, username):
+    try:
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        user = User.objects.get(username=username)
+        favorites = UserFavorite.objects.filter(user=user)
+        serializer = UserFavoriteSerializer(favorites, many=True)
+        return Response({
+            "status_code": 200,
+            "data": serializer.data
+        })
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
