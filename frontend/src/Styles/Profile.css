@@ -677,3 +677,112 @@
     align-items: center;
     gap: 16px;
 }
+
+/* Reviews Tab Styles */
+.reviews-list-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.review-item-row {
+    display: flex;
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.review-item-row:last-child {
+    border-bottom: none;
+}
+
+.review-item-row:hover {
+    transform: translateX(8px);
+}
+
+.review-mini-poster {
+    width: 80px;
+    height: 120px;
+    border-radius: 12px;
+    object-fit: cover;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.review-main-content {
+    flex: 1;
+    min-width: 0; /* Prevents flex items from overflowing */
+}
+
+.review-header-info {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.review-header-info h4 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.review-rating-inline {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    border: 1px solid currentColor;
+    width: fit-content;
+    margin-bottom: 12px;
+}
+
+.review-date-dim {
+    font-size: 12px;
+    opacity: 0.4;
+    white-space: nowrap;
+}
+
+.review-text-content {
+    font-size: 15px;
+    line-height: 1.6;
+    opacity: 0.8;
+    font-style: italic;
+    color: var(--text-color);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word; /* Ensures long words wrap */
+    overflow-wrap: break-word;
+}
+
+.see-more-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 32px;
+    padding-bottom: 24px;
+}
+
+.see-more-btn {
+    padding: 12px 32px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.see-more-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+}

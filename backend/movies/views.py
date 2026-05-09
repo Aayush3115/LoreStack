@@ -368,6 +368,10 @@ def user_stats(request, username=None):
         anime_perfections = AnimeRating.objects.filter(user=user, rating='perfection').count()
         
         joined_rooms = user.communities.count()
+
+        movie_rev_count = MovieRating.objects.filter(user=user).exclude(review="").exclude(review__isnull=True).count()
+        tv_rev_count = TVRating.objects.filter(user=user).exclude(review="").exclude(review__isnull=True).count()
+        anime_rev_count = AnimeRating.objects.filter(user=user).exclude(review="").exclude(review__isnull=True).count()
         
         return Response({
             "status_code": 200,
@@ -378,7 +382,8 @@ def user_stats(request, username=None):
                     "anime": anime_logs,
                     "total_logged": movie_logs + tv_logs + anime_logs,
                     "perfections": movie_perfections + tv_perfections + anime_perfections,
-                    "rooms": joined_rooms
+                    "rooms": joined_rooms,
+                    "reviews": movie_rev_count + tv_rev_count + anime_rev_count
                 }
             }
         })
@@ -494,6 +499,65 @@ def user_watchlist(request, username=None):
             "error": "Failed to fetch watchlist",
             "details": str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def user_reviews(request, username=None):
+    try:
+        if username:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            if not request.user.is_authenticated:
+                return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+            user = request.user
+
+        movie_reviews = MovieRating.objects.filter(user=user).exclude(review="").exclude(review__isnull=True).order_by('-updated_at')
+        tv_reviews = TVRating.objects.filter(user=user).exclude(review="").exclude(review__isnull=True).order_by('-updated_at')
+        anime_reviews = AnimeRating.objects.filter(user=user).exclude(review="").exclude(review__isnull=True).order_by('-updated_at')
+
+        reviews = []
+
+        for rev in movie_reviews:
+            reviews.append({
+                "id": rev.movie_id,
+                "media_type": "movie",
+                "rating": rev.rating,
+                "review": rev.review,
+                "timestamp": rev.updated_at
+            })
+
+        for rev in tv_reviews:
+            reviews.append({
+                "id": rev.tv_id,
+                "media_type": "tv",
+                "rating": rev.rating,
+                "review": rev.review,
+                "timestamp": rev.updated_at
+            })
+
+        for rev in anime_reviews:
+            reviews.append({
+                "id": rev.anime_id,
+                "media_type": "anime",
+                "rating": rev.rating,
+                "review": rev.review,
+                "timestamp": rev.updated_at
+            })
+
+        reviews.sort(key=lambda x: x['timestamp'], reverse=True)
+        
+        return Response({
+            "status_code": 200,
+            "data": reviews
+        })
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(["GET"])

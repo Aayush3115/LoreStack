@@ -13,6 +13,8 @@ const Profile = () => {
     const [activityDetails, setActivityDetails] = useState([]);
     const [stats, setStats] = useState(null);
     const [joinedRooms, setJoinedRooms] = useState([]);
+    const [reviewDetails, setReviewDetails] = useState([]);
+    const [visibleReviewsCount, setVisibleReviewsCount] = useState(4);
     const [isLoading, setIsLoading] = useState(true);
     const [userData, setUserData] = useState(null);
     const [currentUser, setCurrentUser] = useState(null);
@@ -52,13 +54,13 @@ const Profile = () => {
     const fetchUserData = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const url = username 
+            const url = username
                 ? `${BACKEND_URL}/api/auth/profile/${username}/`
                 : `${BACKEND_URL}/api/auth/profile/`;
-            
+
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
             const response = await fetch(url, { headers });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 setUserData(data);
@@ -79,10 +81,10 @@ const Profile = () => {
     const fetchStats = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const url = username 
+            const url = username
                 ? `${BACKEND_URL}/api/movies/user-stats/${username}/`
                 : `${BACKEND_URL}/api/movies/user-stats/`;
-            
+
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
             const response = await fetch(url, { headers });
             if (response.ok) {
@@ -97,10 +99,10 @@ const Profile = () => {
     const fetchJoinedRooms = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const url = username 
+            const url = username
                 ? `${BACKEND_URL}/api/loreroom/joined/?username=${username}`
                 : `${BACKEND_URL}/api/loreroom/joined/`;
-            
+
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
             const response = await fetch(url, { headers });
             if (response.ok) {
@@ -115,10 +117,10 @@ const Profile = () => {
     const fetchWatchlist = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const url = username 
+            const url = username
                 ? `${BACKEND_URL}/api/movies/user-watchlist/${username}/`
                 : `${BACKEND_URL}/api/movies/user-watchlist/`;
-            
+
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
             const response = await fetch(url, { headers });
             const data = await response.json();
@@ -149,9 +151,48 @@ const Profile = () => {
     const fetchActivity = async () => {
         try {
             const token = localStorage.getItem('access_token');
-            const url = username 
+            const url = username
                 ? `${BACKEND_URL}/api/movies/user-activity/${username}/`
                 : `${BACKEND_URL}/api/movies/user-activity/`;
+
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const response = await fetch(url, { headers });
+            const data = await response.json();
+            if (data.status_code === 200) {
+                const details = await Promise.all(
+                    data.data.map(async (item) => {
+                        try {
+                            let url = '';
+                            if (item.media_type === 'movie') url = `${BACKEND_URL}/api/movies/${item.id}/`;
+                            else if (item.media_type === 'tv') url = `${BACKEND_URL}/api/movies/tv/${item.id}/`;
+                            else if (item.media_type === 'anime') url = `${BACKEND_URL}/api/movies/anime/${item.id}/`;
+
+                            const res = await fetch(url);
+                            const detailData = await res.json();
+                            return {
+                                ...detailData.data,
+                                media_type: item.media_type,
+                                user_rating: item.rating,
+                                timestamp: item.timestamp
+                            };
+                        } catch (err) {
+                            return null;
+                        }
+                    })
+                );
+                setActivityDetails(details.filter(d => d !== null));
+            }
+        } catch (error) {
+            console.error("Failed to fetch activity:", error);
+        }
+    };
+
+    const fetchReviews = async () => {
+        try {
+            const token = localStorage.getItem('access_token');
+            const url = username 
+                ? `${BACKEND_URL}/api/movies/user-reviews/${username}/`
+                : `${BACKEND_URL}/api/movies/user-reviews/`;
             
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
             const response = await fetch(url, { headers });
@@ -171,6 +212,7 @@ const Profile = () => {
                                 ...detailData.data, 
                                 media_type: item.media_type, 
                                 user_rating: item.rating,
+                                user_review: item.review,
                                 timestamp: item.timestamp
                             };
                         } catch (err) {
@@ -178,10 +220,10 @@ const Profile = () => {
                         }
                     })
                 );
-                setActivityDetails(details.filter(d => d !== null));
+                setReviewDetails(details.filter(d => d !== null));
             }
         } catch (error) {
-            console.error("Failed to fetch activity:", error);
+            console.error("Failed to fetch reviews:", error);
         }
     };
 
@@ -197,7 +239,8 @@ const Profile = () => {
                 fetchStats(),
                 fetchJoinedRooms(),
                 fetchWatchlist(),
-                fetchActivity()
+                fetchActivity(),
+                fetchReviews()
             ]);
             setIsLoading(false);
         };
@@ -246,18 +289,18 @@ const Profile = () => {
             navigate('/login');
             return;
         }
-        
+
         setFollowLoading(true);
         try {
             const token = localStorage.getItem('access_token');
             const response = await fetch(`${BACKEND_URL}/api/auth/profile/${username}/follow/`, {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 setIsFollowing(data.is_following);
@@ -279,7 +322,7 @@ const Profile = () => {
             setSearchResults([]);
             return;
         }
-        
+
         setIsSearching(true);
         try {
             const token = localStorage.getItem('access_token');
@@ -307,7 +350,7 @@ const Profile = () => {
     };
 
     const getRatingColor = (rating) => {
-        switch(rating) {
+        switch (rating) {
             case 'perfection': return '#a855f7';
             case 'goforit': return '#10b981';
             case 'timepass': return '#f59e0b';
@@ -328,20 +371,20 @@ const Profile = () => {
                         <div className="user-search-wrapper">
                             <div className="user-search-bar">
                                 <Search size={18} className="search-icon-dim" />
-                                <input 
-                                    type="text" 
-                                    placeholder="Search users..." 
+                                <input
+                                    type="text"
+                                    placeholder="Search users..."
                                     value={searchQuery}
                                     onChange={(e) => handleUserSearch(e.target.value)}
                                 />
                                 {isSearching && <Loader2 size={16} className="animate-spin search-loader" />}
                             </div>
-                            
+
                             {searchQuery && searchResults.length > 0 && (
                                 <div className="user-search-results">
                                     {searchResults.map(user => (
-                                        <div 
-                                            key={user.id} 
+                                        <div
+                                            key={user.id}
                                             className="search-result-item"
                                             onClick={() => {
                                                 navigate(`/profile/${user.username}`);
@@ -358,7 +401,7 @@ const Profile = () => {
                                     ))}
                                 </div>
                             )}
-                            
+
                             {searchQuery && !isSearching && searchResults.length === 0 && searchQuery.length >= 2 && (
                                 <div className="user-search-results">
                                     <div className="no-results-msg">No users found</div>
@@ -383,7 +426,7 @@ const Profile = () => {
                                         </button>
                                     ) : (
                                         <div className="profile-actions-public">
-                                            <button 
+                                            <button
                                                 className={`follow-btn ${isFollowing ? 'unfollow' : ''}`}
                                                 onClick={handleFollowToggle}
                                                 disabled={followLoading}
@@ -425,19 +468,26 @@ const Profile = () => {
                                     <div className="compact-val">{joinedRooms.length || 0}</div>
                                     <div className="compact-lab">Rooms</div>
                                 </div>
+                                <div className="compact-stat">
+                                    <div className="compact-val">{stats?.reviews || 0}</div>
+                                    <div className="compact-lab">Reviews</div>
+                                </div>
                             </div>
                         </div>
                     )}
 
                     <div className="profile-tabs">
                         <div className={`profile-tab ${activeTab === 'activity' ? 'active' : ''}`} onClick={() => setActiveTab('activity')}>
-                            Activity ({activityDetails.length})
+                            Activity
                         </div>
                         <div className={`profile-tab ${activeTab === 'watchlist' ? 'active' : ''}`} onClick={() => setActiveTab('watchlist')}>
-                            Watchlist ({watchlistDetails.length})
+                            Watchlist
                         </div>
                         <div className={`profile-tab ${activeTab === 'rooms' ? 'active' : ''}`} onClick={() => setActiveTab('rooms')}>
-                            LoreRooms ({joinedRooms.length})
+                            LoreRooms
+                        </div>
+                        <div className={`profile-tab ${activeTab === 'reviews' ? 'active' : ''}`} onClick={() => setActiveTab('reviews')}>
+                            Reviews
                         </div>
                     </div>
 
@@ -533,6 +583,48 @@ const Profile = () => {
                                         <h3>No Joined Rooms</h3>
                                         <p>Join a LoreRoom to discuss your favorite content with others.</p>
                                         <button className="create-btn" onClick={() => navigate('/loreroom')}>Discover Rooms</button>
+                                    </div>
+                                )
+                            )}
+
+                            {activeTab === 'reviews' && (
+                                reviewDetails.length > 0 ? (
+                                    <>
+                                        <div className="reviews-list-vertical">
+                                            {reviewDetails.slice(0, visibleReviewsCount).map((item) => (
+                                                <div 
+                                                    key={`rev-${item.media_type}-${item.id}`} 
+                                                    className="review-item-row"
+                                                    onClick={() => navigate(`/${item.media_type === 'movie' ? 'movie' : item.media_type}/${item.id}`)}
+                                                >
+                                                    <img src={getPosterUrl(item)} alt={getTitle(item)} className="review-mini-poster" />
+                                                    <div className="review-main-content">
+                                                        <div className="review-header-info">
+                                                            <h4>{getTitle(item)}</h4>
+                                                            <span className="review-date-dim">{new Date(item.timestamp).toLocaleDateString()}</span>
+                                                        </div>
+                                                        <div className="review-rating-inline" style={{ color: getRatingColor(item.user_rating) }}>
+                                                            {item.user_rating.toUpperCase()}
+                                                        </div>
+                                                        <p className="review-text-content">"{item.user_review}"</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        {reviewDetails.length > visibleReviewsCount && (
+                                            <div className="see-more-container">
+                                                <button className="see-more-btn" onClick={() => setVisibleReviewsCount(prev => prev + 4)}>
+                                                    See More
+                                                </button>
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <div className="empty-state">
+                                        <Star size={48} color="rgba(255,255,255,0.1)" />
+                                        <h3>No Reviews Yet</h3>
+                                        <p>Share your thoughts on the movies and shows you've watched.</p>
+                                        <button className="create-btn" onClick={() => navigate('/explore')}>Start Reviewing</button>
                                     </div>
                                 )
                             )}
