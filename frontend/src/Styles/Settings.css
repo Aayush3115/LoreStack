@@ -358,3 +358,40 @@
     opacity: 0.8 !important;
     color: var(--accent-color);
 }
+
+/* Theme Switcher */
+.theme-switcher {
+    display: flex;
+    gap: 12px;
+}
+
+.theme-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--secondary-text);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.theme-option:hover {
+    color: var(--text-color);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.theme-option.active {
+    background: var(--accent-color);
+    color: white;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.light-mode .theme-option.active {
+    background: var(--accent-color);
+    color: white;
+}
