@@ -3,6 +3,7 @@ from .models import User
 from moods.models import Mood
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 User = get_user_model()
 
@@ -33,8 +34,9 @@ class UserSerializer(serializers.ModelSerializer):
             'followers_count',
             'following_count',
             'is_following',
+            'email_verified',
         ]
-        read_only_fields = ('id','preferred_moods', 'is_staff', 'followers_count', 'following_count', 'is_following')
+        read_only_fields = ('id','preferred_moods', 'is_staff', 'followers_count', 'following_count', 'is_following', 'email_verified')
 
     def get_followers_count(self, obj):
         return obj.followers.count()
@@ -108,6 +110,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         validated_data.pop('password2')
         user = User.objects.create_user(**validated_data)
         return user
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data['email_verified'] = self.user.email_verified
+        return data
 
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
