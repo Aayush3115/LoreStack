@@ -55,7 +55,9 @@ def mood_recommendations(request):
         if not media_mood:
             continue
 
-        item_mood_names = set(media_mood.moods.values_list('name', flat=True))
+        # Only consider the PRIMARY mood to ensure a movie is unique to one vibe
+        first_mood = media_mood.moods.first()
+        item_mood_names = {first_mood.name} if first_mood else set()
         
         score = 0
         

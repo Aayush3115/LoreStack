@@ -18,16 +18,19 @@ import {
     Edit3,
     X,
     Search,
-    Plus
+    Plus,
+    Sun
 } from 'lucide-react';
 import '../Styles/Explore.css';
 import '../Styles/Settings.css';
+import { useTheme } from '../Context/ThemeContext';
 
 const Settings = () => {
     const [activeTab, setActiveTab] = useState('general');
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(null); // stores field name being saved
     const [editField, setEditField] = useState(null); // stores field name being edited
+    const { theme, toggleTheme } = useTheme();
 
     const [userData, setUserData] = useState({
         username: '',
@@ -272,9 +275,16 @@ const Settings = () => {
         return (
             <div className="home-container">
                 <Sidebar />
-                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Loader2 className="animate-spin" size={40} color="var(--accent-color)" />
-                </div>
+                <main className="main-content">
+                    <header className="top-header">
+                        <div className="header-left">
+                            <h2 className="page-title">Settings</h2>
+                        </div>
+                    </header>
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+                        <Loader2 className="animate-spin" size={40} color="var(--accent-color)" />
+                    </div>
+                </main>
             </div>
         );
     }
@@ -349,9 +359,19 @@ const Settings = () => {
 
                             <div className="settings-row">
                                 <div className="row-label">Theme</div>
-                                <div className="row-value">Dark Mode</div>
-                                <div className="row-action">
-                                    <button className="edit-btn">Edit</button>
+                                <div className="row-value theme-switcher">
+                                    <button 
+                                        className={`theme-option ${theme === 'dark' ? 'active' : ''}`}
+                                        onClick={() => theme !== 'dark' && toggleTheme()}
+                                    >
+                                        <Moon size={14} /> Dark
+                                    </button>
+                                    <button 
+                                        className={`theme-option ${theme === 'light' ? 'active' : ''}`}
+                                        onClick={() => theme !== 'light' && toggleTheme()}
+                                    >
+                                        <Sun size={14} /> Light
+                                    </button>
                                 </div>
                             </div>
 
@@ -359,7 +379,7 @@ const Settings = () => {
                                 <div className="row-label">Language</div>
                                 <div className="row-value">English (US)</div>
                                 <div className="row-action">
-                                    <button className="edit-btn">Edit</button>
+                                    <button className="edit-btn">Edit(Coming Soon!!)</button>
                                 </div>
                             </div>
                         </>

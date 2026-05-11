@@ -48,7 +48,7 @@ class MoodClassifier:
             reverse=True
         )
 
-        return sorted_moods[:2] # Return primary and secondary mood
+        return sorted_moods[:1] # Return only the primary mood to ensure unique recommendations per vibe
 
     @classmethod
     def get_or_classify(cls, media_id, media_type, **kwargs):
@@ -100,4 +100,4 @@ class MoodClassifier:
             if genre in mapping:
                 scores[mapping[genre]] += 3
         
-        return sorted([m for m, s in scores.items() if s > 0], key=lambda x: scores[x], reverse=True)[:2]
+        return sorted([m for m, s in scores.items() if s > 0], key=lambda x: scores[x], reverse=True)[:1]

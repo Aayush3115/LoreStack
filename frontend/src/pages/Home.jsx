@@ -7,7 +7,7 @@ import '../Styles/Explore.css';
 import {
     Sparkles, Film, Tv, Loader2, Search, Bell,
     MessageSquare, Heart, Share2, Compass,
-    Play, Plus, MoreHorizontal, User, Users,
+    Play, Plus, MoreHorizontal, User, Users, Bookmark,
     ArrowBigDown, ArrowBigUp,
     Gamepad2, BookOpen, Music
 } from 'lucide-react';
@@ -26,8 +26,52 @@ const Home = () => {
     const [activeTab, setActiveTab] = useState('home');
     const [collaborativeRecs, setCollaborativeRecs] = useState([]);
     const [isCollabLoading, setIsCollabLoading] = useState(false);
+    const [isSpotlightWatchlist, setIsSpotlightWatchlist] = useState(false);
 
     const railRef = useRef(null);
+
+    // Fetch watchlist status for a specific movie
+    const fetchWatchlistStatus = async (movieId) => {
+        try {
+            const token = localStorage.getItem('access_token');
+            if (!token) return;
+            const response = await fetch(`${BACKEND_URL}/api/movies/${movieId}/activity/`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (response.ok) {
+                setIsSpotlightWatchlist(data.is_watchlist);
+            }
+        } catch (error) {
+            console.error("Failed to fetch watchlist status:", error);
+        }
+    };
+
+    const handleToggleWatchlist = async (movieId) => {
+        try {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                alert("Please login to add movies to your watchlist!");
+                return;
+            }
+
+            const newValue = !isSpotlightWatchlist;
+            const response = await fetch(`${BACKEND_URL}/api/movies/${movieId}/activity/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ is_watchlist: newValue })
+            });
+
+            if (response.ok) {
+                setIsSpotlightWatchlist(newValue);
+            }
+        } catch (error) {
+            console.error("Failed to update watchlist:", error);
+        }
+    };
 
     // Fetch initial data
     useEffect(() => {
@@ -101,6 +145,13 @@ const Home = () => {
         fetchRecommendations();
     }, [selectedVibe, mediaType]);
 
+    // Fetch watchlist status for spotlight movie
+    useEffect(() => {
+        if (recommendations.length > 0) {
+            fetchWatchlistStatus(recommendations[0].id);
+        }
+    }, [recommendations]);
+
     const handleMediaClick = (item) => {
         const path = mediaType === 'movie' ? 'movie' : (mediaType === 'tv' ? 'tv' : 'anime');
         navigate(`/${path}/${item.id}`);
@@ -156,7 +207,116 @@ const Home = () => {
 
 
 
-                {/* --- COLLABORATIVE CIRCLE SECTION (always visible on load) --- */}
+                {/* --- MOOD-BASED RECOMMENDED SECTION (requires mood selection) --- */}
+                {isRoomsLoading ? (
+                    <div className="loading-container">
+                        <Loader2 className="searching-spinner" size={40} />
+                    </div>
+                ) : !selectedVibe ? (
+                    <section className="mood-prompt-section">
+                        <div className="mood-prompt-content">
+                            <Sparkles className="mood-prompt-icon" size={48} />
+                            <h2 className="mood-prompt-title">How are you feeling today?</h2>
+                            <p className="mood-prompt-subtitle">Select a mood below to unlock personalized recommendations tailored to your vibe.</p>
+
+                            <div className="vibe-selection-bar" style={{ margin: '20px 0', justifyContent: 'center' }}>
+                                <div className="mood-pill-container" style={{ justifyContent: 'center' }}>
+                                    {moods.map((mood) => (
+                                        <div
+                                            key={mood.id}
+                                            className={`mood-pill ${selectedVibe?.id === mood.id ? 'active' : ''}`}
+                                            onClick={() => setSelectedVibe(mood)}
+                                        >
+                                            <span>{getMoodEmoji(mood.name)}</span>
+                                            {mood.name}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="mood-hint-arrow">
+                                <ArrowBigDown size={32} />
+                            </div>
+                        </div>
+                    </section>
+                ) : (
+                    <section className="content-section">
+                        <div className="section-header">
+                            <h2 className="section-title-main">Recommended For You</h2>
+                        </div>
+
+                        <div className="mood-spotlight-container">
+                            {/* LEFT SIDE: MOOD SELECTOR GRID */}
+                            <div className="mood-selector-side">
+                                <h3 className="mood-side-title">Select your mood</h3>
+                                <div className="mood-grid">
+                                    {moods.map((mood) => (
+                                        <div
+                                            key={mood.id}
+                                            className={`mood-pill-grid ${selectedVibe?.id === mood.id ? 'active' : ''}`}
+                                            onClick={() => setSelectedVibe(mood)}
+                                        >
+                                            {mood.name}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* RIGHT SIDE: MOOD PREVIEW LIST */}
+                            <div className="mood-preview-side">
+                                {isLoading ? (
+                                    <div className="loading-container" style={{ height: '300px' }}>
+                                        <Loader2 className="searching-spinner" size={40} />
+                                    </div>
+                                ) : recommendations.length > 0 ? (
+                                    <div className="mood-preview-list">
+                                        {recommendations.slice(0, 2).map((movie, index) => (
+                                            <div key={movie.id} className="mood-preview-card compact">
+                                                <div className="preview-poster-container small" onClick={() => handleMediaClick(movie)}>
+                                                    <img
+                                                        src={movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://via.placeholder.com/300x450'}
+                                                        alt={movie.title}
+                                                        className="preview-poster"
+                                                    />
+                                                </div>
+                                                <div className="preview-details compact">
+                                                    <h2 className="preview-title compact">{movie.title || movie.name}</h2>
+                                                    <p className="preview-overview compact">
+                                                        {movie.overview?.length > 150 
+                                                            ? movie.overview.substring(0, 150) + '...' 
+                                                            : movie.overview || "Experience an unforgettable journey through this cinematic masterpiece."}
+                                                    </p>
+                                                    <div className="preview-actions compact">
+                                                        <button className="spotlight-btn-primary small" onClick={() => handleMediaClick(movie)}>
+                                                            <Play size={14} fill="currentColor" /> Details
+                                                        </button>
+                                                        <button 
+                                                            className="hero-btn-secondary small"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleToggleWatchlist(movie.id);
+                                                            }}
+                                                        >
+                                                            <Bookmark size={14} /> Watchlist
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="empty-mood-state" style={{ padding: '60px', textAlign: 'center', opacity: 0.5 }}>
+                                        <Sparkles size={48} style={{ marginBottom: '15px' }} />
+                                        <p>No recommendations found for this vibe.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                    </section>
+                )}
+
+                {/* --- COLLABORATIVE CIRCLE SECTION --- */}
                 {isCollabLoading ? (
                     <div className="loading-container">
                         <Loader2 className="searching-spinner" size={40} />
@@ -210,94 +370,6 @@ const Home = () => {
                                 Start Rating
                             </button>
                         </div>
-                    </section>
-                )}
-
-
-                {/* --- MOOD-BASED RECOMMENDED SECTION (requires mood selection) --- */}
-                {isRoomsLoading ? (
-                    <div className="loading-container">
-                        <Loader2 className="searching-spinner" size={40} />
-                    </div>
-                ) : !selectedVibe ? (
-                    <section className="mood-prompt-section">
-                        <div className="mood-prompt-content">
-                            <Sparkles className="mood-prompt-icon" size={48} />
-                            <h2 className="mood-prompt-title">How are you feeling today?</h2>
-                            <p className="mood-prompt-subtitle">Select a mood below to unlock personalized recommendations tailored to your vibe.</p>
-
-                            <div className="vibe-selection-bar" style={{ margin: '20px 0', justifyContent: 'center' }}>
-                                <div className="mood-pill-container" style={{ justifyContent: 'center' }}>
-                                    {moods.map((mood) => (
-                                        <div
-                                            key={mood.id}
-                                            className={`mood-pill ${selectedVibe?.id === mood.id ? 'active' : ''}`}
-                                            onClick={() => setSelectedVibe(mood)}
-                                        >
-                                            <span>{getMoodEmoji(mood.name)}</span>
-                                            {mood.name}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="mood-hint-arrow">
-                                <ArrowBigDown size={32} />
-                            </div>
-                        </div>
-                    </section>
-                ) : (
-                    <section className="content-section">
-                        <div className="section-header">
-                            <div className="section-title-wrap">
-                                <h2 className="section-title-main">Recommended For You</h2>
-                                <span className="section-subtitle">Based on your {selectedVibe.name} mood</span>
-                            </div>
-                        </div>
-
-                        <div className="vibe-selection-bar" style={{ marginBottom: '25px', padding: '0' }}>
-                            <div className="mood-pill-container">
-                                {moods.map((mood) => (
-                                    <div
-                                        key={mood.id}
-                                        className={`mood-pill ${selectedVibe?.id === mood.id ? 'active' : ''}`}
-                                        onClick={() => setSelectedVibe(mood)}
-                                    >
-                                        <span>{getMoodEmoji(mood.name)}</span>
-                                        {mood.name}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {isLoading ? (
-                            <div className="loading-container">
-                                <Loader2 className="searching-spinner" size={40} />
-                            </div>
-                        ) : (
-                            <div className="horizontal-rail" ref={railRef}>
-                                {recommendations.length > 0 ? (
-                                    recommendations.slice(0, 7).map((item) => (
-                                        <div key={item.id} className="media-card" onClick={() => handleMediaClick(item)}>
-                                            <img
-                                                src={item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : 'https://via.placeholder.com/300x450'}
-                                                alt={item.title}
-                                                className="card-poster"
-                                            />
-                                            <div className="card-info">
-                                                <h4 className="card-title">{item.title || item.name}</h4>
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : (
-                                    [1, 2, 3, 4, 5, 6].map(i => (
-                                        <div key={i} className="media-card" style={{ opacity: 0.2 }}>
-                                            <div style={{ height: '280px', background: 'var(--card-bg)' }}></div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        )}
                     </section>
                 )}
 
