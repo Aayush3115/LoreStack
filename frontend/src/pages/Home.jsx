@@ -86,6 +86,12 @@ const Home = () => {
 
                 setMoods(moodsRes.data);
                 setUserData(profileRes.data);
+                
+                if (!profileRes.data.email_verified) {
+                    window.location.href = '/login?verify=true';
+                    return;
+                }
+
                 setMyLoreRooms(createdCommsRes.data);
 
                 // Restore default vibe selection

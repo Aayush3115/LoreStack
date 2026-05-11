@@ -37,6 +37,12 @@ export default function LorestackLogin() {
       }
     };
     fetchPosters();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('verify') === 'true') {
+      setOtpRequested(true);
+      setIsLogin(true); // Ensure we are on login tab mode to show OTP for existing user
+    }
   }, []);
 
   const handleSubmit = async (e) => {
@@ -61,6 +67,14 @@ export default function LorestackLogin() {
         if (response.ok) {
           localStorage.setItem('access_token', data.access);
           localStorage.setItem('refresh_token', data.refresh);
+
+          if (!data.email_verified) {
+            setSuccess('Identity recognized. However, email verification is required.');
+            setOtpRequested(true);
+            setLoading(false);
+            return;
+          }
+
           setSuccess('Access Granted. Welcome to the Matrix.');
 
           setTimeout(() => {
@@ -171,6 +185,13 @@ export default function LorestackLogin() {
       if (response.ok) {
         localStorage.setItem('access_token', data.access);
         localStorage.setItem('refresh_token', data.refresh);
+
+        if (!data.user.email_verified) {
+          setSuccess('Google Identity linked. Please verify your email.');
+          setOtpRequested(true);
+          return;
+        }
+
         setSuccess('Access Granted via Google. Welcome to the Lore.');
 
         setTimeout(() => {

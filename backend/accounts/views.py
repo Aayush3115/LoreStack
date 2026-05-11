@@ -8,8 +8,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
-from .serializers import RegisterSerializer,UserSerializer,UserUpdateSerializer
+from .serializers import RegisterSerializer,UserSerializer,UserUpdateSerializer, MyTokenObtainPairSerializer
 from django.db.models import Q
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
@@ -266,3 +267,6 @@ class VerifyOTPView(APIView):
             return Response({'message': 'Email verified successfully'})
         except EmailVerification.DoesNotExist:
             return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
