@@ -17,6 +17,7 @@ from google.auth.transport import requests as google_requests
 from django.conf import settings
 import requests
 from django.core.files.base import ContentFile
+from django.utils.crypto import get_random_string
 from .utils import generate_otp, send_otp_email
 from .models import EmailVerification
 # Create your views here.
@@ -173,7 +174,7 @@ class GoogleLoginView(APIView):
             
             # Get or create user
             user, created = User.objects.get_or_create(email=email, defaults={
-                'username': (idinfo.get('given_name', email.split('@')[0]) + '_' + User.objects.make_random_password(length=4)).lower(),
+                'username': (idinfo.get('given_name', email.split('@')[0]) + '_' + get_random_string(length=4)).lower(),
                 'first_name': idinfo.get('given_name', ''),
                 'last_name': idinfo.get('family_name', ''),
                 'bio': 'Signed in via Google',
