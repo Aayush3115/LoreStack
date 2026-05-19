@@ -86,7 +86,7 @@ const Home = () => {
 
                 setMoods(moodsRes.data);
                 setUserData(profileRes.data);
-                
+
                 if (!profileRes.data.email_verified) {
                     window.location.href = '/login?verify=true';
                     return;
@@ -288,15 +288,15 @@ const Home = () => {
                                                 <div className="preview-details compact">
                                                     <h2 className="preview-title compact">{movie.title || movie.name}</h2>
                                                     <p className="preview-overview compact">
-                                                        {movie.overview?.length > 150 
-                                                            ? movie.overview.substring(0, 150) + '...' 
+                                                        {movie.overview?.length > 150
+                                                            ? movie.overview.substring(0, 150) + '...'
                                                             : movie.overview || "Experience an unforgettable journey through this cinematic masterpiece."}
                                                     </p>
                                                     <div className="preview-actions compact">
                                                         <button className="spotlight-btn-primary small" onClick={() => handleMediaClick(movie)}>
                                                             <Play size={14} fill="currentColor" /> Details
                                                         </button>
-                                                        <button 
+                                                        <button
                                                             className="hero-btn-secondary small"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
@@ -331,10 +331,9 @@ const Home = () => {
                     <section className="content-section">
                         <div className="section-header">
                             <div className="section-title-wrap">
-                                <h2 className="section-title-main">People With Your Taste Are Into...</h2>
-                                <span className="section-subtitle">Based on users who share your cinematic DNA</span>
+                                <h2 className="section-title-main">People With Similar Taste Also Likes...</h2>
                             </div>
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-color)', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: '700' }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'black', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: '700' }}>
                                 <Users size={12} /> TASTE CIRCLE
                             </span>
                         </div>
@@ -342,9 +341,9 @@ const Home = () => {
                         <div className="horizontal-rail">
                             {collaborativeRecs.map((item) => (
                                 <div key={item.id} className="media-card" onClick={() => handleMediaClick(item)}>
-                                    <div className="match-tag" style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 2, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', color: '#4ade80', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', border: '1px solid rgba(74, 222, 128, 0.3)' }}>
+                                    {/* <div className="match-tag" style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 2, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', color: '#4ade80', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', border: '1px solid rgba(74, 222, 128, 0.3)' }}>
                                         {Math.round(item.match_score * 20)}% Match
-                                    </div>
+                                    </div> */}
                                     <img
                                         src={item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : 'https://via.placeholder.com/300x450'}
                                         alt={item.title}
