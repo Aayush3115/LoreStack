@@ -220,7 +220,7 @@ const Home = () => {
                     </div>
                 ) : !selectedVibe ? (
                     <section className="mood-prompt-section">
-                        <div className="mood-prompt-content">
+                        {/* <div className="mood-prompt-content">
                             <Sparkles className="mood-prompt-icon" size={48} />
                             <h2 className="mood-prompt-title">How are you feeling today?</h2>
                             <p className="mood-prompt-subtitle">Select a mood below to unlock personalized recommendations tailored to your vibe.</p>
@@ -243,7 +243,7 @@ const Home = () => {
                             <div className="mood-hint-arrow">
                                 <ArrowBigDown size={32} />
                             </div>
-                        </div>
+                        </div> */}
                     </section>
                 ) : (
                     <section className="content-section">
@@ -361,8 +361,8 @@ const Home = () => {
                     <section className="content-section" style={{ opacity: 0.8 }}>
                         <div className="section-header">
                             <div className="section-title-wrap">
-                                <h2 className="section-title-main">Unlock Your Taste Circle</h2>
-                                <span className="section-subtitle">Personalized picks from people who share your vibe</span>
+                                <h2 className="section-title-main">People With Similar Tests Also Likes...</h2>
+                                {/* <span className="section-subtitle">Personalized picks from people who share your vibe</span> */}
                             </div>
                         </div>
                         <div style={{ background: 'var(--card-bg)', padding: '30px', borderRadius: '16px', textAlign: 'center', border: '1px dashed var(--border-color)' }}>
@@ -370,7 +370,7 @@ const Home = () => {
                             <p style={{ fontSize: '0.9rem', marginBottom: '15px' }}>Rate more movies to find your "Taste Twins" and unlock personalized recommendations.</p>
                             <button
                                 onClick={() => navigate('/explore')}
-                                style={{ background: 'var(--accent-color)', color: 'white', border: 'none', padding: '8px 20px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}
+                                style={{ background: 'black', color: 'white', border: 'none', padding: '8px 20px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}
                             >
                                 Start Rating
                             </button>
