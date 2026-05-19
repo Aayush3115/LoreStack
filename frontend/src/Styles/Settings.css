@@ -175,11 +175,11 @@
         align-items: flex-start;
         gap: 12px;
     }
-    
+
     .row-label {
         flex: none;
     }
-    
+
     .row-action {
         width: 100%;
         justify-content: flex-start;
@@ -335,7 +335,8 @@
     text-transform: capitalize;
 }
 
-.search-prompt, .no-results {
+.search-prompt,
+.no-results {
     text-align: center;
     padding: 60px 20px;
     color: var(--secondary-text);
@@ -386,12 +387,12 @@
 }
 
 .theme-option.active {
-    background: var(--accent-color);
-    color: white;
+    background: white;
+    color: black;
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .light-mode .theme-option.active {
-    background: var(--accent-color);
+    background: black;
     color: white;
 }

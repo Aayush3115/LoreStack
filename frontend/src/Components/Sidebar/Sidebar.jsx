@@ -57,12 +57,12 @@ const Sidebar = () => {
                         <span>LoreRooms</span>
                     </button>
                 </Link>
-                <Link to='/Notification' style={{ textDecoration: 'none' }}>
+                {/* <Link to='/Notification' style={{ textDecoration: 'none' }}>
                     <button className={`nav-item ${isActive('/Notification') ? 'active' : ''}`}>
                         <Bell size={20} />
                         <span>Notifications</span>
                     </button>
-                </Link>
+                </Link> */}
                 <Link to='/Profile' style={{ textDecoration: 'none' }}>
                     <button className={`nav-item ${isActive('/Profile') ? 'active' : ''}`}>
                         <User size={20} />

@@ -368,6 +368,18 @@ def user_stats(request, username=None):
         tv_perfections = TVRating.objects.filter(user=user, rating='perfection').count()
         anime_perfections = AnimeRating.objects.filter(user=user, rating='perfection').count()
         
+        movie_goforit = MovieRating.objects.filter(user=user, rating='goforit').count()
+        tv_goforit = TVRating.objects.filter(user=user, rating='goforit').count()
+        anime_goforit = AnimeRating.objects.filter(user=user, rating='goforit').count()
+        
+        movie_timepass = MovieRating.objects.filter(user=user, rating='timepass').count()
+        tv_timepass = TVRating.objects.filter(user=user, rating='timepass').count()
+        anime_timepass = AnimeRating.objects.filter(user=user, rating='timepass').count()
+        
+        movie_skip = MovieRating.objects.filter(user=user, rating='skip').count()
+        tv_skip = TVRating.objects.filter(user=user, rating='skip').count()
+        anime_skip = AnimeRating.objects.filter(user=user, rating='skip').count()
+        
         joined_rooms = user.communities.count()
 
         movie_rev_count = MovieRating.objects.filter(user=user).exclude(review="").exclude(review__isnull=True).count()
@@ -384,7 +396,13 @@ def user_stats(request, username=None):
                     "total_logged": movie_logs + tv_logs + anime_logs,
                     "perfections": movie_perfections + tv_perfections + anime_perfections,
                     "rooms": joined_rooms,
-                    "reviews": movie_rev_count + tv_rev_count + anime_rev_count
+                    "reviews": movie_rev_count + tv_rev_count + anime_rev_count,
+                    "ratings_distribution": {
+                        "perfection": movie_perfections + tv_perfections + anime_perfections,
+                        "goforit": movie_goforit + tv_goforit + anime_goforit,
+                        "timepass": movie_timepass + tv_timepass + anime_timepass,
+                        "skip": movie_skip + tv_skip + anime_skip,
+                    }
                 }
             }
         })

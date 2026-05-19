@@ -408,7 +408,7 @@
     width: 40px;
     height: 40px;
     border: 3px solid rgba(255, 255, 255, 0.1);
-    border-top: 3px solid #6366f1;
+    border-top: 3px solid black;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -753,7 +753,7 @@
 }
 
 .searching-spinner {
-    color: #6366f1;
+    color: black;
     animation: spin-search 1s linear infinite;
 }
 

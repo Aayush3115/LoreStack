@@ -15,6 +15,7 @@ const Profile = () => {
     const [joinedRooms, setJoinedRooms] = useState([]);
     const [reviewDetails, setReviewDetails] = useState([]);
     const [diaryDetails, setDiaryDetails] = useState([]);
+    const [favorites, setFavorites] = useState([]);
     const [visibleReviewsCount, setVisibleReviewsCount] = useState(4);
     const [isLoading, setIsLoading] = useState(true);
     const [userData, setUserData] = useState(null);
@@ -228,6 +229,33 @@ const Profile = () => {
         }
     };
 
+    const fetchFavorites = async () => {
+        try {
+            const token = localStorage.getItem('access_token');
+            const url = username
+                ? `${BACKEND_URL}/api/movies/user-favorites/${username}/`
+                : `${BACKEND_URL}/api/movies/favorites/`;
+
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const response = await fetch(url, { headers });
+            
+            if (response.ok) {
+                const data = await response.json();
+                let favs = [];
+                if (data.status_code === 200 && data.data) {
+                    favs = data.data;
+                } else if (Array.isArray(data)) {
+                    favs = data;
+                } else if (data.results) {
+                    favs = data.results;
+                }
+                setFavorites(favs);
+            }
+        } catch (error) {
+            console.error("Failed to fetch favorites:", error);
+        }
+    };
+
     const fetchDiary = async () => {
         try {
             const token = localStorage.getItem('access_token');
@@ -281,7 +309,8 @@ const Profile = () => {
                 fetchWatchlist(),
                 fetchActivity(),
                 fetchReviews(),
-                fetchDiary()
+                fetchDiary(),
+                fetchFavorites()
             ]);
             setIsLoading(false);
         };
@@ -461,11 +490,7 @@ const Profile = () => {
                             <div className="profile-info-main">
                                 <div className="profile-name-row">
                                     <h1 className="profile-username-big">{userData.username}</h1>
-                                    {isOwnProfile ? (
-                                        <button className="edit-profile-btn" onClick={() => setIsEditModalOpen(true)}>
-                                            <Settings size={18} /> Edit Profile
-                                        </button>
-                                    ) : (
+                                    {!isOwnProfile && (
                                         <div className="profile-actions-public">
                                             <button
                                                 className={`follow-btn ${isFollowing ? 'unfollow' : ''}`}
@@ -512,6 +537,74 @@ const Profile = () => {
                                 <div className="compact-stat">
                                     <div className="compact-val">{stats?.reviews || 0}</div>
                                     <div className="compact-lab">Reviews</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {(favorites.length > 0 || (stats?.ratings_distribution && Object.values(stats.ratings_distribution).some(v => v > 0))) && (
+                        <div className="profile-favorites-container-wrapper">
+                            <div className="profile-favorites-left">
+                                <h3 className="section-title">
+                                    {isOwnProfile ? "My Favorites" : `${userData?.username}'s Favorites`}
+                                </h3>
+                                {favorites.length > 0 ? (
+                                    <div className="profile-favorites-grid">
+                                        {favorites.map((fav) => (
+                                            <div
+                                                key={fav.id}
+                                                className="fav-movie-card"
+                                                onClick={() => navigate(`/${fav.media_type === 'movie' ? 'movie' : fav.media_type}/${fav.media_id}`)}
+                                            >
+                                                <img
+                                                    src={fav.poster_path ? (fav.poster_path.startsWith('http') ? fav.poster_path : `https://image.tmdb.org/t/p/w500${fav.poster_path}`) : 'https://via.placeholder.com/150x225'}
+                                                    alt={fav.title}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="fav-placeholder-box">
+                                        <p>{isOwnProfile ? "You haven't featured any favorites yet. Head to settings to add some!" : "No favorites featured yet."}</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="profile-stats-right">
+                                <h3 className="section-title">Ratings Distribution</h3>
+                                <div className="ratings-distribution-chart">
+                                    {(() => {
+                                        const dist = stats?.ratings_distribution || { perfection: 0, goforit: 0, timepass: 0, skip: 0 };
+                                        const totalRatings = Object.values(dist).reduce((a, b) => a + b, 0);
+                                        const getPercent = (val) => totalRatings === 0 ? 0 : Math.round((val / totalRatings) * 100);
+                                        const labelMap = {
+                                            perfection: 'Perfection',
+                                            goforit: 'Go For It',
+                                            timepass: 'Timepass',
+                                            skip: 'Skip'
+                                        };
+
+                                        return Object.entries(dist).map(([key, val]) => {
+                                            const percent = getPercent(val);
+                                            return (
+                                                <div key={key} className="chart-row">
+                                                    <div className="chart-label-group">
+                                                        <span className="chart-row-label">{labelMap[key]}</span>
+                                                        <span className="chart-row-value">{val} ({percent}%)</span>
+                                                    </div>
+                                                    <div className="chart-bar-bg">
+                                                        <div 
+                                                            className={`chart-bar-fill fill-${key}`} 
+                                                            style={{ 
+                                                                width: `${percent}%`,
+                                                                backgroundColor: getRatingColor(key)
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            );
+                                        });
+                                    })()}
                                 </div>
                             </div>
                         </div>

@@ -69,6 +69,7 @@
 .profile-social-stats {
     display: flex;
     gap: 20px;
+    flex-wrap: wrap;
 }
 
 .social-stat {
@@ -112,7 +113,7 @@
 
 .hero-stats-compact {
     position: absolute;
-    bottom: 10px;
+    bottom: 32px;
     right: 0;
     display: flex;
     gap: 24px;
@@ -212,7 +213,7 @@
 
 .profile-tab.active {
     opacity: 1;
-    color: var(--accent-color);
+    color: black;
 }
 
 .profile-tab.active::after {
@@ -576,6 +577,7 @@
 .animate-spin {
     animation: spin 1s linear infinite;
 }
+
 /* User Search Styles */
 .user-search-wrapper {
     position: relative;
@@ -712,7 +714,8 @@
 
 .review-main-content {
     flex: 1;
-    min-width: 0; /* Prevents flex items from overflowing */
+    min-width: 0;
+    /* Prevents flex items from overflowing */
 }
 
 .review-header-info {
@@ -759,7 +762,8 @@
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    word-break: break-word; /* Ensures long words wrap */
+    word-break: break-word;
+    /* Ensures long words wrap */
     overflow-wrap: break-word;
 }
 
@@ -822,8 +826,8 @@
     border-radius: 20px;
     font-size: 14px;
     font-weight: 800;
-    color: var(--accent-color);
-    border: 1px solid var(--accent-color);
+    /* color: var(--accent-color); */
+    border: 1px solid black;
     z-index: 2;
     margin-bottom: 40px;
     text-transform: uppercase;
@@ -944,13 +948,13 @@
     .timeline-line {
         left: 20px;
     }
-    
+
     .timeline-year-header {
         left: 20px;
         transform: none;
         margin-left: 10px;
     }
-    
+
     .timeline-item {
         width: 100%;
         padding-left: 50px !important;
@@ -958,12 +962,12 @@
         left: 0 !important;
         text-align: left !important;
     }
-    
+
     .timeline-connector {
         left: 20px !important;
         width: 30px !important;
     }
-    
+
     .timeline-date-label {
         position: static;
         transform: none;
@@ -973,5 +977,142 @@
 
     .timeline-content-card {
         max-width: none;
+    }
+}
+
+/* User Favorites & Stats Container */
+.profile-favorites-container-wrapper {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 12px;
+}
+
+.profile-favorites-left {
+    flex: 1.5;
+    min-width: 0;
+}
+
+.profile-stats-right {
+    flex: 0.7;
+    padding: 0;
+    max-width: 270px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.profile-favorites-left .section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-color);
+    opacity: 1;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.profile-stats-right .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-color);
+    opacity: 1;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.profile-favorites-grid {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.fav-movie-card {
+    width: 110px;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    aspect-ratio: 2/3;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.fav-movie-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+    border: 1px solid var(--accent-color);
+}
+
+.fav-movie-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.fav-placeholder-box {
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed var(--border-color);
+    border-radius: 14px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 14px;
+}
+
+/* Charts */
+.ratings-distribution-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.chart-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.chart-label-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.chart-row-label {
+    color: var(--text-color);
+    opacity: 1;
+}
+
+.chart-row-value {
+    color: var(--text-color);
+    opacity: 1;
+}
+
+.chart-bar-bg {
+    width: 100%;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.chart-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 900px) {
+    .profile-favorites-container-wrapper {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .profile-stats-right {
+        width: 100%;
+        max-width: none;
+        margin-top: 0;
     }
 }
