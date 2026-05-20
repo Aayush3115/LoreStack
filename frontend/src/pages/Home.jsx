@@ -8,7 +8,7 @@ import {
     Sparkles, Film, Tv, Loader2, Search, Bell,
     MessageSquare, Heart, Share2, Compass,
     Play, Plus, MoreHorizontal, User, Users, Bookmark,
-    ArrowBigDown, ArrowBigUp,
+    ArrowBigDown, ArrowBigUp, Popcorn,
     Gamepad2, BookOpen, Music
 } from 'lucide-react';
 import vibeBanner from '../assets/vibe-banner.png';
@@ -200,13 +200,41 @@ const Home = () => {
 
                 {/* --- HERO SECTION --- */}
                 <section className="home-hero-container">
-                    <div className="home-hero" style={{ backgroundImage: `url(${vibeBanner || 'https://images.unsplash.com/photo-1485090916964-672ce3a005bc?q=80&w=2000'})` }}>
-                        <div className="hero-overlay"></div>
+                    <div className="home-hero">
+
                         <div className="hero-content">
-                            <h1 className="hero-title-main">Find Your Next<br />Cinematic Adventure</h1>
+                            <span className="hero-badge">
+                                Discover Your Next Watch
+                            </span>
+                            <h1 className="hero-title-main">
+                                Welcome to <span className="hero-title-gradient">LoreStack</span>
+                            </h1>
                             <p className="hero-description">
-                                Discover new worlds and unforgettable stories.
+                                The ultimate space to discover, share, and discuss your favorite movies, TV shows, and anime with a community that shares your vibe.
                             </p>
+                            <div className="hero-buttons">
+                                <button className="hero-btn-primary" onClick={() => navigate('/explore')}>
+                                    <Compass size={18} /> Explore
+                                </button>
+                                <button className="hero-btn-secondary-custom" onClick={() => navigate('/loreroom')}>
+                                    <Users size={18} /> Join LoreRooms
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="hero-visual">
+                            <div className="floating-card card-1">
+                                <Film size={24} />
+                                <span>Movies</span>
+                            </div>
+                            <div className="floating-card card-2">
+                                <Tv size={24} />
+                                <span>TV Shows</span>
+                            </div>
+                            <div className="floating-card card-3">
+                                <Popcorn size={24} />
+                                <span>Anime</span>
+                            </div>
                         </div>
                     </div>
                 </section>
