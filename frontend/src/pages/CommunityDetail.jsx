@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Sidebar from "../Components/Sidebar/Sidebar";
-import api from "../api/api";
+import api, { BACKEND_URL } from "../api/api";
 import "../styles/communityDetail.css";
 import { MoreHorizontal, ArrowBigUp, ArrowBigDown } from "lucide-react";
 import CommentSection from "../Components/Comments/CommentSection";
@@ -307,7 +307,7 @@ const CommunityDetail = () => {
                 <div className="post-card-header">
                   <Link to={`/profile/${post.username}`} className="post-avatar-link">
                     <img
-                      src={post.user_avatar || `https://i.pravatar.cc/48?u=${post.user_id}`}
+                      src={post.user_avatar || `${BACKEND_URL}/media/profile_pics/default.jpg`}
                       alt={post.username}
                       className="post-avatar"
                     />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../../api/api';
+import api, { BACKEND_URL } from '../../api/api';
 import './CommentSection.css';
 import { Send, Reply, Trash2, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -39,7 +39,7 @@ const CommentItem = ({ comment, postId, onCommentAdded, onDelete, currentUser, i
                 <div className="comment-avatar">
                    <Link to={`/profile/${comment.user_username}`}>
                     <img 
-                        src={comment.user_profile_picture || `https://i.pravatar.cc/40?u=${comment.user}`} 
+                        src={comment.user_profile_picture || `${BACKEND_URL}/media/profile_pics/default.jpg`} 
                         alt={comment.user_username} 
                     />
                    </Link>

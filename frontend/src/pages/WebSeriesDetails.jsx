@@ -308,7 +308,7 @@ const WebSeriesDetails = () => {
                                 <div className="space-badge">{userData.username}'s Space</div>
                                 <div className="user-avatar-container">
                                     <img
-                                        src={userData.profile_picture}
+                                        src={userData.profile_picture || `${BACKEND_URL}/media/profile_pics/default.jpg`}
                                         alt="Avatar"
                                         className="user-avatar-img"
                                     />
@@ -491,7 +491,7 @@ const WebSeriesDetails = () => {
                                                     <div key={rev.id} className="post-card">
                                                         <div className="post-card-header">
                                                             <img
-                                                                src={rev.profile_picture || `https://i.pravatar.cc/48?u=${rev.username}`}
+                                                                src={rev.profile_picture || `${BACKEND_URL}/media/profile_pics/default.jpg`}
                                                                 alt={rev.username}
                                                                 className="post-avatar"
                                                             />

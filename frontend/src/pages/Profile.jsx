@@ -462,7 +462,7 @@ const Profile = () => {
                                                 setSearchResults([]);
                                             }}
                                         >
-                                            <img src={user.profile_picture || '/default-avatar.png'} alt={user.username} />
+                                            <img src={user.profile_picture || `${BACKEND_URL}/media/profile_pics/default.jpg`} alt={user.username} />
                                             <div className="result-info">
                                                 <span className="result-username">{user.username}</span>
                                                 <span className="result-name">{user.first_name} {user.last_name}</span>
@@ -485,7 +485,7 @@ const Profile = () => {
                     {userData && (
                         <div className="profile-hero">
                             <div className="profile-avatar-wrapper">
-                                <img src={userData.profile_picture} alt="Avatar" className="profile-avatar-large" />
+                                <img src={userData.profile_picture || `${BACKEND_URL}/media/profile_pics/default.jpg`} alt="Avatar" className="profile-avatar-large" />
                             </div>
                             <div className="profile-info-main">
                                 <div className="profile-name-row">
