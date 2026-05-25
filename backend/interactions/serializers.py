@@ -23,12 +23,21 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def get_user_profile_picture(self, obj):
         request = self.context.get('request')
+        default_path = '/media/profile_pics/default.jpg'
+        
         if obj.user.profile_picture:
-            url = obj.user.profile_picture.url
-            if request:
-                return request.build_absolute_uri(url)
-            return url
-        return None
+            try:
+                url = obj.user.profile_picture.url
+                if url and 'default.jpg' not in url:
+                    if request:
+                        return request.build_absolute_uri(url)
+                    return url
+            except Exception:
+                pass
+                
+        if request:
+            return request.build_absolute_uri(default_path)
+        return default_path
 
 
     def get_replies(self, obj):
