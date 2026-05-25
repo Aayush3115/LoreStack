@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "../styles/community.css";
+import "../Styles/Community.css";
 import Sidebar from "../Components/Sidebar/Sidebar";
 import api from "../api/api";
 import { useNavigate, Link } from 'react-router-dom';

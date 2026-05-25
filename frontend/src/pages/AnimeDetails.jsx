@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../Components/Sidebar/Sidebar';
 import '../Styles/MovieDetails.css';
-import '../styles/communityDetail.css';
+import '../Styles/communityDetail.css';
 import { MoreVertical, Edit2, Trash2, Loader2, Bookmark, Eye, Check, X } from 'lucide-react';
 import { BACKEND_URL } from '../api/api';
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Sidebar from "../Components/Sidebar/Sidebar";
 import api, { BACKEND_URL } from "../api/api";
-import "../styles/communityDetail.css";
+import "../Styles/communityDetail.css";
 import { MoreHorizontal, ArrowBigUp, ArrowBigDown } from "lucide-react";
 import CommentSection from "../Components/Comments/CommentSection";
 
