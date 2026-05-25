@@ -8,6 +8,8 @@ __pycache__/
 # Django
 *.sqlite3
 *.log
+staticfiles/
+media/
 
 # Node / React
 node_modules/
