@@ -78,10 +78,10 @@ const Sidebar = () => {
             </nav>
 
             <div className="sidebar-footer">
-                {/* <button className="theme-toggle-btn" onClick={toggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
+                <button className="theme-toggle-btn" onClick={toggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
                     {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
                     <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
-                </button> */}
+                </button>
                 <button className="logout-btn" onClick={handleLogout}>
                     <LogOut size={20} />
                     <span>Logout</span>
